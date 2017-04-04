@@ -17,6 +17,7 @@ import java.util.List;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+
 import org.json.JSONObject;
 
 import com.xpn.xwiki.objects.PropertyInterface;
@@ -36,7 +37,7 @@ public class StringFilter extends AbstractFilter<String>
     public static final String MATCH_EXACT = "exact";
 
     /** Match value. */
-    public static final String MATCH_SUBSTRING = null;
+    public static final String MATCH_SUBSTRING = "substr";
 
     /** Match value. */
     public static final String MATCH_CASE_INSENSITIVE = "ci";

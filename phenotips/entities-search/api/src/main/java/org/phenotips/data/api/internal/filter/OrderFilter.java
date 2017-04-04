@@ -31,6 +31,12 @@ public class OrderFilter extends AbstractFilter<String>
     /** The type of this filter. */
     public static final String TYPE = "order_filter";
 
+    /** Ascending order. */
+    public static final String ASC = "asc";
+
+    /** Descending order. */
+    public static final String DESC = "desc";
+
     private String orderDir;
 
     /**
@@ -49,9 +55,9 @@ public class OrderFilter extends AbstractFilter<String>
     {
         super.init(input, parent, expressionParent);
 
-        this.orderDir = SearchUtils.getValue(input, VALUES_KEY, "desc");
-        if (!StringUtils.equals(this.orderDir, "asc") && !StringUtils.equals(this.orderDir, "desc")) {
-            this.orderDir = "desc";
+        this.orderDir = SearchUtils.getValue(input, VALUES_KEY, DESC);
+        if (!StringUtils.equals(this.orderDir, ASC) && !StringUtils.equals(this.orderDir, DESC)) {
+            this.orderDir = DESC;
         }
 
         return this;
