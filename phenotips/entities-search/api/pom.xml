@@ -9,13 +9,13 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>com.gene42.clients.niaid.phenotips.components</groupId>
-    <artifactId>gene42-family-data-table</artifactId>
-    <version>1.1</version>
+    <groupId>com.gene42.commons</groupId>
+    <artifactId>gene42-commons-entities-search</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
   </parent>
 
-  <artifactId>gene42-family-data-table-api</artifactId>
-  <name>Gene42 - NIAID - PhenoTips - Family Data Table - Java APIs</name>
+  <artifactId>gene42-commons-entities-search-api</artifactId>
+  <name>Gene42 - Commons - PhenoTips - Entities Search - Java APIs</name>
   <packaging>jar</packaging>
 
   <properties>
@@ -24,12 +24,18 @@
   </properties>
 
   <dependencies>
+
+    <!-- XWiki -->
+
+
+    <!-- PhenoTips -->
     <dependency>
       <groupId>${phenotips.groupId}</groupId>
       <artifactId>phenotips-crypto-xproperty</artifactId>
       <version>${phenotips.version}</version>
     </dependency>
 
+    <!-- Other -->
     <dependency>
       <groupId>org.hsqldb</groupId>
       <artifactId>hsqldb</artifactId>
