@@ -2,6 +2,7 @@ package org.phenotips.data.api.internal.builder;
 
 import org.phenotips.data.api.DocumentSearch;
 import org.phenotips.data.api.internal.DocumentQuery;
+import org.phenotips.data.api.internal.SpaceAndClass;
 import org.phenotips.data.api.internal.filter.OrderFilter;
 
 import java.util.ArrayList;
@@ -222,6 +223,8 @@ public class DocumentSearchBuilder implements Builder<JSONObject>
         if (this.sortFilter != null) {
             this.searchQuery.put(DocumentSearch.ORDER_KEY, this.sortFilter.build());
         }
+
+        this.searchQuery.put(SpaceAndClass.CLASS_KEY, this.docSpaceAndClass);
 
         return new JSONObject(this.searchQuery.toString());
     }
