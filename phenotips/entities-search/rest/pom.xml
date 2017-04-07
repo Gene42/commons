@@ -24,9 +24,6 @@
   </properties>
 
   <dependencies>
-    <!-- XWiki -->
-
-
     <!-- PhenoTips -->
     <dependency>
       <groupId>${phenotips.groupId}</groupId>
@@ -50,7 +47,6 @@
     <dependency>
       <groupId>javax.servlet</groupId>
       <artifactId>javax.servlet-api</artifactId>
-      <version>3.0.1</version>
     </dependency>
   </dependencies>
 
@@ -59,7 +55,7 @@
       <plugin>
         <groupId>org.jvnet.jaxb2.maven2</groupId>
         <artifactId>maven-jaxb2-plugin</artifactId>
-        <version>0.12.3</version>
+        <version>${maven-jaxb2-plugin.version}</version>
         <configuration>
           <generatePackage>org.phenotips.data.rest.model</generatePackage>
           <extension>true</extension>
@@ -85,7 +81,7 @@
             <plugin>
               <groupId>org.jvnet.jaxb2_commons</groupId>
               <artifactId>jaxb2-fluent-api</artifactId>
-              <version>3.0</version>
+              <version>${jaxb2-fluent-api.version}</version>
             </plugin>
           </plugins>
           <args>

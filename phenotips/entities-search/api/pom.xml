@@ -24,10 +24,6 @@
   </properties>
 
   <dependencies>
-
-    <!-- XWiki -->
-
-
     <!-- PhenoTips -->
     <dependency>
       <groupId>${phenotips.groupId}</groupId>
@@ -39,7 +35,6 @@
     <dependency>
       <groupId>org.hsqldb</groupId>
       <artifactId>hsqldb</artifactId>
-      <version>2.3.4</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
