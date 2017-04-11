@@ -11,11 +11,12 @@ public class NumberFilterBuilder extends AbstractFilterBuilder<Number>
 {
     /**
      * Constructor.
+     * @param propertyName the name of the property
      * @param parent the parent query builder
      */
-    public NumberFilterBuilder(DocumentSearchBuilder parent)
+    public NumberFilterBuilder(String propertyName, DocumentSearchBuilder parent)
     {
-        super(parent);
+        super(propertyName, parent);
         this.setMinKey(NumberFilter.MIN_KEY);
         this.setMaxKey(NumberFilter.MAX_KEY);
     }

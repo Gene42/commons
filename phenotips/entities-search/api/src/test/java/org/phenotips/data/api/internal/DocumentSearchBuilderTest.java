@@ -1,7 +1,6 @@
 package org.phenotips.data.api.internal;
 
 import org.phenotips.data.api.internal.builder.DocumentSearchBuilder;
-import org.phenotips.data.api.internal.filter.StringFilter;
 
 import java.util.Arrays;
 
@@ -58,16 +57,15 @@ public class DocumentSearchBuilderTest
         DocumentSearchBuilder query = new DocumentSearchBuilder("PhenoTips.PatientClass");
 
         String value = "haha";
-        String match = StringFilter.MATCH_SUBSTRING;
 
-        query.newNumberFilter().set("identifier").setMinValue(0);
-        query.newStringFilter().set("visibility", "PhenoTips.VisibilityClass")
+        query.newNumberFilter("identifier").setMinValue(0);
+        query.newStringFilter("visibility").setSpaceAndClass("PhenoTips.VisibilityClass")
             .setValues(Arrays.asList("private", "public", "open"));
 
         query.newExpression().setJoinModeToOr()
-            .newStringFilter().setMatch(match).set("first_name", value).back()
-            .newStringFilter().setMatch(match).set("last_name", value).back()
-            .newStringFilter().setMatch(match).set("fileName", "PhenoTips.SourceFileClass", value).back()
+            .newStringFilter("first_name").setValue(value).back()
+            .newStringFilter("last_name").setValue(value).back()
+            .newStringFilter("fileName").setValue(value).setSpaceAndClass("PhenoTips.SourceFileClass").back()
             .back();
 
         System.out.println(query.build().toString(4));

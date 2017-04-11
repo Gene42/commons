@@ -70,8 +70,7 @@ public class DocumentSearchBuilder implements Builder<JSONObject>
 
         if (this.parent == null) {
             this.setOffset(offset).setLimit(limit);
-            this.sortFilter = new StringFilterBuilder(this)
-                .setPropertyName("doc.name")
+            this.sortFilter = new StringFilterBuilder("doc.name", this)
                 .setSpaceAndClass(this.docSpaceAndClass)
                 .setType(OrderFilter.TYPE)
                 .setValue(OrderFilter.ASC);
@@ -219,22 +218,24 @@ public class DocumentSearchBuilder implements Builder<JSONObject>
 
     /**
      * Creates + adds a new string filter builder and returns it.
+     * @param propertyName the name of the property
      * @return a new StringFilterBuilder
      */
-    public StringFilterBuilder newStringFilter()
+    public StringFilterBuilder newStringFilter(String propertyName)
     {
-        StringFilterBuilder filter = new StringFilterBuilder(this);
+        StringFilterBuilder filter = new StringFilterBuilder(propertyName, this);
         this.filters.add(filter);
         return filter;
     }
 
     /**
      * Creates + adds a new number filter builder and returns it.
+     * @param propertyName the name of the property
      * @return a new NumberFilterBuilder
      */
-    public NumberFilterBuilder newNumberFilter()
+    public NumberFilterBuilder newNumberFilter(String propertyName)
     {
-        NumberFilterBuilder filter = new NumberFilterBuilder(this);
+        NumberFilterBuilder filter = new NumberFilterBuilder(propertyName, this);
         this.filters.add(filter);
         return filter;
     }

@@ -15,11 +15,12 @@ public class StringFilterBuilder extends AbstractFilterBuilder<String>
 
     /**
      * Constructor.
+     * @param propertyName the name of the property
      * @param parent the parent query builder
      */
-    public StringFilterBuilder(DocumentSearchBuilder parent)
+    public StringFilterBuilder(String propertyName, DocumentSearchBuilder parent)
     {
-        super(parent);
+        super(propertyName, parent);
     }
 
     /**

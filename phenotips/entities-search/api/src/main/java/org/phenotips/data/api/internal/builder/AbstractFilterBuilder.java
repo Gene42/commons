@@ -41,6 +41,16 @@ public abstract class AbstractFilterBuilder<T> implements Builder<JSONObject>
      */
     public AbstractFilterBuilder(DocumentSearchBuilder parent)
     {
+        this(null, parent);
+    }
+
+    /**
+     * Constructor.
+     * @param propertyName the name of the property
+     * @param parent the parent DocumentSearchBuilder of this filter
+     */
+    public AbstractFilterBuilder(String propertyName, DocumentSearchBuilder parent)
+    {
         this.parent = Objects.requireNonNull(parent);
 
         DocumentSearchBuilder currentParent = this.parent;
@@ -53,6 +63,7 @@ public abstract class AbstractFilterBuilder<T> implements Builder<JSONObject>
 
         this.setDocSpaceAndClass(parentSpaceAndClass);
         this.setSpaceAndClass(this.getDocSpaceAndClass());
+        this.setPropertyName(propertyName);
     }
 
     /**
@@ -297,40 +308,6 @@ public abstract class AbstractFilterBuilder<T> implements Builder<JSONObject>
         return this;
     }
 
-    /**
-     * Sets the propertyName for this filter.
-     * @param propertyName the name of the property
-     * @return this object
-     */
-    public AbstractFilterBuilder<T> set(String propertyName)
-    {
-        return this.setPropertyName(propertyName);
-    }
-
-    /**
-     * Sets the propertyName for this filter and its value (replaces the values array  with the given value).
-     * @param propertyName the name of the property
-     * @param value the value of the property
-     * @return this object
-     */
-    public AbstractFilterBuilder<T> set(String propertyName, T value)
-    {
-        return this.setPropertyName(propertyName).setValue(value);
-    }
-
-    /**
-     * Sets the propertyName for this filter and its value (replaces the values array  with the given value).
-     * It also sets the class property.
-     * @param propertyName the name of the property
-     * @param spaceAndClass the value to set the 'class' property to
-     * @param value the value of the property to set
-     * @return this object
-     */
-    public AbstractFilterBuilder<T> set(String propertyName, String spaceAndClass, T value)
-    {
-        return this.setPropertyName(propertyName).setSpaceAndClass(spaceAndClass).setValue(value);
-    }
-
     @Override
     public JSONObject build()
     {
@@ -345,7 +322,7 @@ public abstract class AbstractFilterBuilder<T> implements Builder<JSONObject>
 
             for (Object value : this.values) {
                 if (value != null) {
-                    valuesArray.put(value);
+                    valuesArray.put(String.valueOf(value));
                 }
             }
 
@@ -357,11 +334,11 @@ public abstract class AbstractFilterBuilder<T> implements Builder<JSONObject>
         }
 
         if (this.minValue != null) {
-            filter.put(this.minKey, this.minValue);
+            filter.put(this.minKey, String.valueOf(this.minValue));
         }
 
         if (this.maxValue != null) {
-            filter.put(this.maxKey, this.maxValue);
+            filter.put(this.maxKey, String.valueOf(this.maxValue));
         }
 
         return filter;
