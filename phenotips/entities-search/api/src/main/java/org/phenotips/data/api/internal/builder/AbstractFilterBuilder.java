@@ -16,8 +16,9 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 /**
- * DESCRIPTION.
+ * Builder Class for generating a filter JSONObject to be used in a DocumentSearch input JSONObject.
  *
+ * @param <T> the type of filter
  * @version $Id$
  */
 public abstract class AbstractFilterBuilder<T> implements Builder<JSONObject>
@@ -41,7 +42,16 @@ public abstract class AbstractFilterBuilder<T> implements Builder<JSONObject>
     public AbstractFilterBuilder(DocumentSearchBuilder parent)
     {
         this.parent = Objects.requireNonNull(parent);
-        this.setDocSpaceAndClass(this.parent.getDocSpaceAndClass());
+
+        DocumentSearchBuilder currentParent = this.parent;
+
+        String parentSpaceAndClass = null;
+        while (currentParent != null && parentSpaceAndClass == null) {
+            parentSpaceAndClass = currentParent.getDocSpaceAndClass();
+            currentParent = currentParent.getParent();
+        }
+
+        this.setDocSpaceAndClass(parentSpaceAndClass);
         this.setSpaceAndClass(this.getDocSpaceAndClass());
     }
 
@@ -287,16 +297,35 @@ public abstract class AbstractFilterBuilder<T> implements Builder<JSONObject>
         return this;
     }
 
+    /**
+     * Sets the propertyName for this filter.
+     * @param propertyName the name of the property
+     * @return this object
+     */
     public AbstractFilterBuilder<T> set(String propertyName)
     {
         return this.setPropertyName(propertyName);
     }
 
+    /**
+     * Sets the propertyName for this filter and its value (replaces the values array  with the given value).
+     * @param propertyName the name of the property
+     * @param value the value of the property
+     * @return this object
+     */
     public AbstractFilterBuilder<T> set(String propertyName, T value)
     {
         return this.setPropertyName(propertyName).setValue(value);
     }
 
+    /**
+     * Sets the propertyName for this filter and its value (replaces the values array  with the given value).
+     * It also sets the class property.
+     * @param propertyName the name of the property
+     * @param spaceAndClass the value to set the 'class' property to
+     * @param value the value of the property to set
+     * @return this object
+     */
     public AbstractFilterBuilder<T> set(String propertyName, String spaceAndClass, T value)
     {
         return this.setPropertyName(propertyName).setSpaceAndClass(spaceAndClass).setValue(value);

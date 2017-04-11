@@ -14,7 +14,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 /**
- * DESCRIPTION.
+ * Builder Class for generating a DocumentSearch input JSONObject.
  *
  * @version $Id$
  */
@@ -32,11 +32,21 @@ public class DocumentSearchBuilder implements Builder<JSONObject>
 
     private DocumentSearchBuilder parent;
 
+    /**
+     * Constructor.
+     * @param docSpaceAndClass the document space and class (should be null if expression)
+     */
     public DocumentSearchBuilder(String docSpaceAndClass)
     {
         this(null, docSpaceAndClass, 0, 25);
     }
 
+    /**
+     * Constructor.
+     * @param docSpaceAndClass the document space and class (should be null if expression)
+     * @param offset the offset of the query
+     * @param limit the limit of the query result
+     */
     public DocumentSearchBuilder(String docSpaceAndClass, int offset, int limit)
     {
         this(null, docSpaceAndClass, offset, limit);
@@ -47,7 +57,8 @@ public class DocumentSearchBuilder implements Builder<JSONObject>
         this(parent, docSpaceAndClass, 0, 25);
     }
 
-    private DocumentSearchBuilder(DocumentSearchBuilder parent) {
+    private DocumentSearchBuilder(DocumentSearchBuilder parent)
+    {
         this.parent = parent;
     }
 
@@ -79,6 +90,11 @@ public class DocumentSearchBuilder implements Builder<JSONObject>
         return this.docSpaceAndClass;
     }
 
+    /**
+     * Creates + Adds a new expression for this query and returns it. An expression uses the same class
+     * as the query builder, the only difference being that the class/docClass fields are not set.
+     * @return the new expression
+     */
     public DocumentSearchBuilder newExpression()
     {
         DocumentSearchBuilder newExpression = new DocumentSearchBuilder(this);
@@ -86,13 +102,22 @@ public class DocumentSearchBuilder implements Builder<JSONObject>
         return newExpression;
     }
 
+    /**
+     * Creates + Adds a new expression for this query and returns it.
+     * @param docClass the document space and class of this new sub query
+     * @return the new subquery
+     */
     public DocumentSearchBuilder newSubQuery(String docClass)
     {
-        DocumentSearchBuilder newExpression = new DocumentSearchBuilder(this);
-        this.queries.add(newExpression);
-        return newExpression;
+        DocumentSearchBuilder newSubQuery = new DocumentSearchBuilder(this, docClass);
+        this.queries.add(newSubQuery);
+        return newSubQuery;
     }
 
+    /**
+     * Returns the parent of this query builder. If it doesn't have one, it returns itself.
+     * @return the DocumentSearchBuilder or itself
+     */
     public DocumentSearchBuilder back()
     {
         if (this.parent == null) {
@@ -102,18 +127,31 @@ public class DocumentSearchBuilder implements Builder<JSONObject>
         }
     }
 
+    /**
+     * Sets the join mode to 'and'.
+     * @return this object
+     */
     public DocumentSearchBuilder setJoinModeToAnd()
     {
         this.searchQuery.put(DocumentQuery.JOIN_MODE_KEY, "and");
         return this;
     }
 
+    /**
+     * Sets the join mode to 'or'.
+     * @return this object
+     */
     public DocumentSearchBuilder setJoinModeToOr()
     {
         this.searchQuery.put(DocumentQuery.JOIN_MODE_KEY, "or");
         return this;
     }
 
+    /**
+     * Sets the sort order to 'asc' for the given property.
+     * @param propertyName the name of the property to sort on
+     * @return this object
+     */
     public DocumentSearchBuilder setSortAsc(String propertyName)
     {
         if (this.sortFilter != null) {
@@ -122,6 +160,11 @@ public class DocumentSearchBuilder implements Builder<JSONObject>
         return this;
     }
 
+    /**
+     * Sets the sort order to 'desc' for the given property.
+     * @param propertyName the name of the property to sort on
+     * @return this object
+     */
     public DocumentSearchBuilder setSortDesc(String propertyName)
     {
         if (this.sortFilter != null) {
@@ -174,7 +217,10 @@ public class DocumentSearchBuilder implements Builder<JSONObject>
         return this;
     }
 
-
+    /**
+     * Creates + adds a new string filter builder and returns it.
+     * @return a new StringFilterBuilder
+     */
     public StringFilterBuilder newStringFilter()
     {
         StringFilterBuilder filter = new StringFilterBuilder(this);
@@ -182,11 +228,25 @@ public class DocumentSearchBuilder implements Builder<JSONObject>
         return filter;
     }
 
+    /**
+     * Creates + adds a new number filter builder and returns it.
+     * @return a new NumberFilterBuilder
+     */
     public NumberFilterBuilder newNumberFilter()
     {
         NumberFilterBuilder filter = new NumberFilterBuilder(this);
         this.filters.add(filter);
         return filter;
+    }
+
+    /**
+     * Getter for parent.
+     *
+     * @return parent
+     */
+    public DocumentSearchBuilder getParent()
+    {
+        return this.parent;
     }
 
     /**
