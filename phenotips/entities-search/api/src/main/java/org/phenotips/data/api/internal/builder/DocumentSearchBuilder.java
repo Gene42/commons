@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.Builder;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -168,6 +169,25 @@ public class DocumentSearchBuilder implements Builder<JSONObject>
     {
         if (this.sortFilter != null) {
             this.sortFilter.setValue(OrderFilter.DESC).setPropertyName(propertyName);
+        }
+        return this;
+    }
+
+    /**
+     * Sets the sorting order for the given property. If either the property name is null or the order is invalid,
+     * this method will do nothing.
+     * @param propertyName the name of the property to sort on
+     * @param order the order in which to sort {asc,desc}.
+     * @return this object
+     */
+    public DocumentSearchBuilder setSortOrder(String propertyName, String order)
+    {
+        if (!StringUtils.isBlank(propertyName)) {
+            if (StringUtils.equalsIgnoreCase(OrderFilter.ASC, order)) {
+                this.setSortAsc(propertyName);
+            } else if (StringUtils.equalsIgnoreCase(OrderFilter.DESC, order)) {
+                this.setSortDesc(propertyName);
+            }
         }
         return this;
     }

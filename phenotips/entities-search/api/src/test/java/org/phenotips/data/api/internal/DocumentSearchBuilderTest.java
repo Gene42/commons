@@ -66,7 +66,8 @@ public class DocumentSearchBuilderTest
             .newStringFilter("first_name").setValue(value).back()
             .newStringFilter("last_name").setValue(value).back()
             .newStringFilter("fileName").setValue(value).setSpaceAndClass("PhenoTips.SourceFileClass").back()
-            .back();
+            .back()
+        .setSortOrder("first_name", "desc");
 
         System.out.println(query.build().toString(4));
     }
