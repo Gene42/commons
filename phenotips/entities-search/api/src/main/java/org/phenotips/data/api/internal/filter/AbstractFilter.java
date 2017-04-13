@@ -21,6 +21,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.IterableUtils;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
@@ -135,25 +136,27 @@ public abstract class AbstractFilter<T> implements QueryElement
      * @param parentExpression the parent expression this filter belongs to
      * @return this AbstractPropertyFilter object
      */
-    public AbstractFilter init(JSONObject input, DocumentQuery parent, QueryExpression parentExpression)
+    public AbstractFilter init(final JSONObject input, DocumentQuery parent, QueryExpression parentExpression)
     {
-        if (input.has(AbstractFilter.PARENT_LEVEL_KEY)) {
+        JSONObject preppedInput = this.prepInput(input);
+
+        if (preppedInput.has(AbstractFilter.PARENT_LEVEL_KEY)) {
             this.reference = true;
             this.parent = getParent(parent,
-                Integer.valueOf(SearchUtils.getValue(input, AbstractFilter.PARENT_LEVEL_KEY)));
+                Integer.valueOf(SearchUtils.getValue(preppedInput, AbstractFilter.PARENT_LEVEL_KEY)));
         } else {
             this.parent = parent;
         }
 
         this.parentExpression = parentExpression;
 
-        if (!input.has(SpaceAndClass.CLASS_KEY)) {
+        if (!preppedInput.has(SpaceAndClass.CLASS_KEY)) {
             throw new IllegalArgumentException(String.format("[%s] key not present", SpaceAndClass.CLASS_KEY));
         }
 
-        this.negate = SearchUtils.BOOLEAN_TRUE_SET.contains(SearchUtils.getValue(input, AbstractFilter.NOT_KEY));
+        this.negate = SearchUtils.BOOLEAN_TRUE_SET.contains(SearchUtils.getValue(preppedInput, AbstractFilter.NOT_KEY));
 
-        this.joinMode = StringUtils.lowerCase(input.optString(AbstractFilter.JOIN_MODE_KEY));
+        this.joinMode = StringUtils.lowerCase(preppedInput.optString(AbstractFilter.JOIN_MODE_KEY));
 
         if (!StringUtils.equals(this.joinMode, AbstractFilter.JOIN_MODE_VALUE_AND)
             && !StringUtils.equals(this.joinMode, AbstractFilter.JOIN_MODE_VALUE_OR)) {
@@ -161,13 +164,14 @@ public abstract class AbstractFilter<T> implements QueryElement
         }
 
         this.validatesQuery = SearchUtils.BOOLEAN_TRUE_SET.contains(
-            SearchUtils.getValue(input, VALIDATES_QUERY_KEY, CollectionUtils.get(SearchUtils.BOOLEAN_TRUE_SET, 0)));
+            SearchUtils.getValue(preppedInput, VALIDATES_QUERY_KEY, IterableUtils.get(SearchUtils.BOOLEAN_TRUE_SET, 0))
+        );
 
 
-        this.spaceAndClass = new SpaceAndClass(input);
-        this.propertyName = new PropertyName(input, this.getTableName());
+        this.spaceAndClass = new SpaceAndClass(preppedInput);
+        this.propertyName = new PropertyName(preppedInput, this.getTableName());
 
-        this.handleRefValues(input);
+        this.handleRefValues(preppedInput);
 
         return this;
     }
@@ -183,6 +187,17 @@ public abstract class AbstractFilter<T> implements QueryElement
             }
         }
         return this;
+    }
+
+    /**
+     * Modifies the input as needed at the beginning of the init method. Extending classes can override this method
+     * to add/change fields as needed (mostly for special case filters).
+     * @param input the initialization input
+     * @return the prepped initialization input
+     */
+    public JSONObject prepInput(final JSONObject input)
+    {
+        return input;
     }
 
     /**

@@ -9,6 +9,7 @@ package org.phenotips.data.api.internal;
 
 import org.phenotips.data.api.internal.filter.AbstractFilter;
 import org.phenotips.data.api.internal.filter.BooleanFilter;
+import org.phenotips.data.api.internal.filter.ClassFilter;
 import org.phenotips.data.api.internal.filter.DateFilter;
 import org.phenotips.data.api.internal.filter.LargeStringFilter;
 import org.phenotips.data.api.internal.filter.ListFilter;
@@ -117,7 +118,6 @@ public class DefaultFilterFactory extends AbstractFilterFactory
 
     private AbstractFilter getFilterByType(JSONObject input, String propertyName, BaseClass baseClass)
     {
-
         AbstractFilter returnValue;
 
         String type = input.optString(AbstractFilter.TYPE_KEY);
@@ -127,6 +127,8 @@ public class DefaultFilterFactory extends AbstractFilterFactory
             returnValue = new OrderFilter(baseClass.get(propertyName), baseClass, orderPropertyFilter.getTableName());
         } else if (StringUtils.equals(ReferenceClassFilter.TYPE, type)) {
             returnValue = new ReferenceClassFilter(null, null);
+        } else if (StringUtils.equals(ClassFilter.TYPE, type)) {
+            returnValue = new ClassFilter(null, baseClass);
         } else {
             throw new UnsupportedOperationException(String.format("Unsupported filter type [%1$s]", type));
         }
