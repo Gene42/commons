@@ -261,6 +261,17 @@ public class DocumentSearchBuilder implements Builder<JSONObject>
     }
 
     /**
+     * Creates + adds a new object filter builder and returns it.
+     * @return a new ObjectFilterBuilder
+     */
+    public ObjectFilterBuilder newObjectFilter()
+    {
+        ObjectFilterBuilder filter = new ObjectFilterBuilder(this);
+        this.filters.add(filter);
+        return filter;
+    }
+
+    /**
      * Getter for parent.
      *
      * @return parent

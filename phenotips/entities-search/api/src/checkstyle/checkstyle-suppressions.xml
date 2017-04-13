@@ -13,4 +13,5 @@
   <suppress checks="ClassDataAbstractionCoupling" files="DefaultFilterFactory.java"/>
   <suppress checks="ClassFanOutComplexityCheck" files="DefaultFilterFactory.java"/>
   <suppress checks="CyclomaticComplexity" files="DefaultFilterFactory.java"/>
+  <suppress checks="NPathComplexity" files="AbstractFilterBuilder.java"/>
 </suppressions>

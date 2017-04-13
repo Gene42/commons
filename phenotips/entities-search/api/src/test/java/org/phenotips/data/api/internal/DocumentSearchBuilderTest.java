@@ -60,9 +60,10 @@ public class DocumentSearchBuilderTest
 
         query.newNumberFilter("identifier").setMinValue(0);
         query.newStringFilter("visibility").setSpaceAndClass("PhenoTips.VisibilityClass")
-            .setValues(Arrays.asList("private", "public", "open"));
+            .setValues(Arrays.asList("private", "public", "open")).back()
+            .newObjectFilter().setSpaceAndClass("PhenoTips.SourceFileClass").back()
 
-        query.newExpression().setJoinModeToOr()
+            .newExpression().setJoinModeToOr()
             .newStringFilter("first_name").setValue(value).back()
             .newStringFilter("last_name").setValue(value).back()
             .newStringFilter("fileName").setValue(value).setSpaceAndClass("PhenoTips.SourceFileClass").back()

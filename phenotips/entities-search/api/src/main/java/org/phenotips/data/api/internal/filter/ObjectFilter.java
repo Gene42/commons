@@ -22,18 +22,21 @@ import com.xpn.xwiki.objects.classes.BaseClass;
  *
  * @version $Id$
  */
-public class ClassFilter extends AbstractFilter<String>
+public class ObjectFilter extends AbstractFilter<String>
 {
 
     /** The type of this filter. */
     public static final String TYPE = "class";
+
+    /** The property name for this filter. It doesn't need it. */
+    public static final String DEFAULT_PROPERTY_NAME = "objFilter";
 
     /**
      * Constructor.
      * @param property PropertyInterface
      * @param baseClass BaseClass
      */
-    public ClassFilter(PropertyInterface property, BaseClass baseClass)
+    public ObjectFilter(PropertyInterface property, BaseClass baseClass)
     {
         super(property, baseClass, "StringProperty");
     }
@@ -67,7 +70,7 @@ public class ClassFilter extends AbstractFilter<String>
     public JSONObject prepInput(JSONObject input)
     {
         JSONObject preppedInput = new JSONObject(input.toString());
-        preppedInput.put(PropertyName.PROPERTY_NAME_KEY, "n/a");
+        preppedInput.put(PropertyName.PROPERTY_NAME_KEY, DEFAULT_PROPERTY_NAME);
         return preppedInput;
     }
 

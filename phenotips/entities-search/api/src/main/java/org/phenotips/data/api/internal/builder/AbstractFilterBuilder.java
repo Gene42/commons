@@ -21,6 +21,7 @@ import org.json.JSONObject;
  * @param <T> the type of filter
  * @version $Id$
  */
+@SuppressWarnings({"checkstyle:npathcomplexity"})
 public abstract class AbstractFilterBuilder<T> implements Builder<JSONObject>
 {
     private DocumentSearchBuilder parent;
@@ -313,9 +314,17 @@ public abstract class AbstractFilterBuilder<T> implements Builder<JSONObject>
     {
         JSONObject filter = new JSONObject();
 
-        filter.put(PropertyName.PROPERTY_NAME_KEY, this.propertyName);
-        filter.put(SpaceAndClass.CLASS_KEY, this.spaceAndClass);
-        filter.put(AbstractFilter.DOC_CLASS_KEY, this.docSpaceAndClass);
+        if (this.propertyName != null) {
+            filter.put(PropertyName.PROPERTY_NAME_KEY, this.propertyName);
+        }
+
+        if (this.spaceAndClass != null) {
+            filter.put(SpaceAndClass.CLASS_KEY, this.spaceAndClass);
+        }
+
+        if (this.docSpaceAndClass != null) {
+            filter.put(AbstractFilter.DOC_CLASS_KEY, this.docSpaceAndClass);
+        }
 
         if (CollectionUtils.isNotEmpty(this.values)) {
             JSONArray valuesArray = new JSONArray();
