@@ -63,7 +63,7 @@ public class ObjectFilter extends AbstractFilter<String>
 
         bindingValues.add(this.getSpaceAndClass().get());
 
-        return where.endGroup();
+        return where.endGroup().load();
     }
 
     @Override
