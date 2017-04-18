@@ -283,11 +283,11 @@ public class DocumentQuery
 
     private QueryBuffer selectHql(QueryBuffer select)
     {
-        select.append("select distinct ");
+        select.append("select");
         if (this.countQuery) {
-            select.append("count(*)");
+            select.append(" count(distinct ").append(this.docName).append(".fullName) ");
         } else {
-            select.append(this.docName).append(".fullName");
+            select.append(" distinct ").append(this.docName).append(".fullName");
         }
 
         if (this.orderFilter != null) {
