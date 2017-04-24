@@ -5,7 +5,7 @@ import org.phenotips.data.api.internal.DocumentQuery;
 import org.phenotips.data.api.internal.SpaceAndClass;
 import org.phenotips.data.api.internal.filter.OrderFilter;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -27,9 +27,9 @@ public class DocumentSearchBuilder implements Builder<JSONObject>
 
     private AbstractFilterBuilder<String> sortFilter;
 
-    private List<DocumentSearchBuilder> queries = new ArrayList<>();
+    private List<DocumentSearchBuilder> queries = new LinkedList<>();
 
-    private List<AbstractFilterBuilder> filters = new ArrayList<>();
+    private List<AbstractFilterBuilder> filters = new LinkedList<>();
 
     private DocumentSearchBuilder parent;
 

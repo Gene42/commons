@@ -136,7 +136,7 @@ public abstract class AbstractFilter<T> implements QueryElement
      * @param parentExpression the parent expression this filter belongs to
      * @return this AbstractPropertyFilter object
      */
-    public AbstractFilter init(final JSONObject input, DocumentQuery parent, QueryExpression parentExpression)
+    public AbstractFilter<T> init(final JSONObject input, DocumentQuery parent, QueryExpression parentExpression)
     {
         JSONObject preppedInput = this.prepInput(input);
 
@@ -448,7 +448,7 @@ public abstract class AbstractFilter<T> implements QueryElement
      * @param tableName tableName to set
      * @return this object
      */
-    public AbstractFilter setTableName(String tableName)
+    public AbstractFilter<T> setTableName(String tableName)
     {
         if (!this.isEncrypted()) {
             this.tableName = tableName;
@@ -472,7 +472,7 @@ public abstract class AbstractFilter<T> implements QueryElement
      * @param level level to set
      * @return this object
      */
-    public AbstractFilter setLevel(int level)
+    public AbstractFilter<T> setLevel(int level)
     {
         this.level = level;
         return this;
@@ -495,7 +495,7 @@ public abstract class AbstractFilter<T> implements QueryElement
      * @param negate negate to set
      * @return this object
      */
-    public AbstractFilter setNegate(boolean negate)
+    public AbstractFilter<T> setNegate(boolean negate)
     {
         this.negate = negate;
         return this;
@@ -517,7 +517,7 @@ public abstract class AbstractFilter<T> implements QueryElement
      * @param property property to set
      * @return this object
      */
-    public AbstractFilter setProperty(PropertyInterface property)
+    public AbstractFilter<T> setProperty(PropertyInterface property)
     {
         this.property = property;
         return this;
@@ -539,7 +539,7 @@ public abstract class AbstractFilter<T> implements QueryElement
      * @param baseClass baseClass to set
      * @return this object
      */
-    public AbstractFilter setBaseClass(BaseClass baseClass)
+    public AbstractFilter<T> setBaseClass(BaseClass baseClass)
     {
         this.baseClass = baseClass;
         return this;
@@ -561,7 +561,7 @@ public abstract class AbstractFilter<T> implements QueryElement
      * @param min min to set
      * @return this object
      */
-    public AbstractFilter setMin(T min)
+    public AbstractFilter<T> setMin(T min)
     {
         this.min = min;
         return this;
@@ -583,7 +583,7 @@ public abstract class AbstractFilter<T> implements QueryElement
      * @param max max to set
      * @return this object
      */
-    public AbstractFilter setMax(T max)
+    public AbstractFilter<T> setMax(T max)
     {
         this.max = max;
         return this;
@@ -605,7 +605,7 @@ public abstract class AbstractFilter<T> implements QueryElement
      * @param values values to set
      * @return this object
      */
-    public AbstractFilter setValues(List<T> values)
+    public AbstractFilter<T> setValues(List<T> values)
     {
         if (values == null) {
             this.values = new LinkedList<>();
