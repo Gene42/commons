@@ -8,6 +8,7 @@
 package org.phenotips.data.api.internal;
 
 import org.phenotips.data.api.DocumentSearch;
+import org.phenotips.data.api.DocumentSearchException;
 import org.phenotips.data.api.DocumentSearchResult;
 
 import org.xwiki.component.annotation.Component;
@@ -67,7 +68,7 @@ public class DefaultDocumentSearchImpl implements DocumentSearch<DocumentReferen
     private Logger logger;
 
     @Override
-    public DocumentSearchResult<DocumentReference> search(JSONObject queryParameters) throws QueryException
+    public DocumentSearchResult<DocumentReference> search(JSONObject queryParameters) throws DocumentSearchException
     {
         int offset = queryParameters.optInt(DocumentSearch.OFFSET_KEY);
         if (offset <= 0) {
@@ -89,7 +90,12 @@ public class DefaultDocumentSearchImpl implements DocumentSearch<DocumentReferen
             this.logger.debug(String.format("[statement= %1$s ]", scriptQuery.getStatement()));
         }
 
-        List<String> results = this.getQueryResults((List) scriptQuery.execute());
+        List<String> results;
+        try {
+            results = this.getQueryResults((List) scriptQuery.execute());
+        } catch (QueryException e) {
+            throw new DocumentSearchException(e);
+        }
 
         return new DocumentSearchResult<DocumentReference>()
             .setItems(this.getDocRefs(results, wiki.getDatabase(), spaceAndClass))
@@ -124,20 +130,25 @@ public class DefaultDocumentSearchImpl implements DocumentSearch<DocumentReferen
         return result;
     }
 
-    private ScriptQuery getQuery(JSONObject queryParameters, boolean count, int limit, int offset) throws QueryException
+    private ScriptQuery getQuery(JSONObject queryParameters, boolean count, int limit, int offset) throws
+        DocumentSearchException
     {
         List<Object> bindingValues = new LinkedList<>();
         DocumentQuery docQuery = new DocumentQuery(new DefaultFilterFactory(this.contextProvider), count);
         String queryStr = docQuery.init(queryParameters).hql(null, bindingValues).toString();
 
-        Query query = this.queryManager.createQuery(queryStr, "hql");
+        Query query;
+        try {
+            query = this.queryManager.createQuery(queryStr, "hql");
+        } catch (QueryException e) {
+            throw new DocumentSearchException(e);
+        }
 
         ScriptQuery scriptQuery = new ScriptQuery(query, this.componentManager);
 
         scriptQuery.setLimit(limit);
         scriptQuery.setOffset(offset);
         scriptQuery.bindValues(bindingValues);
-        //addFiltersToQuery(scriptQuery);
 
         if (this.logger.isDebugEnabled()) {
             this.logger.debug(String.format("[ %1$s ]", queryStr));

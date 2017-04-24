@@ -49,16 +49,22 @@ public class URLInputAdapter implements LiveTableInputAdapter
 
     private static final Set<String> NON_FILTERS = new HashSet<>();
 
+
+    private static final String OUTPUT_SYNTAX_KEY = "outputSyntax";
+    private static final String FILTER_WHERE_KEY = "filterWhere";
+    private static final String FILTER_FROM_KEY = "filterFrom";
+    private static final String QUERY_FILTERS_KEY = "queryFilters";
+
     static {
         NON_FILTERS.add(CLASS_NAME_KEY);
         NON_FILTERS.add(DocumentSearch.LIMIT_KEY);
         NON_FILTERS.add(DocumentSearch.OFFSET_KEY);
         NON_FILTERS.add(DocumentSearch.ORDER_KEY);
         NON_FILTERS.add(DocumentSearch.REQUEST_NUMBER_KEY);
-        NON_FILTERS.add(DocumentSearch.OUTPUT_SYNTAX_KEY);
-        NON_FILTERS.add(DocumentSearch.FILTER_WHERE_KEY);
-        NON_FILTERS.add(DocumentSearch.FILTER_FROM_KEY);
-        NON_FILTERS.add(DocumentSearch.QUERY_FILTERS_KEY);
+        NON_FILTERS.add(OUTPUT_SYNTAX_KEY);
+        NON_FILTERS.add(FILTER_WHERE_KEY);
+        NON_FILTERS.add(FILTER_FROM_KEY);
+        NON_FILTERS.add(QUERY_FILTERS_KEY);
         NON_FILTERS.add(DocumentSearch.ORDER_DIR_KEY);
         NON_FILTERS.add(DocumentSearch.COLUMN_LIST_KEY);
         NON_FILTERS.add(RequestUtils.TRANS_PREFIX_KEY);
@@ -74,9 +80,7 @@ public class URLInputAdapter implements LiveTableInputAdapter
 
         // Key is param name, value param value list
         for (Map.Entry<String, List<String>> entry : queryParameters.entrySet()) {
-            if (URLInputAdapter.NON_FILTERS.contains(entry.getKey())) {
-                continue;
-            } else {
+            if (!URLInputAdapter.NON_FILTERS.contains(entry.getKey())) {
                 builder.addFilter(ParameterKey.FILTER_KEY_PREFIX + entry.getKey(), entry.getValue());
             }
         }
@@ -86,13 +90,6 @@ public class URLInputAdapter implements LiveTableInputAdapter
         JSONObject queryObj = builder.build().toJSON();
 
         queryObj.put(DocumentSearch.LIMIT_KEY, RequestUtils.getFirst(queryParameters, DocumentSearch.LIMIT_KEY));
-        queryObj.put(DocumentSearch.QUERY_FILTERS_KEY, RequestUtils.getFirst(queryParameters, DocumentSearch
-            .QUERY_FILTERS_KEY));
-        queryObj.put(DocumentSearch.FILTER_WHERE_KEY, RequestUtils.getFirst(queryParameters, DocumentSearch
-            .FILTER_WHERE_KEY));
-        queryObj.put(DocumentSearch.FILTER_FROM_KEY, RequestUtils.getFirst(queryParameters, DocumentSearch
-            .FILTER_FROM_KEY));
-
         queryObj.put(DocumentSearch.OFFSET_KEY,
             Integer.valueOf(RequestUtils.getFirst(queryParameters, DocumentSearch.OFFSET_KEY, "1")) - 1);
         queryObj.put(DocumentSearch.COLUMN_LIST_KEY, this.getColumnList(documentClassName, queryParameters));

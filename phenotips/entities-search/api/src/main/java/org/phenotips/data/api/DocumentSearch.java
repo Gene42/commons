@@ -8,7 +8,6 @@
 package org.phenotips.data.api;
 
 import org.xwiki.component.annotation.Role;
-import org.xwiki.query.QueryException;
 
 import org.json.JSONObject;
 
@@ -39,26 +38,14 @@ public interface DocumentSearch<T>
     String REQUEST_NUMBER_KEY = "reqNo";
 
     /** Input key. */
-    String OUTPUT_SYNTAX_KEY = "outputSyntax";
-
-    /** Input key. */
-    String FILTER_WHERE_KEY = "filterWhere";
-
-    /** Input key. */
-    String FILTER_FROM_KEY = "filterFrom";
-
-    /** Input key. */
-    String QUERY_FILTERS_KEY = "queryFilters";
-
-    /** Input key. */
     String COLUMN_LIST_KEY = "collist";
 
     /**
      *
      * @param queryParameters the parameters used to create the query
      * @return a DocumentSearchResult containing the documents plus extra metadata
-     * @throws QueryException on any issues during document querying
+     * @throws DocumentSearchException on any issues during document querying
      * @throws SecurityException if user is not authorized to search for data
      */
-    DocumentSearchResult<T> search(JSONObject queryParameters) throws QueryException;
+    DocumentSearchResult<T> search(JSONObject queryParameters) throws DocumentSearchException;
 }
