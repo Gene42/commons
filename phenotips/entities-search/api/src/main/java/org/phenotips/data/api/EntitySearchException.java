@@ -5,12 +5,12 @@ package org.phenotips.data.api;
  *
  * @version $Id$
  */
-public class DocumentSearchException extends Exception
+public class EntitySearchException extends Exception
 {
     /**
      * Constructor.
      */
-    public DocumentSearchException()
+    public EntitySearchException()
     {
         super();
     }
@@ -19,7 +19,7 @@ public class DocumentSearchException extends Exception
      * Constructor.
      * @param message message to associate with this exception
      */
-    public DocumentSearchException(String message)
+    public EntitySearchException(String message)
     {
         super(message);
     }
@@ -29,7 +29,7 @@ public class DocumentSearchException extends Exception
      * @param message  message to associate with this exception
      * @param throwable another Throwable to wrap with this exception
      */
-    public DocumentSearchException(String message, Throwable throwable)
+    public EntitySearchException(String message, Throwable throwable)
     {
         super(message, throwable);
     }
@@ -38,7 +38,7 @@ public class DocumentSearchException extends Exception
      * Constructor.
      * @param throwable message to associate with this exception
      */
-    public DocumentSearchException(Throwable throwable)
+    public EntitySearchException(Throwable throwable)
     {
         super(throwable);
     }

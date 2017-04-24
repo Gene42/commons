@@ -7,7 +7,7 @@
  */
 package org.phenotips.data.rest.internal.adapter;
 
-import org.phenotips.data.api.DocumentSearch;
+import org.phenotips.data.api.EntitySearch;
 import org.phenotips.data.api.internal.PropertyName;
 import org.phenotips.data.api.internal.SpaceAndClass;
 import org.phenotips.data.api.internal.filter.AbstractFilter;
@@ -57,16 +57,16 @@ public class URLInputAdapter implements LiveTableInputAdapter
 
     static {
         NON_FILTERS.add(CLASS_NAME_KEY);
-        NON_FILTERS.add(DocumentSearch.LIMIT_KEY);
-        NON_FILTERS.add(DocumentSearch.OFFSET_KEY);
-        NON_FILTERS.add(DocumentSearch.ORDER_KEY);
-        NON_FILTERS.add(DocumentSearch.REQUEST_NUMBER_KEY);
+        NON_FILTERS.add(EntitySearch.Keys.LIMIT_KEY);
+        NON_FILTERS.add(EntitySearch.Keys.OFFSET_KEY);
+        NON_FILTERS.add(EntitySearch.Keys.ORDER_KEY);
+        NON_FILTERS.add(EntitySearch.Keys.REQUEST_NUMBER_KEY);
         NON_FILTERS.add(OUTPUT_SYNTAX_KEY);
         NON_FILTERS.add(FILTER_WHERE_KEY);
         NON_FILTERS.add(FILTER_FROM_KEY);
         NON_FILTERS.add(QUERY_FILTERS_KEY);
-        NON_FILTERS.add(DocumentSearch.ORDER_DIR_KEY);
-        NON_FILTERS.add(DocumentSearch.COLUMN_LIST_KEY);
+        NON_FILTERS.add(EntitySearch.Keys.ORDER_DIR_KEY);
+        NON_FILTERS.add(EntitySearch.Keys.COLUMN_LIST_KEY);
         NON_FILTERS.add(RequestUtils.TRANS_PREFIX_KEY);
     }
 
@@ -89,28 +89,28 @@ public class URLInputAdapter implements LiveTableInputAdapter
 
         JSONObject queryObj = builder.build().toJSON();
 
-        queryObj.put(DocumentSearch.LIMIT_KEY, RequestUtils.getFirst(queryParameters, DocumentSearch.LIMIT_KEY));
-        queryObj.put(DocumentSearch.OFFSET_KEY,
-            Integer.valueOf(RequestUtils.getFirst(queryParameters, DocumentSearch.OFFSET_KEY, "1")) - 1);
-        queryObj.put(DocumentSearch.COLUMN_LIST_KEY, this.getColumnList(documentClassName, queryParameters));
+        queryObj.put(EntitySearch.Keys.LIMIT_KEY, RequestUtils.getFirst(queryParameters, EntitySearch.Keys.LIMIT_KEY));
+        queryObj.put(EntitySearch.Keys.OFFSET_KEY,
+            Integer.valueOf(RequestUtils.getFirst(queryParameters, EntitySearch.Keys.OFFSET_KEY, "1")) - 1);
+        queryObj.put(EntitySearch.Keys.COLUMN_LIST_KEY, this.getColumnList(documentClassName, queryParameters));
 
         return queryObj;
     }
 
     private void addOrderFilter(DocumentQueryBuilder builder, Map<String, List<String>> queryParameters)
     {
-        String sortKey = ParameterKey.FILTER_KEY_PREFIX + RequestUtils.getFirst(queryParameters, DocumentSearch
+        String sortKey = ParameterKey.FILTER_KEY_PREFIX + RequestUtils.getFirst(queryParameters, EntitySearch.Keys
             .ORDER_KEY);
         String typeKey = sortKey + ParameterKey.PROPERTY_DELIMITER + AbstractFilter.TYPE_KEY;
 
         builder.addToOrderFilter(sortKey,
-            Collections.singletonList(RequestUtils.getFirst(queryParameters, DocumentSearch.ORDER_DIR_KEY)));
+            Collections.singletonList(RequestUtils.getFirst(queryParameters, EntitySearch.Keys.ORDER_DIR_KEY)));
         builder.addToOrderFilter(typeKey, Collections.singletonList(OrderFilter.TYPE));
     }
 
     private JSONArray getColumnList(String className, Map<String, List<String>> queryParameters)
     {
-        String [] tokens = StringUtils.split(RequestUtils.getFirst(queryParameters, DocumentSearch.COLUMN_LIST_KEY),
+        String [] tokens = StringUtils.split(RequestUtils.getFirst(queryParameters, EntitySearch.Keys.COLUMN_LIST_KEY),
             URLInputAdapter.VALUE_DELIMITER);
 
         JSONArray array = new JSONArray();

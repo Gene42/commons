@@ -20,7 +20,7 @@ import org.apache.commons.collections4.CollectionUtils;
  *
  * @version $Id$
  */
-public class DocumentSearchResult<T>
+public class EntitySearchResult<T>
 {
     private long totalRows;
 
@@ -44,7 +44,7 @@ public class DocumentSearchResult<T>
      * @param totalRows totalRows to set
      * @return this object
      */
-    public DocumentSearchResult<T> setTotalRows(long totalRows)
+    public EntitySearchResult<T> setTotalRows(long totalRows)
     {
         this.totalRows = totalRows;
         return this;
@@ -77,7 +77,7 @@ public class DocumentSearchResult<T>
      * @param offset offset to set
      * @return this object
      */
-    public DocumentSearchResult<T> setOffset(int offset)
+    public EntitySearchResult<T> setOffset(int offset)
     {
         this.offset = offset;
         return this;
@@ -99,7 +99,7 @@ public class DocumentSearchResult<T>
      * @param items items to set
      * @return this object
      */
-    public DocumentSearchResult<T> setItems(List<T> items)
+    public EntitySearchResult<T> setItems(List<T> items)
     {
         if (items != null) {
             this.items = items;

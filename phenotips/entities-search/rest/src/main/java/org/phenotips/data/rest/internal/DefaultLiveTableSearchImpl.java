@@ -7,9 +7,9 @@
  */
 package org.phenotips.data.rest.internal;
 
-import org.phenotips.data.api.DocumentSearch;
-import org.phenotips.data.api.DocumentSearchException;
-import org.phenotips.data.api.DocumentSearchResult;
+import org.phenotips.data.api.EntitySearch;
+import org.phenotips.data.api.EntitySearchException;
+import org.phenotips.data.api.EntitySearchResult;
 import org.phenotips.data.api.internal.SpaceAndClass;
 import org.phenotips.data.rest.LiveTableInputAdapter;
 import org.phenotips.data.rest.LiveTableRowHandler;
@@ -88,7 +88,7 @@ public class DefaultLiveTableSearchImpl implements LiveTableSearch
     private AuthorizationManager access;
 
     @Inject
-    private DocumentSearch<DocumentReference> documentSearch;
+    private EntitySearch<DocumentReference> documentSearch;
 
     @Inject
     @Named("url")
@@ -123,11 +123,11 @@ public class DefaultLiveTableSearchImpl implements LiveTableSearch
 
             JSONObject responseObject = this.getResponseObject(inputObject, queryParameters, stopWatches);
 
-            responseObject.put(DocumentSearch.REQUEST_NUMBER_KEY, Long.valueOf(RequestUtils.getFirst(queryParameters,
-                DocumentSearch.REQUEST_NUMBER_KEY, "0")));
+            responseObject.put(EntitySearch.Keys.REQUEST_NUMBER_KEY, Long.valueOf(RequestUtils.getFirst(queryParameters,
+                EntitySearch.Keys.REQUEST_NUMBER_KEY, "0")));
 
-            responseObject.put(DocumentSearch.OFFSET_KEY, Long.valueOf(RequestUtils.getFirst(queryParameters,
-                DocumentSearch.OFFSET_KEY, "0")));
+            responseObject.put(EntitySearch.Keys.OFFSET_KEY, Long.valueOf(RequestUtils.getFirst(queryParameters,
+                EntitySearch.Keys.OFFSET_KEY, "0")));
 
             JSONObject timingsJSON = getTimingsJSON(stopWatches);
             responseObject.put("timings", timingsJSON);
@@ -143,7 +143,7 @@ public class DefaultLiveTableSearchImpl implements LiveTableSearch
             this.handleError(e, Status.UNAUTHORIZED);
         } catch (XWikiException e) {
             this.handleError(e, Status.INTERNAL_SERVER_ERROR);
-        } catch (DocumentSearchException | IllegalArgumentException e) {
+        } catch (EntitySearchException | IllegalArgumentException e) {
             this.handleError(e, Status.BAD_REQUEST);
         }
 
@@ -151,10 +151,10 @@ public class DefaultLiveTableSearchImpl implements LiveTableSearch
     }
 
     private JSONObject getResponseObject(JSONObject inputObject, Map<String, List<String>> queryParameters,
-        StopWatches stopWatches) throws XWikiException, DocumentSearchException
+        StopWatches stopWatches) throws XWikiException, EntitySearchException
     {
         stopWatches.getSearchStopWatch().start();
-        DocumentSearchResult<DocumentReference> documentSearchResult = this.documentSearch.search(inputObject);
+        EntitySearchResult<DocumentReference> documentSearchResult = this.documentSearch.search(inputObject);
         stopWatches.getSearchStopWatch().stop();
 
         stopWatches.getTableStopWatch().start();

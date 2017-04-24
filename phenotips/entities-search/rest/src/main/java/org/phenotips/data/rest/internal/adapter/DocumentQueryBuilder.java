@@ -7,7 +7,7 @@
  */
 package org.phenotips.data.rest.internal.adapter;
 
-import org.phenotips.data.api.DocumentSearch;
+import org.phenotips.data.api.EntitySearch;
 import org.phenotips.data.api.internal.DocumentQuery;
 import org.phenotips.data.api.internal.PropertyName;
 import org.phenotips.data.api.internal.QueryExpression;
@@ -186,7 +186,7 @@ public class DocumentQueryBuilder implements Builder<DocumentQueryBuilder>
         }
 
         if (this.orderFilter != null) {
-            myself.put(DocumentSearch.ORDER_KEY, this.orderFilter);
+            myself.put(EntitySearch.Keys.ORDER_KEY, this.orderFilter);
         }
 
         return myself;

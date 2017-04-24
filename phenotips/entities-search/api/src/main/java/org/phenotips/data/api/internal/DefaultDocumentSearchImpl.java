@@ -7,9 +7,9 @@
  */
 package org.phenotips.data.api.internal;
 
-import org.phenotips.data.api.DocumentSearch;
-import org.phenotips.data.api.DocumentSearchException;
-import org.phenotips.data.api.DocumentSearchResult;
+import org.phenotips.data.api.EntitySearch;
+import org.phenotips.data.api.EntitySearchException;
+import org.phenotips.data.api.EntitySearchResult;
 
 import org.xwiki.component.annotation.Component;
 import org.xwiki.component.manager.ComponentManager;
@@ -45,7 +45,7 @@ import com.xpn.xwiki.XWikiContext;
  */
 @Component
 @Singleton
-public class DefaultDocumentSearchImpl implements DocumentSearch<DocumentReference>
+public class DefaultDocumentSearchImpl implements EntitySearch<DocumentReference>
 {
     private static final String LIMIT_DEFAULT = "15";
 
@@ -68,17 +68,16 @@ public class DefaultDocumentSearchImpl implements DocumentSearch<DocumentReferen
     private Logger logger;
 
     @Override
-    public DocumentSearchResult<DocumentReference> search(JSONObject queryParameters) throws DocumentSearchException
+    public EntitySearchResult<DocumentReference> search(JSONObject queryParameters) throws EntitySearchException
     {
-        int offset = queryParameters.optInt(DocumentSearch.OFFSET_KEY);
+        int offset = queryParameters.optInt(EntitySearch.Keys.OFFSET_KEY);
         if (offset <= 0) {
             offset = 0;
         }
 
-        int limit = Integer.parseInt(
-            SearchUtils.getValue(queryParameters, DocumentSearch.LIMIT_KEY, DefaultDocumentSearchImpl.LIMIT_DEFAULT));
-
-        SpaceAndClass spaceAndClass = new SpaceAndClass(queryParameters);
+        int limit = Integer.parseInt(SearchUtils.getValue(
+            queryParameters, EntitySearch.Keys.LIMIT_KEY, DefaultDocumentSearchImpl.LIMIT_DEFAULT)
+        );
 
         XWiki wiki = this.contextProvider.get().getWiki();
 
@@ -94,11 +93,11 @@ public class DefaultDocumentSearchImpl implements DocumentSearch<DocumentReferen
         try {
             results = this.getQueryResults((List) scriptQuery.execute());
         } catch (QueryException e) {
-            throw new DocumentSearchException(e);
+            throw new EntitySearchException(e);
         }
 
-        return new DocumentSearchResult<DocumentReference>()
-            .setItems(this.getDocRefs(results, wiki.getDatabase(), spaceAndClass))
+        return new EntitySearchResult<DocumentReference>()
+            .setItems(this.getDocRefs(results, wiki.getDatabase()))
             .setOffset(offset)
             .setTotalRows(countScriptQuery.count());
     }
@@ -108,8 +107,8 @@ public class DefaultDocumentSearchImpl implements DocumentSearch<DocumentReferen
         List<String> stringResults = new LinkedList<>();
 
         for (Object obj : resultList) {
-            if (obj instanceof Object []) {
-                stringResults.add(String.valueOf(((Object []) obj) [0]));
+            if (obj instanceof Object[]) {
+                stringResults.add(String.valueOf(((Object[]) obj) [0]));
             } else {
                 stringResults.add(String.valueOf(obj));
             }
@@ -118,7 +117,7 @@ public class DefaultDocumentSearchImpl implements DocumentSearch<DocumentReferen
         return stringResults;
     }
 
-    private List<DocumentReference> getDocRefs(List<String> docNames, String wikiName, SpaceAndClass spaceAndClass)
+    private List<DocumentReference> getDocRefs(List<String> docNames, String wikiName)
     {
         List<DocumentReference> result = new LinkedList<>();
 
@@ -131,7 +130,7 @@ public class DefaultDocumentSearchImpl implements DocumentSearch<DocumentReferen
     }
 
     private ScriptQuery getQuery(JSONObject queryParameters, boolean count, int limit, int offset) throws
-        DocumentSearchException
+        EntitySearchException
     {
         List<Object> bindingValues = new LinkedList<>();
         DocumentQuery docQuery = new DocumentQuery(new DefaultFilterFactory(this.contextProvider), count);
@@ -141,7 +140,7 @@ public class DefaultDocumentSearchImpl implements DocumentSearch<DocumentReferen
         try {
             query = this.queryManager.createQuery(queryStr, "hql");
         } catch (QueryException e) {
-            throw new DocumentSearchException(e);
+            throw new EntitySearchException(e);
         }
 
         ScriptQuery scriptQuery = new ScriptQuery(query, this.componentManager);
@@ -156,12 +155,5 @@ public class DefaultDocumentSearchImpl implements DocumentSearch<DocumentReferen
         }
 
         return scriptQuery;
-    }
-
-    private static void addFiltersToQuery(ScriptQuery scriptQuery)
-    {
-        for (String filter : DefaultDocumentSearchImpl.QUERY_FILTER_SET) {
-            scriptQuery.addFilter(filter);
-        }
     }
 }

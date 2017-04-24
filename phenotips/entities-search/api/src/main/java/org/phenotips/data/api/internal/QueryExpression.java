@@ -7,7 +7,7 @@
  */
 package org.phenotips.data.api.internal;
 
-import org.phenotips.data.api.DocumentSearch;
+import org.phenotips.data.api.EntitySearch;
 import org.phenotips.data.api.internal.filter.AbstractFilter;
 
 import java.util.LinkedList;
@@ -233,7 +233,7 @@ public class QueryExpression implements QueryElement
             return;
         }
 
-        if (StringUtils.isBlank(SearchUtils.getValue(queryJson, DocumentSearch.CLASS_KEY))) {
+        if (StringUtils.isBlank(SearchUtils.getValue(queryJson, EntitySearch.Keys.CLASS_KEY))) {
             QueryExpression expr = new QueryExpression(this.parentQuery).init(queryJson);
             if (expr.isValid()) {
                 this.expressions.add(expr);

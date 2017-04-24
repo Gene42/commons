@@ -7,7 +7,7 @@
  */
 package org.phenotips.data.api.internal;
 
-import org.phenotips.data.api.DocumentSearch;
+import org.phenotips.data.api.EntitySearch;
 import org.phenotips.data.api.internal.filter.AbstractFilter;
 
 import java.util.HashSet;
@@ -26,7 +26,6 @@ import org.json.JSONObject;
  */
 public class DocumentQuery
 {
-
     /** JSON Object key. */
     public static final String QUERIES_KEY = "queries";
 
@@ -202,8 +201,8 @@ public class DocumentQuery
             this.expression.createBindings();
         }
 
-        if (input.has(DocumentSearch.ORDER_KEY) && !this.countQuery) {
-            JSONObject sortFilter = input.getJSONObject(DocumentSearch.ORDER_KEY);
+        if (input.has(EntitySearch.Keys.ORDER_KEY) && !this.countQuery) {
+            JSONObject sortFilter = input.getJSONObject(EntitySearch.Keys.ORDER_KEY);
             this.orderFilter = this.filterFactory.getFilter(sortFilter).init(sortFilter, this, this.expression);
             this.orderFilter.createBindings();
         }

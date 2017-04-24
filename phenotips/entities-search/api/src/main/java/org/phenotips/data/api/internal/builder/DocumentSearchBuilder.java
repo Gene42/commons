@@ -1,6 +1,6 @@
 package org.phenotips.data.api.internal.builder;
 
-import org.phenotips.data.api.DocumentSearch;
+import org.phenotips.data.api.EntitySearch;
 import org.phenotips.data.api.internal.DocumentQuery;
 import org.phenotips.data.api.internal.SpaceAndClass;
 import org.phenotips.data.api.internal.filter.OrderFilter;
@@ -199,7 +199,7 @@ public class DocumentSearchBuilder implements Builder<JSONObject>
      */
     public int getOffset()
     {
-        return this.searchQuery.optInt(DocumentSearch.OFFSET_KEY, 0);
+        return this.searchQuery.optInt(EntitySearch.Keys.OFFSET_KEY, 0);
     }
 
     /**
@@ -210,7 +210,7 @@ public class DocumentSearchBuilder implements Builder<JSONObject>
      */
     public DocumentSearchBuilder setOffset(int offset)
     {
-        this.searchQuery.put(DocumentSearch.OFFSET_KEY, offset);
+        this.searchQuery.put(EntitySearch.Keys.OFFSET_KEY, offset);
         return this;
     }
 
@@ -221,7 +221,7 @@ public class DocumentSearchBuilder implements Builder<JSONObject>
      */
     public int getLimit()
     {
-        return this.searchQuery.optInt(DocumentSearch.LIMIT_KEY, 25);
+        return this.searchQuery.optInt(EntitySearch.Keys.LIMIT_KEY, 25);
     }
 
     /**
@@ -232,7 +232,7 @@ public class DocumentSearchBuilder implements Builder<JSONObject>
      */
     public DocumentSearchBuilder setLimit(int limit)
     {
-        this.searchQuery.put(DocumentSearch.LIMIT_KEY, limit);
+        this.searchQuery.put(EntitySearch.Keys.LIMIT_KEY, limit);
         return this;
     }
 
@@ -313,7 +313,7 @@ public class DocumentSearchBuilder implements Builder<JSONObject>
         }
 
         if (this.sortFilter != null) {
-            this.searchQuery.put(DocumentSearch.ORDER_KEY, this.sortFilter.build());
+            this.searchQuery.put(EntitySearch.Keys.ORDER_KEY, this.sortFilter.build());
         }
 
         this.searchQuery.put(SpaceAndClass.CLASS_KEY, this.docSpaceAndClass);

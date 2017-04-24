@@ -8,7 +8,7 @@
 package org.phenotips.data.api.internal;
 
 import org.phenotips.Constants;
-import org.phenotips.data.api.DocumentSearch;
+import org.phenotips.data.api.EntitySearch;
 
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
@@ -21,7 +21,7 @@ import org.json.JSONObject;
 public class SpaceAndClass
 {
     /** Class property key. */
-    public static final String CLASS_KEY = DocumentSearch.CLASS_KEY;
+    public static final String CLASS_KEY = EntitySearch.Keys.CLASS_KEY;
 
     private final String spaceAndClassName;
 
