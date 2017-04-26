@@ -1,3 +1,10 @@
+/*
+ * This file is subject to the terms and conditions defined in file LICENSE,
+ * which is part of this source code package.
+ *
+ * See the NOTICE file distributed with this work for additional
+ * information regarding copyright ownership.
+ */
 package org.phenotips.data.api.internal.builder;
 
 import org.phenotips.data.api.EntitySearch;
@@ -313,7 +320,7 @@ public class DocumentSearchBuilder implements Builder<JSONObject>
         }
 
         if (this.sortFilter != null) {
-            this.searchQuery.put(EntitySearch.Keys.ORDER_KEY, this.sortFilter.build());
+            this.searchQuery.put(EntitySearch.Keys.SORT_KEY, this.sortFilter.build());
         }
 
         this.searchQuery.put(SpaceAndClass.CLASS_KEY, this.docSpaceAndClass);

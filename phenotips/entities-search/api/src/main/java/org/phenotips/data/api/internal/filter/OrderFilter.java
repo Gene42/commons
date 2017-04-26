@@ -51,7 +51,7 @@ public class OrderFilter extends AbstractFilter<String>
     }
 
     @Override
-    public AbstractFilter init(JSONObject input, DocumentQuery parent, QueryExpression expressionParent)
+    public AbstractFilter<String> init(JSONObject input, DocumentQuery parent, QueryExpression expressionParent)
     {
         super.init(input, parent, expressionParent);
 

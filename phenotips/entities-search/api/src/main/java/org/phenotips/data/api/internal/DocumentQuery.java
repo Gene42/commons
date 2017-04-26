@@ -201,8 +201,8 @@ public class DocumentQuery
             this.expression.createBindings();
         }
 
-        if (input.has(EntitySearch.Keys.ORDER_KEY) && !this.countQuery) {
-            JSONObject sortFilter = input.getJSONObject(EntitySearch.Keys.ORDER_KEY);
+        if (input.has(EntitySearch.Keys.SORT_KEY) && !this.countQuery) {
+            JSONObject sortFilter = input.getJSONObject(EntitySearch.Keys.SORT_KEY);
             this.orderFilter = this.filterFactory.getFilter(sortFilter).init(sortFilter, this, this.expression);
             this.orderFilter.createBindings();
         }

@@ -24,7 +24,6 @@ public interface EntitySearch<T>
      * @param queryParameters the parameters used to create the query
      * @return a DocumentSearchResult containing the documents plus extra metadata
      * @throws EntitySearchException on any issues during document querying
-     * @throws SecurityException if user is not authorized to search for data
      */
     EntitySearchResult<T> search(JSONObject queryParameters) throws EntitySearchException;
 
@@ -43,16 +42,19 @@ public interface EntitySearch<T>
         public static final String OFFSET_KEY = "offset";
 
         /** Input key. */
-        public static final String ORDER_KEY = "sort";
+        public static final String SORT_KEY = "sort";
 
         /** Input key. */
-        public static final String ORDER_DIR_KEY = "dir";
+        public static final String SORT_DIR_KEY = "dir";
 
         /** Input key. */
         public static final String REQUEST_NUMBER_KEY = "reqNo";
 
         /** Input key. */
         public static final String COLUMN_LIST_KEY = "collist";
+
+        /** Input key. */
+        public static final String FILTERS_KEY = "filters";
 
         private Keys()
         {

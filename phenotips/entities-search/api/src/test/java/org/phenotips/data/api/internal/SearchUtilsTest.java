@@ -7,22 +7,27 @@
  */
 package org.phenotips.data.api.internal;
 
-import org.phenotips.data.api.internal.builder.DocumentSearchBuilder;
+import org.xwiki.text.StringUtils;
 
 import java.util.Arrays;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 /**
  * DESCRIPTION.
  *
  * @version $Id$
  */
-public class DocumentSearchBuilderTest
+public class SearchUtilsTest
 {
     /**
      * Class set up.
@@ -59,24 +64,20 @@ public class DocumentSearchBuilderTest
 
 
     @Test
-    public void test1() throws Exception
+    public void getJSONArrayTest() throws Exception
     {
-        DocumentSearchBuilder query = new DocumentSearchBuilder("PhenoTips.PatientClass");
+        String key = "key";
+        JSONObject obj = new JSONObject();
+        JSONArray arr = SearchUtils.getJSONArray(obj, key);
+        assertNotNull(arr);
+    }
 
-        String value = "haha";
-
-        query.newNumberFilter("identifier").setMinValue(0);
-        query.newStringFilter("visibility").setSpaceAndClass("PhenoTips.VisibilityClass")
-            .setValues(Arrays.asList("private", "public", "open")).back()
-            .newObjectFilter().setSpaceAndClass("PhenoTips.SourceFileClass").back()
-
-            .newExpression().setJoinModeToOr()
-            .newStringFilter("first_name").setValue(value).back()
-            .newStringFilter("last_name").setValue(value).back()
-            .newStringFilter("fileName").setValue(value).setSpaceAndClass("PhenoTips.SourceFileClass").back()
-            .back()
-        .setSortOrder("first_name", "desc");
-
-        System.out.println(query.build().toString(4));
+    @Test
+    public void getFirstStringTest() throws Exception
+    {
+        assertEquals(StringUtils.EMPTY, SearchUtils.getFirstString(null));
+        assertEquals(StringUtils.EMPTY, SearchUtils.getFirstString(StringUtils.EMPTY));
+        assertEquals("test", SearchUtils.getFirstString(new Object [] {"test", "blah"}));
+        assertEquals("7", SearchUtils.getFirstString(Arrays.asList(7, "blah", new JSONObject())));
     }
 }

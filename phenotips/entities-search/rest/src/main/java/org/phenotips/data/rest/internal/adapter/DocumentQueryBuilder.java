@@ -186,7 +186,7 @@ public class DocumentQueryBuilder implements Builder<DocumentQueryBuilder>
         }
 
         if (this.orderFilter != null) {
-            myself.put(EntitySearch.Keys.ORDER_KEY, this.orderFilter);
+            myself.put(EntitySearch.Keys.SORT_KEY, this.orderFilter);
         }
 
         return myself;

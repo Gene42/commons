@@ -91,7 +91,7 @@ public class DefaultDocumentSearchImpl implements EntitySearch<DocumentReference
 
         List<String> results;
         try {
-            results = this.getQueryResults((List) scriptQuery.execute());
+            results = this.getQueryResults(scriptQuery.execute());
         } catch (QueryException e) {
             throw new EntitySearchException(e);
         }
@@ -107,11 +107,7 @@ public class DefaultDocumentSearchImpl implements EntitySearch<DocumentReference
         List<String> stringResults = new LinkedList<>();
 
         for (Object obj : resultList) {
-            if (obj instanceof Object[]) {
-                stringResults.add(String.valueOf(((Object[]) obj) [0]));
-            } else {
-                stringResults.add(String.valueOf(obj));
-            }
+            stringResults.add(SearchUtils.getFirstString(obj));
         }
 
         return stringResults;

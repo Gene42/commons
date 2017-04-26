@@ -26,7 +26,6 @@ import org.json.JSONObject;
  */
 public class QueryExpression implements QueryElement
 {
-
     /** JSON Object key. */
     public static final String QUERIES_KEY = "queries";
 

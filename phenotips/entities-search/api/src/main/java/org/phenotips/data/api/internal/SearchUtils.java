@@ -16,12 +16,15 @@ import org.xwiki.model.reference.SpaceReference;
 import org.xwiki.model.reference.WikiReference;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections4.set.UnmodifiableSet;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -260,5 +263,27 @@ public final class SearchUtils
     public static Set<String> getValueParameterNames()
     {
         return new DefaultFilterFactory(null).getValueParameterNames();
+    }
+
+    /**
+     * Returns the the string value of the object. If the object is an array or collection the string value of the
+     * first item in the array is returned.
+     * @param object the object to get the string value of
+     * @return a String
+     */
+    public static String getFirstString(Object object)
+    {
+        String result = StringUtils.EMPTY;
+
+        if ((object instanceof Object []) && ArrayUtils.isNotEmpty((Object[]) object)) {
+            Object[] array = (Object[]) object;
+            result = String.valueOf(array[0]);
+        } else if ((object instanceof Collection) && CollectionUtils.isNotEmpty((Collection) object)) {
+            result = String.valueOf(((Collection) object).iterator().next());
+        } else if (object != null) {
+            return String.valueOf(object);
+        }
+
+        return result;
     }
 }

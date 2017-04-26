@@ -59,13 +59,13 @@ public class URLInputAdapter implements LiveTableInputAdapter
         NON_FILTERS.add(CLASS_NAME_KEY);
         NON_FILTERS.add(EntitySearch.Keys.LIMIT_KEY);
         NON_FILTERS.add(EntitySearch.Keys.OFFSET_KEY);
-        NON_FILTERS.add(EntitySearch.Keys.ORDER_KEY);
+        NON_FILTERS.add(EntitySearch.Keys.SORT_KEY);
         NON_FILTERS.add(EntitySearch.Keys.REQUEST_NUMBER_KEY);
         NON_FILTERS.add(OUTPUT_SYNTAX_KEY);
         NON_FILTERS.add(FILTER_WHERE_KEY);
         NON_FILTERS.add(FILTER_FROM_KEY);
         NON_FILTERS.add(QUERY_FILTERS_KEY);
-        NON_FILTERS.add(EntitySearch.Keys.ORDER_DIR_KEY);
+        NON_FILTERS.add(EntitySearch.Keys.SORT_DIR_KEY);
         NON_FILTERS.add(EntitySearch.Keys.COLUMN_LIST_KEY);
         NON_FILTERS.add(RequestUtils.TRANS_PREFIX_KEY);
     }
@@ -100,11 +100,11 @@ public class URLInputAdapter implements LiveTableInputAdapter
     private void addOrderFilter(DocumentQueryBuilder builder, Map<String, List<String>> queryParameters)
     {
         String sortKey = ParameterKey.FILTER_KEY_PREFIX + RequestUtils.getFirst(queryParameters, EntitySearch.Keys
-            .ORDER_KEY);
+            .SORT_KEY);
         String typeKey = sortKey + ParameterKey.PROPERTY_DELIMITER + AbstractFilter.TYPE_KEY;
 
         builder.addToOrderFilter(sortKey,
-            Collections.singletonList(RequestUtils.getFirst(queryParameters, EntitySearch.Keys.ORDER_DIR_KEY)));
+            Collections.singletonList(RequestUtils.getFirst(queryParameters, EntitySearch.Keys.SORT_DIR_KEY)));
         builder.addToOrderFilter(typeKey, Collections.singletonList(OrderFilter.TYPE));
     }
 
