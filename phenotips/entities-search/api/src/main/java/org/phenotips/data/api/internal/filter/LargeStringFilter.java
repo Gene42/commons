@@ -35,7 +35,7 @@ public class LargeStringFilter extends StringFilter
     }
 
     @Override
-    public AbstractFilter init(JSONObject input, DocumentQuery parent, QueryExpression expressionParent)
+    public StringFilter init(JSONObject input, DocumentQuery parent, QueryExpression expressionParent)
     {
         super.init(input, parent, expressionParent);
         super.setMatch(StringFilter.MATCH_SUBSTRING);

@@ -63,7 +63,7 @@ public class DateFilter extends AbstractFilter<DateTime>
     }
 
     @Override
-    public AbstractFilter init(JSONObject input, DocumentQuery parent, QueryExpression expressionParent)
+    public AbstractFilter<DateTime> init(JSONObject input, DocumentQuery parent, QueryExpression expressionParent)
     {
         super.init(input, parent, expressionParent);
 

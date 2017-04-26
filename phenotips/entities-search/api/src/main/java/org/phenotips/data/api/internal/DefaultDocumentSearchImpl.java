@@ -55,7 +55,6 @@ public class DefaultDocumentSearchImpl implements EntitySearch<DocumentReference
         new HashSet<>(Collections.singletonList("unique")));
 
     @Inject
-    //@Named("secure")
     private QueryManager queryManager;
 
     @Inject

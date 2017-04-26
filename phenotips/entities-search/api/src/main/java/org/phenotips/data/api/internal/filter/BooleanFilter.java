@@ -28,8 +28,6 @@ import com.xpn.xwiki.objects.classes.BaseClass;
  */
 public class BooleanFilter extends AbstractFilter<Integer>
 {
-
-
     /**
      * Constructor.
      * @param property PropertyInterface
@@ -41,7 +39,7 @@ public class BooleanFilter extends AbstractFilter<Integer>
     }
 
     @Override
-    public AbstractFilter init(JSONObject input, DocumentQuery parent, QueryExpression expressionParent)
+    public AbstractFilter<Integer> init(JSONObject input, DocumentQuery parent, QueryExpression expressionParent)
     {
         super.init(input, parent, expressionParent);
 

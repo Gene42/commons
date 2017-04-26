@@ -62,7 +62,7 @@ public class NumberFilter extends AbstractFilter<Number>
     }
 
     @Override
-    public AbstractFilter init(JSONObject input, DocumentQuery parent, QueryExpression expressionParent)
+    public AbstractFilter<Number> init(JSONObject input, DocumentQuery parent, QueryExpression expressionParent)
     {
         super.init(input, parent, expressionParent);
 
