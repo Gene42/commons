@@ -38,6 +38,7 @@ import javax.inject.Singleton;
 
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
+import org.slf4j.Logger;
 
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
@@ -73,6 +74,9 @@ public class DefaultLiveTableColumnHandler implements LiveTableColumnHandler
     @Inject
     private LocalizationManager localization;
 
+    @Inject
+    private Logger logger;
+
     @Override
     public void addColumn(JSONObject row, TableColumn col, XWikiDocument doc, XWikiContext context,
         ComponentManager componentManager, Map<String, List<String>> queryParameters) throws XWikiException
@@ -104,23 +108,25 @@ public class DefaultLiveTableColumnHandler implements LiveTableColumnHandler
         }
 
         PropertyInterface field = propertyObj.getField(col.getPropertyName());
+        String displayValue = this.getDisplayValue(col, doc, context, classRef, componentManager, field);
+
+        String[] valueAndURL = this.getValueAndValueURL(col, doc, context, classRef, componentManager, field);
+
+        if (StringUtils.isBlank(displayValue)) {
+            displayValue = this.getEmptyDisplayValue(translationPrefix, componentManager);
+        }
+
+        displayValue = displayValue.replaceFirst(Pattern.quote("{{html clean=\"false\" wiki=\"false\"}}"), "");
+        displayValue = displayValue.replaceAll(Pattern.quote("{{/html}}"), "");
+
+        this.addColumnToRow(row, col.getColName(), displayValue, valueAndURL[0], valueAndURL[1]);
+    }
+
+    private String [] getValueAndValueURL(TableColumn col, XWikiDocument doc, XWikiContext context,
+        DocumentReference classRef, ComponentManager componentManager, PropertyInterface field)
+    {
         String value = doc.getStringValue(classRef, col.getPropertyName());
-        String displayValue;
         String valueURL = StringUtils.EMPTY;
-
-        String customDisplay = doc.getStringValue(classRef, "customDisplay");
-
-        if (field instanceof PropertyClass) {
-            customDisplay = ((PropertyClass) field).getCustomDisplay();
-        }
-
-        if (this.isStringValue(field, customDisplay)) {
-            String docDisplay = doc.display(col.getColName(), ViewAction.VIEW_ACTION, context);
-            XDOM parsedValue = this.parse(docDisplay, Syntax.HTML_4_01.toIdString(), componentManager);
-            displayValue = this.render(parsedValue, Syntax.PLAIN_1_0.toIdString(), componentManager);
-        } else {
-            displayValue = doc.display(col.getColName(), ViewAction.VIEW_ACTION, context);
-        }
 
         if (field instanceof DBListClass && StringUtils.isNotBlank(((DBListClass) field).getValueField()) && !(
             (DBListClass) field).isMultiSelect()) {
@@ -145,14 +151,25 @@ public class DefaultLiveTableColumnHandler implements LiveTableColumnHandler
             }
         }
 
-        if (StringUtils.isBlank(displayValue)) {
-            displayValue = this.getEmptyDisplayValue(translationPrefix, componentManager);
+        return new String[] {value, valueURL};
+    }
+
+    private String getDisplayValue(TableColumn col, XWikiDocument doc, XWikiContext context,
+        DocumentReference classRef, ComponentManager componentManager, PropertyInterface field) throws XWikiException
+    {
+        String customDisplay = doc.getStringValue(classRef, "customDisplay");
+
+        if (field instanceof PropertyClass) {
+            customDisplay = ((PropertyClass) field).getCustomDisplay();
         }
 
-        displayValue = displayValue.replaceFirst(Pattern.quote("{{html clean=\"false\" wiki=\"false\"}}"), "");
-        displayValue = displayValue.replaceAll(Pattern.quote("{{/html}}"), "");
-
-        this.addColumnToRow(row, col.getColName(), displayValue, value, valueURL);
+        if (this.isStringValue(field, customDisplay)) {
+            String docDisplay = doc.display(col.getColName(), ViewAction.VIEW_ACTION, context);
+            XDOM parsedValue = this.parse(docDisplay, Syntax.HTML_4_01.toIdString(), componentManager);
+            return this.render(parsedValue, Syntax.PLAIN_1_0.toIdString(), componentManager);
+        } else {
+            return doc.display(col.getColName(), ViewAction.VIEW_ACTION, context);
+        }
     }
 
     private boolean isStringValue(PropertyInterface field, String customDisplay)
@@ -185,6 +202,7 @@ public class DefaultLiveTableColumnHandler implements LiveTableColumnHandler
             renderer.render(block, printer);
             result = printer.toString();
         } catch (Exception e) {
+            this.logger.warn(e.getMessage(), e);
             result = null;
         }
         return result;
@@ -192,20 +210,19 @@ public class DefaultLiveTableColumnHandler implements LiveTableColumnHandler
 
     private XDOM parse(String displayValue, String syntaxId, ComponentManager componentManager) throws XWikiException
     {
-        XDOM result;
         try {
             Parser parser = componentManager.getInstance(Parser.class, syntaxId);
-            result = parser.parse(new StringReader(displayValue));
+            return parser.parse(new StringReader(displayValue));
         } catch (Exception e) {
-            result = null;
+            this.logger.warn(e.getMessage(), e);
+            return null;
         }
-        return result;
     }
 
     private String localizationRender(String key, Syntax syntax, ComponentManager componentManager)
         throws XWikiException
     {
-        String result = null;
+        String result;
 
         Locale currentLocale = this.localizationContext.getCurrentLocale();
 
@@ -241,6 +258,7 @@ public class DefaultLiveTableColumnHandler implements LiveTableColumnHandler
                 componentManager.getInstance(EntityReferenceResolver.TYPE_STRING, "default");
             return new DocumentReference(resolver.resolve(stringRepresentation, EntityType.DOCUMENT, parameters));
         } catch (ComponentLookupException e) {
+            this.logger.warn(e.getMessage(), e);
             return null;
         }
     }
