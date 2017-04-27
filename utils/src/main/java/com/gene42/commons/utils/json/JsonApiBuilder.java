@@ -17,15 +17,22 @@ import org.json.JSONObject;
 public class JsonApiBuilder implements Builder<JSONObject>
 {
     /** JSON API Field. */
+    public static final String DATA_FIELD = "data";
+
+    /** JSON API Field. */
     public static final String INCLUDED_FIELD = "included";
+
+    /** JSON API Field. */
+    public static final String ERRORS_FIELD = "errors";
 
     /** JSON API Field. */
     public static final String META_FIELD = "meta";
 
 
     private JSONObject meta = new JSONObject();
-    private List<JsonApiResourceBuilder> data = new LinkedList<>();
-    private List<JsonApiResourceBuilder> included = new LinkedList<>();
+    private List<Builder<JSONObject>> data = new LinkedList<>();
+    private List<Builder<JSONObject>> included = new LinkedList<>();
+    private List<Builder<JSONObject>> errors = new LinkedList<>();
 
     /**
      * Adds the given Resource Builder to the data list.
@@ -49,6 +56,19 @@ public class JsonApiBuilder implements Builder<JSONObject>
     {
         if (included != null) {
             this.included.add(included);
+        }
+        return this;
+    }
+
+    /**
+     * Adds the given Error Builder to the errors list.
+     * @param error the error builder to add
+     * @return this object
+     */
+    public JsonApiBuilder addError(JsonApiErrorBuilder error)
+    {
+        if (error != null) {
+            this.errors.add(error);
         }
         return this;
     }
@@ -85,14 +105,18 @@ public class JsonApiBuilder implements Builder<JSONObject>
     {
         JSONObject result = new JSONObject();
 
-        addCollection(JsonApiResourceBuilder.DATA_FIELD, result, this.data);
+        if (CollectionUtils.isEmpty(this.errors)) {
+            addCollection(DATA_FIELD, result, this.data);
+        }
+
         addCollection(INCLUDED_FIELD, result, this.included);
+        addCollection(ERRORS_FIELD, result, this.errors);
 
         if (this.meta.length() > 0) {
             result.put(META_FIELD, this.meta);
         }
 
-        return result;
+        return new JSONObject(result.toString());
     }
 
     @Override
@@ -101,11 +125,11 @@ public class JsonApiBuilder implements Builder<JSONObject>
         return this.build().toString();
     }
 
-    private static void addCollection(String key, JSONObject result, Collection<JsonApiResourceBuilder> builders)
+    private static void addCollection(String key, JSONObject result, Collection<Builder<JSONObject>> builders)
     {
         if (CollectionUtils.isNotEmpty(builders)) {
             JSONArray array = new JSONArray();
-            for (JsonApiResourceBuilder builder : builders) {
+            for (Builder<JSONObject> builder : builders) {
                 array.put(builder.build());
             }
             result.put(key, array);

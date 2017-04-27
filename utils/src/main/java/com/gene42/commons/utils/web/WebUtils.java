@@ -14,6 +14,8 @@ import javax.ws.rs.core.Response;
 import org.slf4j.Logger;
 
 import com.gene42.commons.utils.exceptions.ServiceException;
+import com.gene42.commons.utils.json.JsonApiBuilder;
+import com.gene42.commons.utils.json.JsonApiErrorBuilder;
 
 /**
  * A utils class for Web related helper functions.
@@ -55,10 +57,10 @@ public final class WebUtils
      * Returns a Response with a status value depending on the given ServiceException.Status value. The body of the
      * Response will contain the exception's message if available).
      * @param e the ServiceException to use for populating the Response object
-     * @param logger the logger to use in case an error or fatal must be logged
+     * @param logger the logger to use in case an error or fatal must be logged (can be null; will ignore logging)
      * @return a Response object
      */
-    public static Response getErrorResponse(ServiceException e, Logger logger)
+    public static Response getErrorResponse(ServiceException e, Logger  logger)
     {
         if (e.getStatus() == null) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
@@ -82,7 +84,9 @@ public final class WebUtils
             case COULD_NOT_LOAD_DATA:
             default:
                 status = Response.Status.INTERNAL_SERVER_ERROR;
-                logger.error(status.toString(), e);
+                if (logger != null) {
+                    logger.error(status.toString(), e);
+                }
                 message = "Uh oh, something went wrong on the server. Contact an admin if it persists.";
         }
 
@@ -99,6 +103,21 @@ public final class WebUtils
     public static Response getErrorResponse(String message, Response.Status status)
     {
         return Response.serverError().status(status).entity(message).type(MediaType.TEXT_PLAIN_TYPE).build();
+    }
+
+    public static Response getErrorResponse(Response.Status status, String message, String uri, String param) {
+        return Response.serverError()
+            .status(status)
+            .entity(new JsonApiBuilder()
+                .addError(new JsonApiErrorBuilder()
+                        .setStatus(String.valueOf(status.getStatusCode()))
+                        .setDetail(message)
+                        .setSourcePointer(uri)
+                        .setSourceParameter(param)
+                        .setTitle(status.toString()))
+                .build().toString())
+            .type(MediaType.APPLICATION_JSON)
+            .build();
     }
 
     /**

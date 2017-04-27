@@ -127,7 +127,7 @@ public class JsonApiResourceBuilder implements Builder<JSONObject>
             resource.put(RELATIONSHIPS_FIELD, this.relationships);
         }
 
-        return resource;
+        return new JSONObject(resource.toString());
     }
 
     @Override
