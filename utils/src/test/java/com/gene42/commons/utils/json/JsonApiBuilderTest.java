@@ -14,7 +14,6 @@ import static org.junit.Assert.assertFalse;
  */
 public class JsonApiBuilderTest
 {
-
     @Test
     public void testBuild() throws Exception {
 

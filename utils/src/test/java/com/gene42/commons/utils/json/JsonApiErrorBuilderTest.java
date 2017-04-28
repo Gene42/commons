@@ -1,11 +1,7 @@
 package com.gene42.commons.utils.json;
 
-import javax.ws.rs.core.Response;
-
 import org.json.JSONObject;
 import org.junit.Test;
-
-import com.gene42.commons.utils.web.WebUtils;
 
 /**
  * Test class for JsonApiErrorBuilder.
@@ -31,13 +27,5 @@ public class JsonApiErrorBuilderTest
         JSONObject result = builder.build();
 
         System.out.println(result.toString(4));
-    }
-
-    @Test
-    public void web() throws Exception
-    {
-        System.out.println(WebUtils.getErrorResponse(
-            Response.Status.BAD_REQUEST,
-            "Source File Name can only have .vcf extension", "/blah/blah2/data", "data"));
     }
 }
