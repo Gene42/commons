@@ -144,5 +144,6 @@
 
   <modules>
     <module>entities-search</module>
+    <module>json-form-data</module>
   </modules>
 </project>
