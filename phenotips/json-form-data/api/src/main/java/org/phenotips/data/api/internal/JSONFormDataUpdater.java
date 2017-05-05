@@ -1,3 +1,10 @@
+/*
+ * This file is subject to the terms and conditions defined in file LICENSE,
+ * which is part of this source code package.
+ *
+ * See the NOTICE file distributed with this work for additional
+ * information regarding copyright ownership.
+ */
 package org.phenotips.data.api.internal;
 
 import org.phenotips.data.Patient;
@@ -11,21 +18,19 @@ import org.xwiki.context.Execution;
 import org.xwiki.observation.AbstractEventListener;
 import org.xwiki.observation.event.Event;
 
-
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 
-import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.doc.XWikiDocument;
 
 /**
- * A handler that listens for updates to the
+ * A handler that listens for updates on a Patient document triggered by changes to data contained inside
+ * of a form element identified by name=JSONFormDataUpdater.FORM_UPDATE_KEY
  *
  * @version $Id$
  */
@@ -37,7 +42,6 @@ public class JSONFormDataUpdater extends AbstractEventListener
     public static final String NAME = "json-form-data-updater";
 
     private static final String FORM_UPDATE_KEY = "json_form_update";
-    private static final String FORM_DATA_KEY = "form_data";
 
     @Inject
     private Execution execution;
@@ -69,31 +73,21 @@ public class JSONFormDataUpdater extends AbstractEventListener
 
         Patient patient = new PhenoTipsPatient((XWikiDocument) source);
 
-        String formUpdate = ((ServletRequest) this.container.getRequest()).getHttpServletRequest()
-            .getParameter(this.FORM_UPDATE_KEY);
+        String[] formUpdate = ((ServletRequest) this.container.getRequest()).getHttpServletRequest()
+            .getParameterValues(this.FORM_UPDATE_KEY);
         if (formUpdate == null) {
             return;
         }
 
         JSONObject formUpdateJson;
-        JSONArray formData;
-        try {
-            formUpdateJson = new JSONObject(formUpdate);
-            formData = formUpdateJson.getJSONArray(this.FORM_DATA_KEY);
-        } catch (JSONException e) {
-            this.logger.warn("Failed to parse form data to JSON: [{}]", e.getMessage());
-            return;
-        }
-
-        JSONObject jsonObject;
-        try {
-            for (int i = 0; i < formData.length(); i++) {
-                jsonObject = formData.getJSONObject(i);
-                patient.updateFromJSON(jsonObject);
+        for (String jsonString : formUpdate) {
+            try {
+                formUpdateJson = new JSONObject(jsonString);
+                patient.updateFromJSON(formUpdateJson);
+            } catch (JSONException e) {
+                this.logger.warn("Update failed. Failure to parse form data to JSON: [{}]", e.getMessage());
+                continue;
             }
-        } catch (JSONException e) {
-            this.logger.warn("Failed to retrieve JSON object from JSON form data update: [{}]", e.getMessage());
-            return;
         }
     }
 }
