@@ -53,15 +53,17 @@ public class JSONFormDataUpdater extends AbstractEventListener
     @Inject
     private Container container;
 
+    /**
+     * Default constructor, sets up the listener name and the list of events to subscribe to.
+     */
+    public JSONFormDataUpdater()
+    {
+        super("json-form-data-updater", new PatientChangingEvent());
+    }
+
     public String getName()
     {
         return this.NAME;
-    }
-
-    /** Default constructor, sets up the listener name and the list of events to subscribe to. */
-    public JSONFormDataUpdater()
-    {
-        super(this.NAME, new PatientChangingEvent());
     }
 
     @Override
