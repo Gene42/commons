@@ -69,7 +69,8 @@ public class JSONFormDataUpdater extends AbstractEventListener
     @Override
     public void onEvent(Event event, Object source, Object data)
     {
-        if (this.container.getRequest() == null) {
+        XWikiDocument doc = (XWikiDocument) source;
+        if (this.container.getRequest() == null || doc.isMinorEdit()) {
             return;
         }
 
@@ -79,7 +80,7 @@ public class JSONFormDataUpdater extends AbstractEventListener
             return;
         }
 
-        Patient patient = new PhenoTipsPatient((XWikiDocument) source);
+        Patient patient = new PhenoTipsPatient(doc);
 
         for (String jsonString : formUpdate) {
             try {
