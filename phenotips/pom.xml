@@ -145,5 +145,6 @@
   <modules>
     <module>entities-search</module>
     <module>json-form-data</module>
+    <module>xwiki</module>
   </modules>
 </project>
