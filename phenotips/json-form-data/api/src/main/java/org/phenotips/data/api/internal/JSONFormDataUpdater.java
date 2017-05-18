@@ -30,7 +30,7 @@ import com.xpn.xwiki.doc.XWikiDocument;
 
 /**
  * A handler that listens for updates on a Patient document triggered by changes to data contained inside
- * of a form element identified by name=JSONFormDataUpdater.FORM_UPDATE_KEY
+ * of a form element identified by {@code JSONFormDataUpdater.FORM_UPDATE_KEY}
  *
  * @version $Id$
  */
@@ -69,11 +69,10 @@ public class JSONFormDataUpdater extends AbstractEventListener
     @Override
     public void onEvent(Event event, Object source, Object data)
     {
-        if (this.container.getRequest() == null) {
+        XWikiDocument doc = (XWikiDocument) source;
+        if (this.container.getRequest() == null || doc.isMinorEdit()) {
             return;
         }
-
-        Patient patient = new PhenoTipsPatient((XWikiDocument) source);
 
         String[] formUpdate = ((ServletRequest) this.container.getRequest()).getHttpServletRequest()
             .getParameterValues(this.FORM_UPDATE_KEY);
@@ -81,13 +80,14 @@ public class JSONFormDataUpdater extends AbstractEventListener
             return;
         }
 
-        JSONObject formUpdateJson;
+        Patient patient = new PhenoTipsPatient(doc);
+
         for (String jsonString : formUpdate) {
             try {
-                formUpdateJson = new JSONObject(jsonString);
+                JSONObject formUpdateJson = new JSONObject(jsonString);
                 patient.updateFromJSON(formUpdateJson);
             } catch (JSONException e) {
-                this.logger.warn("Update failed. Failure to parse form data to JSON: [{}]", e.getMessage());
+                this.logger.warn("Update failed, error parsing form data to JSONObject: [{}]", e.getMessage());
                 continue;
             }
         }
