@@ -143,6 +143,7 @@
   </scm>
 
   <modules>
+    <module>controllers</module>
     <module>entities-search</module>
     <module>json-form-data</module>
     <module>xwiki</module>
