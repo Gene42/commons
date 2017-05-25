@@ -32,7 +32,7 @@ import com.xpn.xwiki.objects.classes.TextAreaClass;
 public abstract class AbstractBaseObjectJSONConverter implements BaseObjectJSONConverter
 {
     /** Date format. */
-    protected static final String DATE_FORMAT = "yyyy-MM-dd";
+    protected static final String DATE_FORMAT = "yyyy-M-d";
 
     /** UTC Zone. */
     protected static final ZoneId UTC_ZONE = ZoneId.of("UTC");
