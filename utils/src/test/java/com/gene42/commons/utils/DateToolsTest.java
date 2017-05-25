@@ -29,6 +29,7 @@ public class DateToolsTest
         String dateStr1 = "2017-01-02";
         String dateStr2 = "2017-1-2";
         Date date1 = DateTools.stringToDate(dateStr1, format1);
+        Date date2 = DateTools.stringToDate(dateStr1, format2);
 
         try {
             DateTools.stringToDate(dateStr2, format1);
@@ -36,6 +37,8 @@ public class DateToolsTest
         } catch (DateTimeParseException e) {
             WebUtils.doNothing(e);
         }
+
+
 
         Date date3 = DateTools.stringToDate(dateStr2, format2);
         assertTrue(DateUtils.truncatedEquals(date1, date3, Calendar.DAY_OF_MONTH));
