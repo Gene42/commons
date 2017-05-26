@@ -102,6 +102,10 @@ public abstract class AbstractBaseObjectJSONConverter implements BaseObjectJSONC
     public BaseObject populateBaseObject(JSONObject from, BaseObject to, XWikiContext context,
         Set<Map.Entry<String, Class>> keyTypesMapEntrySet, Map<Class, JSONToXObj> functionMap)
     {
+        if (from == null || to == null) {
+            return to;
+        }
+
         for (Map.Entry<String, Class> entry : keyTypesMapEntrySet) {
             JSONToXObj func = functionMap.get(entry.getValue());
             if (func != null && from.has(entry.getKey())) {
@@ -134,6 +138,10 @@ public abstract class AbstractBaseObjectJSONConverter implements BaseObjectJSONC
     public JSONObject populateJSONObject(BaseObject from, JSONObject to,
         Set<Map.Entry<String, Class>> keyTypesMapEntrySet, Map<Class, XObjToJSON> functionMap)
     {
+        if (from == null || to == null) {
+            return to;
+        }
+
         for (Map.Entry<String, Class> entry : keyTypesMapEntrySet) {
             XObjToJSON func = functionMap.get(entry.getValue());
             if (func != null) {
