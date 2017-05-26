@@ -56,7 +56,7 @@ public class JSONFormDataUpdater extends AbstractEventListener
      */
     public JSONFormDataUpdater()
     {
-        super(NAME, new ActionExecutingEvent("save"));
+        super(NAME, new ActionExecutingEvent("preview"));
     }
 
     /**
