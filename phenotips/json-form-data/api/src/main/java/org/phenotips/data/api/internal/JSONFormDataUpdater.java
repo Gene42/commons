@@ -8,8 +8,7 @@
 package org.phenotips.data.api.internal;
 
 import org.phenotips.data.PatientData;
-import org.phenotips.data.PatientDataController;
-import org.phenotips.data.api.containers.PhenoTipsPatientForUpdater;
+import org.phenotips.data.api.JSONFormPatientController;
 import org.phenotips.data.events.PatientChangingEvent;
 
 import org.xwiki.component.annotation.Component;
@@ -93,15 +92,13 @@ public class JSONFormDataUpdater extends AbstractEventListener
             return;
         }
 
-        PhenoTipsPatientForUpdater patient = new PhenoTipsPatientForUpdater(doc);
-
-
         for (String jsonString : formUpdate) {
-            this.handleUpdate(jsonString, patient, doc);
+            this.handleUpdate(jsonString, doc);
         }
     }
 
-    private void handleUpdate(String jsonString, PhenoTipsPatientForUpdater patient, XWikiDocument doc)
+    @SuppressWarnings("unchecked")
+    private void handleUpdate(String jsonString, XWikiDocument doc)
     {
         try {
             JSONObject formUpdateJson = getJSON(jsonString);
@@ -110,18 +107,15 @@ public class JSONFormDataUpdater extends AbstractEventListener
                 return;
             }
 
-            PatientDataController<?> controller =
-                this.componentManager.getInstance(PatientDataController.class, getControllerHint(formUpdateJson));
+            JSONFormPatientController<?> controller =
+                this.componentManager.getInstance(JSONFormPatientController.class, getControllerHint(formUpdateJson));
 
             if (controller == null) {
                 return;
             }
 
-            PatientData<?> patientData = controller.readJSON(formUpdateJson);
-            if (patientData != null) {
-                patient.addData(patientData);
-                controller.save(patient, doc);
-            }
+            controller.saveForm((PatientData) controller.readJSON(formUpdateJson), doc);
+
         } catch (JSONException e) {
             this.logger.warn(
                 String.format("Update failed, error parsing form data to JSONObject: [%s]", e.getMessage()), e);
