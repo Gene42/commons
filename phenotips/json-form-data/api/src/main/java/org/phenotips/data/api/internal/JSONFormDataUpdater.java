@@ -7,15 +7,12 @@
  */
 package org.phenotips.data.api.internal;
 
-import org.phenotips.data.PatientData;
-import org.phenotips.data.api.JSONFormPatientController;
-import org.phenotips.data.events.PatientChangingEvent;
+import org.phenotips.data.internal.PhenoTipsPatient;
 
+import org.xwiki.bridge.event.ActionExecutingEvent;
 import org.xwiki.component.annotation.Component;
-import org.xwiki.component.manager.ComponentManager;
 import org.xwiki.container.Container;
 import org.xwiki.container.servlet.ServletRequest;
-import org.xwiki.context.Execution;
 import org.xwiki.observation.AbstractEventListener;
 import org.xwiki.observation.event.Event;
 
@@ -48,24 +45,18 @@ public class JSONFormDataUpdater extends AbstractEventListener
     private static final String FORM_UPDATE_KEY = "json_form_update";
 
     @Inject
-    private Execution execution;
-
-    @Inject
     private Logger logger;
 
     /** Needed for getting access to the request. */
     @Inject
     private Container container;
 
-    @Inject
-    private ComponentManager componentManager;
-
     /**
      * Default constructor, sets up the listener name and the list of events to subscribe to.
      */
     public JSONFormDataUpdater()
     {
-        super(NAME, new PatientChangingEvent());
+        super(NAME, new ActionExecutingEvent("save"));
     }
 
     /**
@@ -92,55 +83,39 @@ public class JSONFormDataUpdater extends AbstractEventListener
             return;
         }
 
-        for (String jsonString : formUpdate) {
-            this.handleUpdate(jsonString, doc);
-        }
-    }
+        JSONObject aggregate = new JSONObject();
 
-    @SuppressWarnings("unchecked")
-    private void handleUpdate(String jsonString, XWikiDocument doc)
-    {
         try {
-            JSONObject formUpdateJson = getJSON(jsonString);
-
-            if (formUpdateJson == null) {
-                return;
+            // 1. Aggregate all form JSONs into one, so that we don't have to save the document more than once
+            for (String jsonString : formUpdate) {
+                aggregate(aggregate, jsonString);
             }
 
-            JSONFormPatientController<?> controller =
-                this.componentManager.getInstance(JSONFormPatientController.class, getControllerHint(formUpdateJson));
-
-            if (controller == null) {
-                return;
-            }
-
-            controller.saveForm((PatientData) controller.readJSON(formUpdateJson), doc);
+            // 2. Call all controllers and save the document
+            new PhenoTipsPatient(doc).updateFromJSON(aggregate);
 
         } catch (JSONException e) {
             this.logger.warn(
                 String.format("Update failed, error parsing form data to JSONObject: [%s]", e.getMessage()), e);
         } catch (Exception e) {
-            this.logger.debug(String.format("Unable to update patient from JSON [%s]", jsonString), e);
+            this.logger.debug(String.format("Unable to update patient from JSON [%s]", aggregate), e);
         }
     }
 
-    private static JSONObject getJSON(String value)
+    private static void aggregate(JSONObject aggregate, String formString)
     {
-        if (StringUtils.isBlank(value)) {
-            return null;
+        if (StringUtils.isBlank(formString)) {
+            return;
         }
 
-        JSONObject json = new JSONObject(value);
+        JSONObject formJson = new JSONObject(formString);
 
-        if (CollectionUtils.isEmpty(json.keySet())) {
-            return null;
+        if (CollectionUtils.isEmpty(formJson.keySet())) {
+            return;
         }
 
-        return json;
-    }
+        String sectionName = formJson.keys().next();
 
-    private static String getControllerHint(JSONObject jsonObject)
-    {
-        return jsonObject.keys().next();
+        aggregate.putOpt(sectionName, formJson.opt(sectionName));
     }
 }
