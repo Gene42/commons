@@ -108,8 +108,9 @@ public abstract class AbstractBaseObjectJSONConverter implements BaseObjectJSONC
 
         for (Map.Entry<String, Class> entry : keyTypesMapEntrySet) {
             JSONToXObj func = functionMap.get(entry.getValue());
-            if (func != null && from.has(entry.getKey())) {
-                func.apply(from, to, entry.getKey(), context);
+            String key = entry.getKey();
+            if (func != null && from.has(key) && !from.isNull(key)) {
+                func.apply(from, to, key, context);
             }
         }
         return to;
@@ -144,7 +145,7 @@ public abstract class AbstractBaseObjectJSONConverter implements BaseObjectJSONC
 
         for (Map.Entry<String, Class> entry : keyTypesMapEntrySet) {
             XObjToJSON func = functionMap.get(entry.getValue());
-            if (func != null) {
+            if (func != null && from.safeget(entry.getKey()) != null) {
                 func.apply(from, to, entry.getKey());
             }
         }
