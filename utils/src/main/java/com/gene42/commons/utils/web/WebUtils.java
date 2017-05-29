@@ -60,7 +60,7 @@ public final class WebUtils
      * @param logger the logger to use in case an error or fatal must be logged (can be null; will ignore logging)
      * @return a Response object
      */
-    public static Response getErrorResponse(ServiceException e, Logger  logger)
+    public static Response getErrorResponse(ServiceException e, Logger logger)
     {
         if (e.getStatus() == null) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
@@ -105,7 +105,16 @@ public final class WebUtils
         return Response.serverError().status(status).entity(message).type(MediaType.TEXT_PLAIN_TYPE).build();
     }
 
-    public static Response getErrorResponse(Response.Status status, String message, String uri, String param) {
+    /**
+     * Returns a Response object based on the given parameters.
+     * @param status the status to set
+     * @param message the message to add to the response
+     * @param uri the source uri to set in the response
+     * @param param the source param to set in the response
+     * @return a Response object
+     */
+    public static Response getErrorResponse(Response.Status status, String message, String uri, String param)
+    {
         return Response.serverError()
             .status(status)
             .entity(new JsonApiBuilder()

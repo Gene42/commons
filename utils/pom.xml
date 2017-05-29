@@ -19,6 +19,10 @@
   <name>Gene42 - Commons - Utils</name>
   <packaging>jar</packaging>
 
+  <properties>
+    <coverage.instructionRatio>0.6</coverage.instructionRatio>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>org.json</groupId>
