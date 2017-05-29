@@ -19,7 +19,7 @@
   <packaging>jar</packaging>
 
   <properties>
-    <coverage.instructionRatio>0.2</coverage.instructionRatio>
+    <coverage.instructionRatio>0.1</coverage.instructionRatio>
     <checkstyle.suppressions.location>${basedir}/src/checkstyle/checkstyle-suppressions.xml</checkstyle.suppressions.location>
   </properties>
 
