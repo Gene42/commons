@@ -24,6 +24,11 @@
   </properties>
 
   <dependencies>
+    <dependency>
+      <groupId>com.gene42.commons</groupId>
+      <artifactId>gene42-commons-utils</artifactId>
+      <version>${project.version}</version>
+    </dependency>
     <!-- PhenoTips -->
     <dependency>
       <groupId>${phenotips.groupId}</groupId>

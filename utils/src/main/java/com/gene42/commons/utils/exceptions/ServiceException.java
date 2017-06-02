@@ -25,6 +25,15 @@ public class ServiceException extends Exception
     }
 
     /**
+     * Constructor. The Status is set to Status.INTERNAL_EXCEPTION.
+     * @param message the message to set
+     */
+    public ServiceException(String message)
+    {
+        this(Status.INTERNAL_EXCEPTION, message);
+    }
+
+    /**
      * Constructor. Defaults to Status.INTERNAL_EXCEPTION.
      * @param e Throwable to wrap
      */
@@ -118,6 +127,9 @@ public class ServiceException extends Exception
         INTERNAL_EXCEPTION,
 
         /** Value. */
-        INVALID_INPUT
+        INVALID_INPUT,
+
+        /** Value. */
+        SERVICE_UNAVAILABLE
     }
 }

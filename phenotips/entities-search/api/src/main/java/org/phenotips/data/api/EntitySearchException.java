@@ -7,15 +7,17 @@
  */
 package org.phenotips.data.api;
 
+import com.gene42.commons.utils.exceptions.ServiceException;
+
 /**
  * Exception thrown during a DocumentSearch.
  *
  * @version $Id$
  */
-public class EntitySearchException extends Exception
+public class EntitySearchException extends ServiceException
 {
     /**
-     * Constructor.
+     * Constructor. The Status is set to Status.INTERNAL_EXCEPTION.
      */
     public EntitySearchException()
     {
@@ -23,8 +25,8 @@ public class EntitySearchException extends Exception
     }
 
     /**
-     * Constructor.
-     * @param message message to associate with this exception
+     * Constructor. The Status is set to Status.INTERNAL_EXCEPTION.
+     * @param message the message to set
      */
     public EntitySearchException(String message)
     {
@@ -32,21 +34,62 @@ public class EntitySearchException extends Exception
     }
 
     /**
-     * Constructor.
-     * @param message  message to associate with this exception
-     * @param throwable another Throwable to wrap with this exception
+     * Constructor. Defaults to Status.INTERNAL_EXCEPTION.
+     * @param e Throwable to wrap
      */
-    public EntitySearchException(String message, Throwable throwable)
+    public EntitySearchException(Throwable e)
     {
-        super(message, throwable);
+        super(e);
     }
 
     /**
      * Constructor.
-     * @param throwable message to associate with this exception
+     * @param status the Status to set
      */
-    public EntitySearchException(Throwable throwable)
+    public EntitySearchException(Status status)
     {
-        super(throwable);
+        super(status);
     }
+
+    /**
+     * Constructor.
+     * @param status the Status to set
+     * @param message the message to set
+     */
+    public EntitySearchException(Status status, String message)
+    {
+        super(status, message);
+    }
+
+    /**
+     * Constructor.
+     * @param status the Status to set
+     * @param message the message to set
+     * @param e Throwable to wrap
+     */
+    public EntitySearchException(Status status, String message, Throwable e)
+    {
+        super(status, message, e);
+    }
+
+    /**
+     * Constructor.
+     * @param status the Status to set
+     * @param e Throwable to wrap
+     */
+    public EntitySearchException(Status status, Throwable e)
+    {
+        super(status, e);
+    }
+
+    /**
+     * Constructor.
+     * @param message the message to set
+     * @param e Throwable to wrap
+     */
+    public EntitySearchException(String message, Throwable e)
+    {
+        super(message, e);
+    }
+
 }
