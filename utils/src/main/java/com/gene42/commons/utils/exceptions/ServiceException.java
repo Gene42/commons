@@ -39,7 +39,7 @@ public class ServiceException extends Exception
      */
     public ServiceException(Throwable e)
     {
-        this(Status.INTERNAL_EXCEPTION, e);
+        this(transferStatus(e, Status.INTERNAL_EXCEPTION), e.getMessage(), e);
     }
 
     /**
@@ -82,7 +82,7 @@ public class ServiceException extends Exception
      */
     public ServiceException(Status status, Throwable e)
     {
-        super(e);
+        super(e.getMessage(), e);
         this.status = status;
     }
 
@@ -93,7 +93,8 @@ public class ServiceException extends Exception
      */
     public ServiceException(String message, Throwable e)
     {
-        this(Status.INTERNAL_EXCEPTION, message, e);
+        this(transferStatus(e, Status.INTERNAL_EXCEPTION), message, e);
+
     }
 
     /**
@@ -131,5 +132,14 @@ public class ServiceException extends Exception
 
         /** Value. */
         SERVICE_UNAVAILABLE
+    }
+
+    private static Status transferStatus(Throwable e, Status defaultStatus)
+    {
+        if (e instanceof ServiceException) {
+            return ((ServiceException) e).getStatus();
+        } else {
+            return defaultStatus;
+        }
     }
 }
