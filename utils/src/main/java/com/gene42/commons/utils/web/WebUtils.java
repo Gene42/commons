@@ -79,6 +79,9 @@ public final class WebUtils
             case INVALID_INPUT:
                 status = Response.Status.BAD_REQUEST;
                 break;
+            case SERVICE_UNAVAILABLE:
+                status = Response.Status.SERVICE_UNAVAILABLE;
+                break;
             case INTERNAL_EXCEPTION:
             case COULD_NOT_SAVE_DATA:
             case COULD_NOT_LOAD_DATA:
