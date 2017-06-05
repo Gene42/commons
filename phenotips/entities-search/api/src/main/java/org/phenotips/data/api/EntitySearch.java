@@ -11,21 +11,24 @@ import org.xwiki.component.annotation.Role;
 
 import org.json.JSONObject;
 
+import com.gene42.commons.utils.exceptions.ServiceException;
+
 /**
  * Interface for searching entities in the system.
  * @param <T> result type
  * @version $Id$
  */
 @Role
+@FunctionalInterface
 public interface EntitySearch<T>
 {
     /**
      *
      * @param queryParameters the parameters used to create the query
      * @return a DocumentSearchResult containing the documents plus extra metadata
-     * @throws EntitySearchException on any issues during document querying
+     * @throws ServiceException on any issues during document querying
      */
-    EntitySearchResult<T> search(JSONObject queryParameters) throws EntitySearchException;
+    EntitySearchResult<T> search(JSONObject queryParameters) throws ServiceException;
 
     /**
      * Holder for key values.

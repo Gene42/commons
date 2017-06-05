@@ -8,7 +8,6 @@
 package org.phenotips.data.rest.internal;
 
 import org.phenotips.data.api.EntitySearch;
-import org.phenotips.data.api.EntitySearchException;
 import org.phenotips.data.api.EntitySearchResult;
 import org.phenotips.data.api.internal.SpaceAndClass;
 import org.phenotips.data.rest.LiveTableInputAdapter;
@@ -47,6 +46,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 
+import com.gene42.commons.utils.exceptions.ServiceException;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
@@ -143,7 +143,7 @@ public class DefaultLiveTableSearchImpl implements LiveTableSearch
             this.handleError(e, Status.UNAUTHORIZED);
         } catch (XWikiException e) {
             this.handleError(e, Status.INTERNAL_SERVER_ERROR);
-        } catch (EntitySearchException | IllegalArgumentException e) {
+        } catch (ServiceException | IllegalArgumentException e) {
             this.handleError(e, Status.BAD_REQUEST);
         }
 
@@ -151,7 +151,7 @@ public class DefaultLiveTableSearchImpl implements LiveTableSearch
     }
 
     private JSONObject getResponseObject(JSONObject inputObject, Map<String, List<String>> queryParameters,
-        StopWatches stopWatches) throws XWikiException, EntitySearchException
+        StopWatches stopWatches) throws XWikiException, ServiceException
     {
         stopWatches.getSearchStopWatch().start();
         EntitySearchResult<DocumentReference> documentSearchResult = this.documentSearch.search(inputObject);

@@ -8,7 +8,6 @@
 package org.phenotips.data.api.internal;
 
 import org.phenotips.data.api.EntitySearch;
-import org.phenotips.data.api.EntitySearchException;
 import org.phenotips.data.api.EntitySearchResult;
 
 import org.xwiki.component.annotation.Component;
@@ -35,6 +34,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 
+import com.gene42.commons.utils.exceptions.ServiceException;
 import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiContext;
 
@@ -67,7 +67,7 @@ public class DefaultDocumentSearchImpl implements EntitySearch<DocumentReference
     private Logger logger;
 
     @Override
-    public EntitySearchResult<DocumentReference> search(JSONObject queryParameters) throws EntitySearchException
+    public EntitySearchResult<DocumentReference> search(JSONObject queryParameters) throws ServiceException
     {
         int offset = queryParameters.optInt(EntitySearch.Keys.OFFSET_KEY);
         if (offset <= 0) {
@@ -92,7 +92,7 @@ public class DefaultDocumentSearchImpl implements EntitySearch<DocumentReference
         try {
             results = this.getQueryResults(scriptQuery.execute());
         } catch (QueryException e) {
-            throw new EntitySearchException(e);
+            throw new ServiceException(e);
         }
 
         return new EntitySearchResult<DocumentReference>()
@@ -125,7 +125,7 @@ public class DefaultDocumentSearchImpl implements EntitySearch<DocumentReference
     }
 
     private ScriptQuery getQuery(JSONObject queryParameters, boolean count, int limit, int offset) throws
-        EntitySearchException
+        ServiceException
     {
         List<Object> bindingValues = new LinkedList<>();
         DocumentQuery docQuery = new DocumentQuery(new DefaultFilterFactory(this.contextProvider), count);
@@ -135,7 +135,7 @@ public class DefaultDocumentSearchImpl implements EntitySearch<DocumentReference
         try {
             query = this.queryManager.createQuery(queryStr, "hql");
         } catch (QueryException e) {
-            throw new EntitySearchException(e);
+            throw new ServiceException(e);
         }
 
         ScriptQuery scriptQuery = new ScriptQuery(query, this.componentManager);
