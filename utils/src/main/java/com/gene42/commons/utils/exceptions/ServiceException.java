@@ -131,7 +131,10 @@ public class ServiceException extends Exception
         INVALID_INPUT,
 
         /** Value. */
-        SERVICE_UNAVAILABLE
+        SERVICE_UNAVAILABLE,
+
+        /** Value. */
+        UNAUTHORIZED
     }
 
     private static Status transferStatus(Throwable e, Status defaultStatus)

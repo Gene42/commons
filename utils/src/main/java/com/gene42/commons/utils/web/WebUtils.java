@@ -7,6 +7,8 @@
  */
 package com.gene42.commons.utils.web;
 
+import java.util.EnumMap;
+
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -36,6 +38,17 @@ public final class WebUtils
     /** Key for returned in a json result object. */
     public static final String RETURNED_KEY = "returned";
 
+    private static final EnumMap<ServiceException.Status, Response.Status> SERVICE_TO_WEB_MAP =
+        new EnumMap<>(ServiceException.Status.class);
+
+    static {
+        SERVICE_TO_WEB_MAP.put(ServiceException.Status.DATA_ALREADY_EXISTS, Response.Status.CONFLICT);
+        SERVICE_TO_WEB_MAP.put(ServiceException.Status.DATA_NOT_FOUND, Response.Status.NOT_FOUND);
+        SERVICE_TO_WEB_MAP.put(ServiceException.Status.INVALID_INPUT, Response.Status.BAD_REQUEST);
+        SERVICE_TO_WEB_MAP.put(ServiceException.Status.SERVICE_UNAVAILABLE, Response.Status.SERVICE_UNAVAILABLE);
+        SERVICE_TO_WEB_MAP.put(ServiceException.Status.UNAUTHORIZED, Response.Status.UNAUTHORIZED);
+    }
+
     private WebUtils()
     {
         throw new AssertionError();
@@ -53,6 +66,7 @@ public final class WebUtils
         throw new WebApplicationException(e, getErrorResponse(e, logger).getStatus());
     }
 
+
     /**
      * Returns a Response with a status value depending on the given ServiceException.Status value. The body of the
      * Response will contain the exception's message if available).
@@ -69,28 +83,14 @@ public final class WebUtils
         Response.Status status;
         String message = e.getMessage();
 
-        switch (e.getStatus()) {
-            case DATA_ALREADY_EXISTS:
-                status = Response.Status.CONFLICT;
-                break;
-            case DATA_NOT_FOUND:
-                status = Response.Status.NOT_FOUND;
-                break;
-            case INVALID_INPUT:
-                status = Response.Status.BAD_REQUEST;
-                break;
-            case SERVICE_UNAVAILABLE:
-                status = Response.Status.SERVICE_UNAVAILABLE;
-                break;
-            case INTERNAL_EXCEPTION:
-            case COULD_NOT_SAVE_DATA:
-            case COULD_NOT_LOAD_DATA:
-            default:
-                status = Response.Status.INTERNAL_SERVER_ERROR;
-                if (logger != null) {
-                    logger.error(status.toString(), e);
-                }
-                message = "Uh oh, something went wrong on the server. Contact an admin if it persists.";
+        status = SERVICE_TO_WEB_MAP.get(e.getStatus());
+
+        if (status == null) {
+            status = Response.Status.INTERNAL_SERVER_ERROR;
+            if (logger != null) {
+                logger.error(status.toString(), e);
+            }
+            message = "Uh oh, something went wrong on the server. Contact an admin if it persists.";
         }
 
         return Response.status(status).entity(message).build();
