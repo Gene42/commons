@@ -44,6 +44,7 @@ public final class WebUtils
     static {
         SERVICE_TO_WEB_MAP.put(ServiceException.Status.DATA_ALREADY_EXISTS, Response.Status.CONFLICT);
         SERVICE_TO_WEB_MAP.put(ServiceException.Status.DATA_NOT_FOUND, Response.Status.NOT_FOUND);
+        SERVICE_TO_WEB_MAP.put(ServiceException.Status.COULD_NOT_PARSE_DATA, Response.Status.BAD_REQUEST);
         SERVICE_TO_WEB_MAP.put(ServiceException.Status.INVALID_INPUT, Response.Status.BAD_REQUEST);
         SERVICE_TO_WEB_MAP.put(ServiceException.Status.SERVICE_UNAVAILABLE, Response.Status.SERVICE_UNAVAILABLE);
         SERVICE_TO_WEB_MAP.put(ServiceException.Status.UNAUTHORIZED, Response.Status.UNAUTHORIZED);

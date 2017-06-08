@@ -125,6 +125,9 @@ public class ServiceException extends Exception
         COULD_NOT_LOAD_DATA,
 
         /** Value. */
+        COULD_NOT_PARSE_DATA,
+
+        /** Value. */
         INTERNAL_EXCEPTION,
 
         /** Value. */
