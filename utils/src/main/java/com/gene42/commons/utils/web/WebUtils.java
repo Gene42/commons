@@ -106,7 +106,19 @@ public final class WebUtils
      */
     public static Response getErrorResponse(String message, Response.Status status)
     {
-        return Response.serverError().status(status).entity(message).type(MediaType.TEXT_PLAIN_TYPE).build();
+        return getErrorResponse(message, MediaType.TEXT_PLAIN_TYPE, status);
+    }
+
+    /**
+     * Returns a Response with a status value depending on the given status and the body containing the given message.
+     * @param message the message to set as the Response body
+     * @param messageMediaType the media type of the message
+     * @param status the status of the Response
+     * @return a Response object
+     */
+    public static Response getErrorResponse(String message, MediaType messageMediaType, Response.Status status)
+    {
+        return Response.serverError().status(status).entity(message).type(messageMediaType).build();
     }
 
     /**
