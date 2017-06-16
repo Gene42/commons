@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 
 import com.gene42.commons.utils.DateTools;
@@ -109,7 +110,7 @@ public abstract class AbstractBaseObjectJSONConverter implements BaseObjectJSONC
         for (Map.Entry<String, Class> entry : keyTypesMapEntrySet) {
             JSONToXObj func = functionMap.get(entry.getValue());
             String key = entry.getKey();
-            if (func != null && from.has(key) && !from.isNull(key)) {
+            if (func != null && jsonValueIsNotNull(from, key, entry.getValue())) {
                 func.apply(from, to, key, context);
             }
         }
@@ -162,5 +163,32 @@ public abstract class AbstractBaseObjectJSONConverter implements BaseObjectJSONC
     public Map<Class, JSONToXObj> getJSONToXObjFunctionMap()
     {
         return JSON_TO_X_OBJ;
+    }
+
+    /**
+     * Returns whether or not the given JSONObject has the given key and if it is not null. If the type is a number and
+     * the value is an empty string, it is considered a null.
+     * @param from the input JSONObject
+     * @param key the key to check for
+     * @param keyType the type the key is supposed to be
+     * @return true if not null, false otherwise
+     */
+    public static boolean jsonValueIsNotNull(JSONObject from, String key, Class keyType)
+    {
+        if (!from.has(key) || from.isNull(key)) {
+            return false;
+        }
+
+        Object value = from.get(key);
+
+        if (value == null) {
+            return false;
+        }
+
+        if (Number.class.isAssignableFrom(keyType)) {
+            return !((value instanceof String) && StringUtils.isEmpty((String) value));
+        }
+
+        return true;
     }
 }
