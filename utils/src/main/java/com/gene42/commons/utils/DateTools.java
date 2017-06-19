@@ -70,13 +70,18 @@ public final class DateTools
     }
 
     /**
-     * Converts the given date in a String using the given formatter.
+     * Converts the given date in a String using the given formatter. If the formatter is null,
+     * the default one is used (DateTimeFormatter.BASIC_ISO_DATE).
      * @param date the Date to convert
      * @param formatter the formatter to use
      * @return a String
      */
     public static String dateToString(Date date, DateTimeFormatter formatter)
     {
-        return formatter.format(date.toInstant());
+        if (formatter == null) {
+            return DateTimeFormatter.BASIC_ISO_DATE.format(date.toInstant());
+        } else {
+            return formatter.format(date.toInstant());
+        }
     }
 }
