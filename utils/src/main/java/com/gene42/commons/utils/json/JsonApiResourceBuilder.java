@@ -106,12 +106,25 @@ public class JsonApiResourceBuilder implements Builder<JSONObject>
      */
     public JsonApiResourceBuilder putParentRelationship(String id, String type)
     {
-        JSONObject parent = new JSONObject();
-        JSONObject parentData = new JSONObject();
-        parent.put(DATA_FIELD, parentData);
-        parentData.put(ID_FIELD, id);
-        parentData.put(TYPE_FIELD, type);
-        this.relationships.put(PARENT_RELATIONSHIP_FIELD, parent);
+        return this.putRelationship(PARENT_RELATIONSHIP_FIELD, id, type);
+    }
+
+    /**
+     * Adds the given relationship, overriding the one there if it already exists.
+     * @param relationshipName the name of the relationship (used as the key)
+     * @param id the id of the resource object the relationship points to
+     * @param type the type of the relationship resource object
+     * @return this object
+     */
+    public JsonApiResourceBuilder putRelationship(String relationshipName, String id, String type)
+    {
+        JSONObject relationship = new JSONObject();
+        JSONObject relationshipData = new JSONObject();
+        relationship.put(DATA_FIELD, relationshipData);
+        relationshipData.put(ID_FIELD, id);
+        relationshipData.put(TYPE_FIELD, type);
+
+        this.relationships.put(relationshipName, relationship);
         return this;
     }
 

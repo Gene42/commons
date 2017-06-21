@@ -26,10 +26,14 @@ public class JsonApiBuilderTest
 
         JsonApiResourceBuilder data1 = new JsonApiResourceBuilder("data1", "type1");
         data1.putAttribute("attr1", "attrValue1").putAttribute("attr2", "attrValue2");
+        data1.putParentRelationship("data1", "type1").putSelfLink("/patients/parent1");
+        data1.putRelationship("job", "jobId1", "job");
 
-        JsonApiResourceBuilder data2 = new JsonApiResourceBuilder("data2", "type1");
-        JsonApiResourceBuilder include1 = new JsonApiResourceBuilder("include1", "type2");
-        include1.putParentRelationship("data1", "type1").putSelfLink("/include1/stuff");
+        JsonApiResourceBuilder data2 = new JsonApiResourceBuilder("data2", "type1").putSelfLink("/include1/stuff2");
+        data2.putParentRelationship("data1", "type1");
+
+        JsonApiResourceBuilder include1 = new JsonApiResourceBuilder("parent1", "patient").putSelfLink("/patients/parent1");
+        JsonApiResourceBuilder include2 = new JsonApiResourceBuilder("jobId1", "job").putSelfLink("/rest/jobs/job1");
 
         JSONObject meta = new JSONObject();
         meta.put("meta2", "metaValueX");
@@ -39,7 +43,8 @@ public class JsonApiBuilderTest
         new JsonApiBuilder()
             .putMeta(meta).putMeta("meta1", "metaValue1").putMeta("meta2", "metaValue2")
             .addData(data1).addData(data2)
-            .addIncluded(include1).build();
+            .addIncluded(include1).addIncluded(include2)
+            .build();
 
         System.out.println(result.toString(4));
 
