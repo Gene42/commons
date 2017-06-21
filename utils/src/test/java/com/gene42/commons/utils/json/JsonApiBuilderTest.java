@@ -28,6 +28,7 @@ public class JsonApiBuilderTest
         data1.putAttribute("attr1", "attrValue1").putAttribute("attr2", "attrValue2");
         data1.putParentRelationship("data1", "type1").putSelfLink("/patients/parent1");
         data1.putRelationship("job", "jobId1", "job");
+        data1.putLink("job", "/rest/jobs/job1", null);
 
         JsonApiResourceBuilder data2 = new JsonApiResourceBuilder("data2", "type1").putSelfLink("/include1/stuff2");
         data2.putParentRelationship("data1", "type1");

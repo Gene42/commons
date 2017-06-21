@@ -7,6 +7,7 @@
  */
 package com.gene42.commons.utils.json;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.Builder;
 import org.json.JSONObject;
 
@@ -41,6 +42,12 @@ public class JsonApiResourceBuilder implements Builder<JSONObject>
 
     /** JSON API Field. */
     public static final String SELF_FIELD = "self";
+
+    /** JSON API Field. */
+    public static final String HREF_FIELD = "href";
+
+    /** JSON API Field. */
+    public static final String META_FIELD = "meta";
 
     private JSONObject attributes = new JSONObject();
     private JSONObject links = new JSONObject();
@@ -96,6 +103,26 @@ public class JsonApiResourceBuilder implements Builder<JSONObject>
     {
         this.links.put(SELF_FIELD, link);
         return this;
+    }
+
+    /**
+     * Sets the link with the given name to the links object.
+     * @param linkName the name of the link. If it equals 'self', the link will be handled as such.
+     * @param href a string containing the link’s URL
+     * @param meta a meta object containing non-standard meta-information about the link (can be null)
+     * @return this object
+     */
+    public JsonApiResourceBuilder putLink(String linkName, String href, JSONObject meta)
+    {
+        if (StringUtils.equals(SELF_FIELD, linkName)) {
+            return this.putSelfLink(href);
+        } else {
+            JSONObject linkObject = new JSONObject();
+            linkObject.put(HREF_FIELD, href);
+            linkObject.putOpt(META_FIELD, meta);
+            this.links.put(linkName, linkObject);
+            return this;
+        }
     }
 
     /**
