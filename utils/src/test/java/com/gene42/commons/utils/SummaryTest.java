@@ -30,8 +30,8 @@ public class SummaryTest
     @Test
     public void checkRow() throws Exception
     {
-        Summary variants = new Summary().sortedByKey().setMaxMessagesKept(20);
-        Summary columns = new Summary("column").insertionOrdered().setMaxMessagesKept(200);
+        Summary variants = new Summary(" ").sortedByKey().setMaxMessagesKept(20);
+        Summary columns = new Summary(" ").insertionOrdered().setMaxMessagesKept(200);
 
         variants.error(SKIP_LINE);
         variants.error(SKIP_LINE);
@@ -45,7 +45,7 @@ public class SummaryTest
         variants.merge(columns);
 
         Summary finalSummary = new Summary().insertionOrdered().setLogStringVariable("{}");
-
+        finalSummary.info("Number of variants parsed", 2);
         finalSummary.merge(variants);
         finalSummary.log(LOGGER);
     }

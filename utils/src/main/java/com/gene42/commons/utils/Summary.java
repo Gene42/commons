@@ -24,16 +24,17 @@ import org.slf4j.event.Level;
  */
 public class Summary implements Mergeable<Summary>
 {
-    private static final String LOG_STRING = "%s: %s times";
+    private static final String DEFAULT_LOG_STRING = "%s: (%s)";
 
     private static final List<Level> LEVELS = Arrays.asList(Level.ERROR, Level.WARN, Level.INFO);
 
     private String logStringVariable = "%s";
-    private String logString = getLogString(this.logStringVariable);
 
     private String name;
     private Map<Level, Map<String, Integer>> messageCountMap = new TreeMap<>();
     private int maxMessagesKept = 20;
+
+    private Map<Level, String> logStringMap = new TreeMap<>();
 
     /**
      * Constructor.
@@ -106,6 +107,21 @@ public class Summary implements Mergeable<Summary>
     }
 
     /**
+     * Sets the formatting string for the message and its count (for the given Level).
+     * @param level the level to set the string for
+     * @param logFormattingString the formatting string
+     * @return this object
+     */
+    public Summary setLogFormattingString(Level level, String logFormattingString)
+    {
+        if (level != null && logFormattingString != null
+            && StringUtils.countMatches(logFormattingString, this.logStringVariable) == 2) {
+            this.logStringMap.put(level, getLogFormattingString(logFormattingString, this.logStringVariable));
+        }
+        return this;
+    }
+
+    /**
      * Setter for logStringVariable.
      *
      * @param logStringVariable logStringVariable to set
@@ -114,7 +130,8 @@ public class Summary implements Mergeable<Summary>
     public Summary setLogStringVariable(String logStringVariable)
     {
         this.logStringVariable = logStringVariable;
-        this.logString = getLogString(this.logStringVariable);
+        this.logStringMap.entrySet().forEach(entry ->
+            this.logStringMap.put(entry.getKey(), getLogFormattingString(entry.getValue(), this.logStringVariable)));
         return this;
     }
 
@@ -142,7 +159,8 @@ public class Summary implements Mergeable<Summary>
         for (Map.Entry<Level, Map<String, Integer>> otherEntry : other.messageCountMap.entrySet()) {
 
             for (Map.Entry<String, Integer> otherMapEntry : otherEntry.getValue().entrySet()) {
-                this.incrementMessageCount(otherEntry.getKey(), otherMapEntry.getKey(), otherMapEntry.getValue());
+                this.incrementMessageCount(
+                    otherEntry.getKey(), otherMapEntry.getKey(), otherMapEntry.getValue(), false);
             }
         }
 
@@ -175,7 +193,7 @@ public class Summary implements Mergeable<Summary>
      */
     public Summary info(String message, int amount)
     {
-        return this.incrementMessageCount(Level.INFO, message, amount);
+        return this.incrementMessageCount(Level.INFO, message, amount, true);
     }
 
     /**
@@ -186,7 +204,7 @@ public class Summary implements Mergeable<Summary>
      */
     public Summary warn(String message)
     {
-        return this.incrementMessageCount(Level.WARN, message, 1);
+        return this.incrementMessageCount(Level.WARN, message, 1, true);
     }
 
     /**
@@ -197,7 +215,7 @@ public class Summary implements Mergeable<Summary>
      */
     public Summary error(String message)
     {
-        return this.incrementMessageCount(Level.ERROR, message, 1);
+        return this.incrementMessageCount(Level.ERROR, message, 1, true);
     }
 
     /**
@@ -209,15 +227,17 @@ public class Summary implements Mergeable<Summary>
     {
         Map<String, Integer> error = this.messageCountMap.get(Level.ERROR);
         if (error.size() > 0) {
+            logger.info("The following errors were encountered (# of times)");
             for (Map.Entry<String, Integer> entry : error.entrySet()) {
-                logger.error(this.logString, entry.getKey(), entry.getValue());
+                logger.error(this.logStringMap.get(Level.ERROR), entry.getKey(), entry.getValue());
             }
         }
 
         Map<String, Integer> warn = this.messageCountMap.get(Level.WARN);
         if (warn.size() > 0) {
+            logger.info("The following warnings were encountered (# of times)");
             for (Map.Entry<String, Integer> entry : warn.entrySet()) {
-                logger.warn(this.logString, entry.getKey(), entry.getValue());
+                logger.warn(this.logStringMap.get(Level.WARN), entry.getKey(), entry.getValue());
             }
         }
 
@@ -225,7 +245,7 @@ public class Summary implements Mergeable<Summary>
 
         if (info.size() > 0) {
             for (Map.Entry<String, Integer> entry : info.entrySet()) {
-                logger.info(this.logString, entry.getKey(), entry.getValue());
+                logger.info(this.logStringMap.get(Level.INFO), entry.getKey(), entry.getValue());
             }
         }
 
@@ -246,9 +266,13 @@ public class Summary implements Mergeable<Summary>
         summary.log(logger);
     }
 
-    private static String getLogString(String logStringVariable)
+    private static String getLogFormattingString(String formattingString, String logStringVariable)
     {
-        return String.format(LOG_STRING, logStringVariable, logStringVariable);
+        if (formattingString == null) {
+            return String.format(DEFAULT_LOG_STRING, logStringVariable, logStringVariable);
+        } else {
+            return String.format(formattingString, logStringVariable, logStringVariable);
+        }
     }
 
     /**
@@ -256,17 +280,18 @@ public class Summary implements Mergeable<Summary>
      * key to the amount, as long as the number of keys in the map is less then the max allowed.
      * @param key the key of the value to increment
      * @param amount the amount to increment by
+     * @param appendName flag for whether or not to append the name of this Summary to the key
      * @return this object
      */
-    private Summary incrementMessageCount(Level type, String key, int amount)
+    private Summary incrementMessageCount(Level type, String key, int amount, boolean appendName)
     {
         Map<String, Integer> map = this.messageCountMap.get(type);
 
         String internalKey;
-        if (StringUtils.isBlank(this.name)) {
-            internalKey = key;
-        } else {
+        if (appendName && this.name != null) {
             internalKey = this.name + " - " + key;
+        } else {
+            internalKey = key;
         }
 
         Integer currentCount = map.get(internalKey);
