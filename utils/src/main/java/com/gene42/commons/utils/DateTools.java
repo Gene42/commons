@@ -19,7 +19,11 @@ import java.util.Date;
  */
 public final class DateTools
 {
+    private static final String ZULU_TIME_FORMAT = "yyyy-MM-dd'T'hh:mm:ss.SSS'Z'";
+
     private static final ZoneId UTC_ZONE = ZoneId.of("UTC");
+
+    private static final DateTimeFormatter ZULU_FORMATTER = getDateFormatter(ZULU_TIME_FORMAT);
 
     private DateTools()
     {
@@ -34,6 +38,15 @@ public final class DateTools
     public static DateTimeFormatter getDateFormatter(String dateFormat)
     {
         return DateTimeFormatter.ofPattern(dateFormat).withZone(UTC_ZONE);
+    }
+
+    /**
+     * Returns a DateTimeFormatter for zulu time.
+     * @return  the date format
+     */
+    public static DateTimeFormatter getZuluDateFormatter()
+    {
+        return ZULU_FORMATTER;
     }
 
     /**
@@ -71,7 +84,7 @@ public final class DateTools
 
     /**
      * Converts the given date in a String using the given formatter. If the formatter is null,
-     * the default one is used (DateTimeFormatter.BASIC_ISO_DATE).
+     * a Zulu time formatter is used (yyyy-MM-dd'T'hh:mm:ss.SSS'Z')
      * @param date the Date to convert
      * @param formatter the formatter to use
      * @return a String
@@ -79,7 +92,7 @@ public final class DateTools
     public static String dateToString(Date date, DateTimeFormatter formatter)
     {
         if (formatter == null) {
-            return DateTimeFormatter.BASIC_ISO_DATE.format(date.toInstant());
+            return ZULU_FORMATTER.format(date.toInstant());
         } else {
             return formatter.format(date.toInstant());
         }
