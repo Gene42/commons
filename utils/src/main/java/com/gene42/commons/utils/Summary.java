@@ -9,11 +9,13 @@ package com.gene42.commons.utils;
 
 import java.util.Arrays;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
+import org.slf4j.event.Level;
 
 /**
  * A summary of info/warnings/errors encountered during a task.
@@ -24,16 +26,13 @@ public class Summary implements Mergeable<Summary>
 {
     private static final String LOG_STRING = "%s: %s times";
 
+    private static final List<Level> LEVELS = Arrays.asList(Level.ERROR, Level.WARN, Level.INFO);
+
     private String logStringVariable = "%s";
     private String logString = getLogString(this.logStringVariable);
 
-    private enum Message
-    {
-        ERROR, WARN, INFO;
-    }
-
     private String name;
-    private Map<Message, Map<String, Integer>> messageCountMap = new TreeMap<>();
+    private Map<Level, Map<String, Integer>> messageCountMap = new TreeMap<>();
     private int maxMessagesKept = 20;
 
     /**
@@ -60,7 +59,7 @@ public class Summary implements Mergeable<Summary>
      */
     public Summary insertionOrdered()
     {
-        Arrays.asList(Message.values()).forEach(key -> this.messageCountMap.put(key, new LinkedHashMap<>()));
+        LEVELS.forEach(key -> this.messageCountMap.put(key, new LinkedHashMap<>()));
         return this;
     }
 
@@ -70,7 +69,7 @@ public class Summary implements Mergeable<Summary>
      */
     public Summary sortedByKey()
     {
-        Arrays.asList(Message.values()).forEach(key -> this.messageCountMap.put(key, new TreeMap<>()));
+        LEVELS.forEach(key -> this.messageCountMap.put(key, new TreeMap<>()));
         return this;
     }
 
@@ -124,7 +123,7 @@ public class Summary implements Mergeable<Summary>
      * @param type the type of message
      * @return the messageCountMap for that type
      */
-    public Map<String, Integer> getMessageCountMap(Message type)
+    public Map<String, Integer> getMessageCountMap(Level type)
     {
         return this.messageCountMap.get(type);
     }
@@ -140,7 +139,7 @@ public class Summary implements Mergeable<Summary>
 
         this.maxMessagesKept += other.maxMessagesKept;
 
-        for (Map.Entry<Message, Map<String, Integer>> otherEntry : other.messageCountMap.entrySet()) {
+        for (Map.Entry<Level, Map<String, Integer>> otherEntry : other.messageCountMap.entrySet()) {
 
             for (Map.Entry<String, Integer> otherMapEntry : otherEntry.getValue().entrySet()) {
                 this.incrementMessageCount(otherEntry.getKey(), otherMapEntry.getKey(), otherMapEntry.getValue());
@@ -176,7 +175,7 @@ public class Summary implements Mergeable<Summary>
      */
     public Summary info(String message, int amount)
     {
-        return this.incrementMessageCount(Message.INFO, message, amount);
+        return this.incrementMessageCount(Level.INFO, message, amount);
     }
 
     /**
@@ -187,7 +186,7 @@ public class Summary implements Mergeable<Summary>
      */
     public Summary warn(String message)
     {
-        return this.incrementMessageCount(Message.WARN, message, 1);
+        return this.incrementMessageCount(Level.WARN, message, 1);
     }
 
     /**
@@ -198,7 +197,7 @@ public class Summary implements Mergeable<Summary>
      */
     public Summary error(String message)
     {
-        return this.incrementMessageCount(Message.ERROR, message, 1);
+        return this.incrementMessageCount(Level.ERROR, message, 1);
     }
 
     /**
@@ -208,21 +207,21 @@ public class Summary implements Mergeable<Summary>
      */
     public Summary log(Logger logger)
     {
-        Map<String, Integer> error = this.messageCountMap.get(Message.ERROR);
+        Map<String, Integer> error = this.messageCountMap.get(Level.ERROR);
         if (error.size() > 0) {
             for (Map.Entry<String, Integer> entry : error.entrySet()) {
                 logger.error(this.logString, entry.getKey(), entry.getValue());
             }
         }
 
-        Map<String, Integer> warn = this.messageCountMap.get(Message.WARN);
+        Map<String, Integer> warn = this.messageCountMap.get(Level.WARN);
         if (warn.size() > 0) {
             for (Map.Entry<String, Integer> entry : warn.entrySet()) {
                 logger.warn(this.logString, entry.getKey(), entry.getValue());
             }
         }
 
-        Map<String, Integer> info = this.messageCountMap.get(Message.INFO);
+        Map<String, Integer> info = this.messageCountMap.get(Level.INFO);
 
         if (info.size() > 0) {
             for (Map.Entry<String, Integer> entry : info.entrySet()) {
@@ -249,7 +248,7 @@ public class Summary implements Mergeable<Summary>
 
     private static String getLogString(String logStringVariable)
     {
-        return String.format("%s: %s times", logStringVariable, logStringVariable);
+        return String.format(LOG_STRING, logStringVariable, logStringVariable);
     }
 
     /**
@@ -259,7 +258,7 @@ public class Summary implements Mergeable<Summary>
      * @param amount the amount to increment by
      * @return this object
      */
-    private Summary incrementMessageCount(Message type, String key, int amount)
+    private Summary incrementMessageCount(Level type, String key, int amount)
     {
         Map<String, Integer> map = this.messageCountMap.get(type);
 
