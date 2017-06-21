@@ -109,6 +109,17 @@ public class JsonApiResourceBuilder implements Builder<JSONObject>
      * Sets the link with the given name to the links object.
      * @param linkName the name of the link. If it equals 'self', the link will be handled as such.
      * @param href a string containing the link’s URL
+     * @return this object
+     */
+    public JsonApiResourceBuilder putLink(String linkName, String href)
+    {
+        return this.putLink(linkName, href, null);
+    }
+
+    /**
+     * Sets the link with the given name to the links object.
+     * @param linkName the name of the link. If it equals 'self', the link will be handled as such.
+     * @param href a string containing the link’s URL
      * @param meta a meta object containing non-standard meta-information about the link (can be null)
      * @return this object
      */
