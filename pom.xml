@@ -18,7 +18,7 @@
 
   <groupId>com.gene42.commons</groupId>
   <artifactId>gene42-commons-parent</artifactId>
-  <version>1.0.2-SNAPSHOT</version>
+  <version>1.0.2</version>
   <packaging>pom</packaging>
   <name>Gene42 - Commons - Parent</name>
   <inceptionYear>2017</inceptionYear>
@@ -171,7 +171,7 @@
     <connection>scm:git:git://github.com/Gene42/commons.git</connection>
     <developerConnection>scm:git:git@github.com:Gene42/commons.git</developerConnection>
     <url>https://github.com/Gene42/commons.git/tree/master/</url>
-    <tag>HEAD</tag>
+    <tag>gene42-commons-1.0.2</tag>
   </scm>
 
   <dependencyManagement>
