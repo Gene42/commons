@@ -8,6 +8,7 @@
 package com.gene42.commons.utils;
 
 import java.util.Arrays;
+import java.util.EnumMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,9 +25,19 @@ import org.slf4j.event.Level;
  */
 public class Summary implements Mergeable<Summary>
 {
-    private static final String DEFAULT_LOG_STRING = "%s: (%s)";
+    private static final Map<Level, LoggerMethod> LOGGER_METHOD = new EnumMap<>(Level.class);
 
-    private static final List<Level> LEVELS = Arrays.asList(Level.ERROR, Level.WARN, Level.INFO);
+    static {
+        LOGGER_METHOD.put(Level.ERROR, Logger::error);
+        LOGGER_METHOD.put(Level.WARN, Logger::warn);
+        LOGGER_METHOD.put(Level.INFO, Logger::info);
+        LOGGER_METHOD.put(Level.DEBUG, Logger::debug);
+        LOGGER_METHOD.put(Level.TRACE, Logger::trace);
+    }
+
+    private static final String DEFAULT_LOG_STRING = "  %s: (%s)";
+
+    private static final List<Level> LEVELS = Arrays.asList(Level.INFO, Level.ERROR, Level.WARN);
 
     private String logStringVariable = "%s";
 
@@ -35,6 +46,8 @@ public class Summary implements Mergeable<Summary>
     private int maxMessagesKept = 20;
 
     private Map<Level, String> logStringMap = new TreeMap<>();
+    private Map<Level, String> levelHeaderMap = new TreeMap<>();
+    private List<Level> levelLogOrder = LEVELS;
 
     /**
      * Constructor.
@@ -62,6 +75,8 @@ public class Summary implements Mergeable<Summary>
     public Summary insertionOrdered()
     {
         LEVELS.forEach(key -> this.messageCountMap.put(key, new LinkedHashMap<>()));
+        this.levelHeaderMap.put(Level.INFO, "Summary");
+        this.levelHeaderMap.put(Level.ERROR, "Errors/Warnings (# of times encountered)");
         return this;
     }
 
@@ -123,6 +138,23 @@ public class Summary implements Mergeable<Summary>
     }
 
     /**
+     * Sets the header string to log before entries of the given level. If either argument is null, the current
+     * entry is removed, and no header is logged.
+     * @param level the level this header belongs to
+     * @param headerString the header string to log
+     * @return this object
+     */
+    public Summary setLogLevelHeader(Level level, String headerString)
+    {
+        if (level == null || headerString == null) {
+            this.levelHeaderMap.remove(level);
+        } else {
+            this.levelHeaderMap.put(level, headerString);
+        }
+        return this;
+    }
+
+    /**
      * Setter for logStringVariable.
      *
      * @param logStringVariable logStringVariable to set
@@ -133,6 +165,18 @@ public class Summary implements Mergeable<Summary>
         this.logStringVariable = logStringVariable;
         this.logStringMap.entrySet().forEach(entry ->
             this.logStringMap.put(entry.getKey(), getLogFormattingString(entry.getValue(), this.logStringVariable)));
+        return this;
+    }
+
+    /**
+     * Setter for levelLogOrder.
+     *
+     * @param levelLogOrder levelLogOrder to set
+     * @return this object
+     */
+    public Summary setLevelLogOrder(List<Level> levelLogOrder)
+    {
+        this.levelLogOrder = levelLogOrder;
         return this;
     }
 
@@ -220,36 +264,41 @@ public class Summary implements Mergeable<Summary>
     }
 
     /**
+     * Logs this object's messages (of the given level) with the given Logger.
+     * @param level the level of the messages to log
+     * @param logger the Logger to use
+     * @return this object
+     */
+    public Summary log(Level level, Logger logger)
+    {
+        Map<String, Long> messageMap = this.messageCountMap.get(level);
+        LoggerMethod loggerMethod = LOGGER_METHOD.get(level);
+
+        String header = this.levelHeaderMap.get(level);
+
+        if (header != null) {
+            logger.info(header);
+        }
+
+        if (messageMap.size() > 0) {
+            for (Map.Entry<String, Long> entry : messageMap.entrySet()) {
+                loggerMethod.log(logger, this.logStringMap.get(level), entry.getKey(), entry.getValue());
+            }
+        }
+
+        return this;
+    }
+
+    /**
      * Logs this object with the given Logger.
      * @param logger the Logger to use
      * @return this object
      */
     public Summary log(Logger logger)
     {
-        Map<String, Long> error = this.messageCountMap.get(Level.ERROR);
-        if (error.size() > 0) {
-            logger.info("The following errors were encountered (# of times)");
-            for (Map.Entry<String, Long> entry : error.entrySet()) {
-                logger.error(this.logStringMap.get(Level.ERROR), entry.getKey(), entry.getValue());
-            }
+        if (this.levelLogOrder != null) {
+            this.levelLogOrder.forEach(level -> this.log(level, logger));
         }
-
-        Map<String, Long> warn = this.messageCountMap.get(Level.WARN);
-        if (warn.size() > 0) {
-            logger.info("The following warnings were encountered (# of times)");
-            for (Map.Entry<String, Long> entry : warn.entrySet()) {
-                logger.warn(this.logStringMap.get(Level.WARN), entry.getKey(), entry.getValue());
-            }
-        }
-
-        Map<String, Long> info = this.messageCountMap.get(Level.INFO);
-
-        if (info.size() > 0) {
-            for (Map.Entry<String, Long> entry : info.entrySet()) {
-                logger.info(this.logStringMap.get(Level.INFO), entry.getKey(), entry.getValue());
-            }
-        }
-
         return this;
     }
 
@@ -305,5 +354,11 @@ public class Summary implements Mergeable<Summary>
         }
 
         return this;
+    }
+
+    @FunctionalInterface
+    private interface LoggerMethod
+    {
+        void log(Logger logger, String message, Object o1, Object o2);
     }
 }
