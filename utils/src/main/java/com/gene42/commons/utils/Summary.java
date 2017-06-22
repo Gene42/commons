@@ -8,11 +8,16 @@
 package com.gene42.commons.utils;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+
+import javax.annotation.Nonnull;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -42,7 +47,7 @@ public class Summary implements Mergeable<Summary>
     private String logStringVariable = "%s";
 
     private String name;
-    private Map<Level, Map<String, Long>> messageCountMap = new TreeMap<>();
+    private Map<Level, Map<SummaryEntry, Long>> messageCountMap = new TreeMap<>();
     private int maxMessagesKept = 20;
 
     private Map<Level, String> logStringMap = new TreeMap<>();
@@ -185,7 +190,7 @@ public class Summary implements Mergeable<Summary>
      * @param type the type of message
      * @return the messageCountMap for that type
      */
-    public Map<String, Long> getMessageCountMap(Level type)
+    public Map<SummaryEntry, Long> getMessageCountMap(Level type)
     {
         return this.messageCountMap.get(type);
     }
@@ -201,11 +206,10 @@ public class Summary implements Mergeable<Summary>
 
         this.maxMessagesKept += other.maxMessagesKept;
 
-        for (Map.Entry<Level, Map<String, Long>> otherEntry : other.messageCountMap.entrySet()) {
-
-            for (Map.Entry<String, Long> otherMapEntry : otherEntry.getValue().entrySet()) {
+        for (Map.Entry<Level, Map<SummaryEntry, Long>> otherEntry : other.messageCountMap.entrySet()) {
+            for (Map.Entry<SummaryEntry, Long> otherMapEntry : otherEntry.getValue().entrySet()) {
                 this.incrementMessageCount(
-                    otherEntry.getKey(), otherMapEntry.getKey(), otherMapEntry.getValue(), false);
+                    otherEntry.getKey(), otherMapEntry.getKey(), otherMapEntry.getValue());
             }
         }
 
@@ -238,7 +242,7 @@ public class Summary implements Mergeable<Summary>
      */
     public Summary info(String message, long amount)
     {
-        return this.incrementMessageCount(Level.INFO, message, amount, true);
+        return this.incrementMessageCount(Level.INFO, new SummaryEntry(message, this.name), amount);
     }
 
     /**
@@ -249,7 +253,7 @@ public class Summary implements Mergeable<Summary>
      */
     public Summary warn(String message)
     {
-        return this.incrementMessageCount(Level.WARN, message, 1, true);
+        return this.incrementMessageCount(Level.WARN, new SummaryEntry(message, this.name), 1);
     }
 
     /**
@@ -260,7 +264,7 @@ public class Summary implements Mergeable<Summary>
      */
     public Summary error(String message)
     {
-        return this.incrementMessageCount(Level.ERROR, message, 1, true);
+        return this.incrementMessageCount(Level.ERROR, new SummaryEntry(message, this.name), 1);
     }
 
     /**
@@ -271,22 +275,7 @@ public class Summary implements Mergeable<Summary>
      */
     public Summary log(Level level, Logger logger)
     {
-        Map<String, Long> messageMap = this.messageCountMap.get(level);
-        LoggerMethod loggerMethod = LOGGER_METHOD.get(level);
-
-        String header = this.levelHeaderMap.get(level);
-
-        if (header != null) {
-            logger.info(header);
-        }
-
-        if (messageMap.size() > 0) {
-            for (Map.Entry<String, Long> entry : messageMap.entrySet()) {
-                loggerMethod.log(logger, this.logStringMap.get(level), entry.getKey(), entry.getValue());
-            }
-        }
-
-        return this;
+        return log(level, logger, null);
     }
 
     /**
@@ -297,7 +286,12 @@ public class Summary implements Mergeable<Summary>
     public Summary log(Logger logger)
     {
         if (this.levelLogOrder != null) {
-            this.levelLogOrder.forEach(level -> this.log(level, logger));
+            List<SummaryEntry> allSummaryEntries = new LinkedList<>();
+            this.messageCountMap.values().forEach(map -> allSummaryEntries.addAll(map.keySet()));
+
+            SummaryEntry max = Collections.max(allSummaryEntries, Comparator.comparing(SummaryEntry::getNameLength));
+
+            this.levelLogOrder.forEach(level -> this.log(level, logger, max.getNameLength()));
         }
         return this;
     }
@@ -316,6 +310,29 @@ public class Summary implements Mergeable<Summary>
         summary.log(logger);
     }
 
+
+    private Summary log(Level level, Logger logger, Integer maxNameLength)
+    {
+        Map<SummaryEntry, Long> messageMap = this.messageCountMap.get(level);
+        LoggerMethod loggerMethod = LOGGER_METHOD.get(level);
+
+        String header = this.levelHeaderMap.get(level);
+
+        if (header != null) {
+            logger.info(header);
+        }
+
+        if (messageMap.size() > 0) {
+            for (Map.Entry<SummaryEntry, Long> entry : messageMap.entrySet()) {
+                loggerMethod.log(
+                    logger, this.logStringMap.get(level), entry.getKey().toString(maxNameLength), entry.getValue()
+                );
+            }
+        }
+
+        return this;
+    }
+
     private static String getLogFormattingString(String formattingString, String logStringVariable)
     {
         if (formattingString == null) {
@@ -328,29 +345,20 @@ public class Summary implements Mergeable<Summary>
     /**
      * Increments the value of the given error key by the given amount. If it is not initialized it initializes the
      * key to the amount, as long as the number of keys in the map is less then the max allowed.
-     * @param key the key of the value to increment
+     * @param summaryEntry the key of the value to increment
      * @param amount the amount to increment by
-     * @param appendName flag for whether or not to append the name of this Summary to the key
      * @return this object
      */
-    private Summary incrementMessageCount(Level type, String key, long amount, boolean appendName)
+    private Summary incrementMessageCount(Level type, SummaryEntry summaryEntry, long amount)
     {
-        Map<String, Long> map = this.messageCountMap.get(type);
-
-        String internalKey;
-        if (appendName && this.name != null) {
-            internalKey = this.name + " - " + key;
-        } else {
-            internalKey = key;
-        }
-
-        Long currentCount = map.get(internalKey);
+        Map<SummaryEntry, Long> map = this.messageCountMap.get(type);
+        Long currentCount = map.get(summaryEntry);
         if (currentCount == null) {
             if (map.size() < this.maxMessagesKept) {
-                map.put(internalKey, amount);
+                map.put(summaryEntry, amount);
             }
         } else {
-            map.put(internalKey, currentCount + amount);
+            map.put(summaryEntry, currentCount + amount);
         }
 
         return this;
@@ -360,5 +368,79 @@ public class Summary implements Mergeable<Summary>
     private interface LoggerMethod
     {
         void log(Logger logger, String message, Object o1, Object o2);
+    }
+
+    private static class SummaryEntry implements Comparable<SummaryEntry>
+    {
+        private final String key;
+        private final String message;
+        private final String name;
+
+        SummaryEntry(String message, String name)
+        {
+            this.message = message;
+            this.name = name;
+            if (name == null) {
+                this.key = message;
+            } else {
+                this.key = name + message;
+            }
+        }
+
+        /**
+         * Getter for message.
+         *
+         * @return message
+         */
+        public String getMessage()
+        {
+            return this.message;
+        }
+
+        /**
+         * Getter for name.
+         *
+         * @return name
+         */
+        public String getName()
+        {
+            return this.name;
+        }
+
+        public int getNameLength()
+        {
+            if (this.name == null) {
+                return 0;
+            } else {
+                return this.name.length();
+            }
+        }
+
+        public String toString(Integer maxNameLength)
+        {
+            if (this.name == null || maxNameLength == null) {
+                return this.message;
+            } else {
+                return StringUtils.leftPad(this.name, maxNameLength) + " - " + this.message;
+            }
+        }
+
+        @Override
+        public int hashCode()
+        {
+            return this.key.hashCode();
+        }
+
+        @Override
+        public boolean equals(Object other)
+        {
+            return other instanceof SummaryEntry && this.key.equals(((SummaryEntry) other).key);
+        }
+
+        @Override
+        public int compareTo(@Nonnull SummaryEntry summaryEntry)
+        {
+            return this.key.compareTo(summaryEntry.key);
+        }
     }
 }

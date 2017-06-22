@@ -10,7 +10,6 @@ package com.gene42.commons.utils;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.event.Level;
 
 /**
  * Test class for Summary.
@@ -31,8 +30,8 @@ public class SummaryTest
     @Test
     public void checkRow() throws Exception
     {
-        Summary variants = new Summary("  Validation").sortedByKey().setMaxMessagesKept(20);
-        Summary columns = new Summary("     Parsing").insertionOrdered().setMaxMessagesKept(200);
+        Summary variants = new Summary("Validation").sortedByKey().setMaxMessagesKept(20);
+        Summary columns = new Summary("Parsing").insertionOrdered().setMaxMessagesKept(200);
 
 
         variants.error(SKIP_LINE);
@@ -45,8 +44,7 @@ public class SummaryTest
 
         variants.merge(columns);
 
-        Summary finalSummary = new Summary().insertionOrdered().setLogStringVariable("{}")
-            .setLogFormattingString(Level.INFO, "  {}: ({})");
+        Summary finalSummary = new Summary().insertionOrdered().setLogStringVariable("{}");
         finalSummary.info("Number of variants parsed", 2);
         finalSummary.merge(variants);
         finalSummary.log(LOGGER);
