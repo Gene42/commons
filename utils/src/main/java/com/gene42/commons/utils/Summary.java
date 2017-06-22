@@ -226,13 +226,19 @@ public class Summary implements Mergeable<Summary>
     }
 
     /**
-     * Returns the message map of a specific type.
+     * Returns the count for a message of a specific type.
      * @param type the type of message
+     * @param message the message to search for
      * @return the messageCountMap for that type
      */
-    public Map<SummaryEntry, Long> getMessageCountMap(Level type)
+    public Long getMessageCount(Level type, String message)
     {
-        return this.messageCountMap.get(type);
+        Map<SummaryEntry, Long> map = this.messageCountMap.get(type);
+        if (map == null) {
+            return null;
+        }
+
+        return map.get(new SummaryEntry(message, this.name));
     }
 
     @Override
@@ -423,7 +429,8 @@ public class Summary implements Mergeable<Summary>
 
     private static class SummaryEntry implements Comparable<SummaryEntry>
     {
-        private final String key;
+        public static final String NAME_MESSAGE_DELIMITER = " - ";
+
         private final String message;
         private final String name;
 
@@ -431,11 +438,6 @@ public class Summary implements Mergeable<Summary>
         {
             this.message = message;
             this.name = name;
-            if (name == null) {
-                this.key = message;
-            } else {
-                this.key = name + message;
-            }
         }
 
         /**
@@ -473,9 +475,10 @@ public class Summary implements Mergeable<Summary>
                 return this.message;
             } else {
                 if (maxNameLength == null) {
-                    return this.name + " - " + this.message;
+                    return this.name + NAME_MESSAGE_DELIMITER + this.message;
                 } else {
-                    return StringUtils.leftPad(this.name, maxNameLength, padChar) + " - " + this.message;
+                    return StringUtils.leftPad(this.name, maxNameLength, padChar)
+                        + NAME_MESSAGE_DELIMITER + this.message;
                 }
             }
         }
@@ -483,19 +486,19 @@ public class Summary implements Mergeable<Summary>
         @Override
         public int hashCode()
         {
-            return this.key.hashCode();
+            return this.message.hashCode();
         }
 
         @Override
         public boolean equals(Object other)
         {
-            return other instanceof SummaryEntry && this.key.equals(((SummaryEntry) other).key);
+            return other instanceof SummaryEntry && this.message.equals(((SummaryEntry) other).message);
         }
 
         @Override
         public int compareTo(@Nonnull SummaryEntry summaryEntry)
         {
-            return this.key.compareTo(summaryEntry.key);
+            return this.message.compareTo(summaryEntry.message);
         }
     }
 }
