@@ -40,7 +40,7 @@ public class Summary implements Mergeable<Summary>
         LOGGER_METHOD.put(Level.TRACE, Logger::trace);
     }
 
-    private static final String DEFAULT_LOG_STRING = "  %s: (%s)";
+    private static final String DEFAULT_LOG_STRING = "%s: (%s)";
 
     private static final List<Level> LEVELS = Arrays.asList(Level.INFO, Level.ERROR, Level.WARN);
 
@@ -53,6 +53,9 @@ public class Summary implements Mergeable<Summary>
     private Map<Level, String> logStringMap = new TreeMap<>();
     private Map<Level, String> levelHeaderMap = new TreeMap<>();
     private List<Level> levelLogOrder = LEVELS;
+    private char padChar = ' ';
+    private int leftPaddingSize = 2;
+    private boolean alignByName = true;
 
     /**
      * Constructor.
@@ -60,6 +63,9 @@ public class Summary implements Mergeable<Summary>
     public Summary()
     {
         LEVELS.forEach(level -> this.logStringMap.put(level, getLogFormattingString(null, this.logStringVariable)));
+        this.levelHeaderMap.put(Level.INFO, "Summary");
+        this.levelHeaderMap.put(Level.ERROR, "Errors/Warnings (# of times encountered)");
+        this.insertionOrdered();
     }
 
     /**
@@ -80,8 +86,6 @@ public class Summary implements Mergeable<Summary>
     public Summary insertionOrdered()
     {
         LEVELS.forEach(key -> this.messageCountMap.put(key, new LinkedHashMap<>()));
-        this.levelHeaderMap.put(Level.INFO, "Summary");
-        this.levelHeaderMap.put(Level.ERROR, "Errors/Warnings (# of times encountered)");
         return this;
     }
 
@@ -114,6 +118,30 @@ public class Summary implements Mergeable<Summary>
     public Summary setMaxMessagesKept(int maxMessagesKept)
     {
         this.maxMessagesKept = maxMessagesKept;
+        return this;
+    }
+
+    /**
+     * Setter for leftPaddingSize.
+     *
+     * @param leftPaddingSize the value to set
+     * @return this object
+     */
+    public Summary setLeftPaddingSize(int leftPaddingSize)
+    {
+        this.leftPaddingSize = leftPaddingSize;
+        return this;
+    }
+
+    /**
+     * Setter for padChar.
+     *
+     * @param padChar the value to set
+     * @return this object
+     */
+    public Summary setPadChar(char padChar)
+    {
+        this.padChar = padChar;
         return this;
     }
 
@@ -160,6 +188,18 @@ public class Summary implements Mergeable<Summary>
     }
 
     /**
+     * Setter for alignByName.
+     *
+     * @param alignByName the value to set
+     * @return this object
+     */
+    public Summary setAlignByName(boolean alignByName)
+    {
+        this.alignByName = alignByName;
+        return this;
+    }
+
+    /**
      * Setter for logStringVariable.
      *
      * @param logStringVariable logStringVariable to set
@@ -168,8 +208,8 @@ public class Summary implements Mergeable<Summary>
     public Summary setLogStringVariable(String logStringVariable)
     {
         this.logStringVariable = logStringVariable;
-        this.logStringMap.entrySet().forEach(entry ->
-            this.logStringMap.put(entry.getKey(), getLogFormattingString(entry.getValue(), this.logStringVariable)));
+        this.logStringMap.forEach((key, value) ->
+            this.logStringMap.put(key, getLogFormattingString(value, this.logStringVariable)));
         return this;
     }
 
@@ -289,9 +329,17 @@ public class Summary implements Mergeable<Summary>
             List<SummaryEntry> allSummaryEntries = new LinkedList<>();
             this.messageCountMap.values().forEach(map -> allSummaryEntries.addAll(map.keySet()));
 
-            SummaryEntry max = Collections.max(allSummaryEntries, Comparator.comparing(SummaryEntry::getNameLength));
+            final Integer namePaddingSize;
+            if (this.alignByName) {
+                SummaryEntry max =
+                    Collections.max(allSummaryEntries, Comparator.comparing(SummaryEntry::getNameLength));
+                namePaddingSize = max.getNameLength();
+            } else {
+                namePaddingSize = null;
+            }
 
-            this.levelLogOrder.forEach(level -> this.log(level, logger, max.getNameLength()));
+
+            this.levelLogOrder.forEach(level -> this.log(level, logger, namePaddingSize));
         }
         return this;
     }
@@ -325,7 +373,10 @@ public class Summary implements Mergeable<Summary>
         if (messageMap.size() > 0) {
             for (Map.Entry<SummaryEntry, Long> entry : messageMap.entrySet()) {
                 loggerMethod.log(
-                    logger, this.logStringMap.get(level), entry.getKey().toString(maxNameLength), entry.getValue()
+                    logger,
+                     StringUtils.repeat(this.padChar, this.leftPaddingSize) + this.logStringMap.get(level),
+                    entry.getKey().toString(maxNameLength, this.padChar),
+                    entry.getValue()
                 );
             }
         }
@@ -407,7 +458,7 @@ public class Summary implements Mergeable<Summary>
             return this.name;
         }
 
-        public int getNameLength()
+        int getNameLength()
         {
             if (this.name == null) {
                 return 0;
@@ -416,12 +467,16 @@ public class Summary implements Mergeable<Summary>
             }
         }
 
-        public String toString(Integer maxNameLength)
+        public String toString(Integer maxNameLength, char padChar)
         {
-            if (this.name == null || maxNameLength == null) {
+            if (this.name == null) {
                 return this.message;
             } else {
-                return StringUtils.leftPad(this.name, maxNameLength) + " - " + this.message;
+                if (maxNameLength == null) {
+                    return this.name + " - " + this.message;
+                } else {
+                    return StringUtils.leftPad(this.name, maxNameLength, padChar) + " - " + this.message;
+                }
             }
         }
 
