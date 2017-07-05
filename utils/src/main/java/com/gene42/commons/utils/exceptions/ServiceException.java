@@ -15,6 +15,7 @@ package com.gene42.commons.utils.exceptions;
 public class ServiceException extends Exception
 {
     private final Status status;
+    private final int code;
 
     /**
      * Constructor. The Status is set to Status.INTERNAL_EXCEPTION.
@@ -50,6 +51,18 @@ public class ServiceException extends Exception
     {
         super();
         this.status = status;
+        this.code = -1;
+    }
+
+    /**
+     * Constructor.
+     * @param code the Status to set
+     */
+    public ServiceException(int code)
+    {
+        super();
+        this.code = code;
+        this.status = Status.INTERNAL_EXCEPTION;
     }
 
     /**
@@ -61,6 +74,19 @@ public class ServiceException extends Exception
     {
         super(message);
         this.status = status;
+        this.code = -1;
+    }
+
+    /**
+     * Constructor.
+     * @param code the Status to set
+     * @param message the message to set
+     */
+    public ServiceException(int code, String message)
+    {
+        super(message);
+        this.code = code;
+        this.status = Status.INTERNAL_EXCEPTION;
     }
 
     /**
@@ -73,6 +99,20 @@ public class ServiceException extends Exception
     {
         super(message, e);
         this.status = status;
+        this.code = -1;
+    }
+
+    /**
+     * Constructor.
+     * @param code the Status to set
+     * @param message the message to set
+     * @param e Throwable to wrap
+     */
+    public ServiceException(int code, String message, Throwable e)
+    {
+        super(message, e);
+        this.code = code;
+        this.status = Status.INTERNAL_EXCEPTION;
     }
 
     /**
@@ -84,6 +124,19 @@ public class ServiceException extends Exception
     {
         super(e.getMessage(), e);
         this.status = status;
+        this.code = -1;
+    }
+
+    /**
+     * Constructor.
+     * @param code the Status to set
+     * @param e Throwable to wrap
+     */
+    public ServiceException(int code, Throwable e)
+    {
+        super(e.getMessage(), e);
+        this.code = code;
+        this.status = Status.INTERNAL_EXCEPTION;
     }
 
     /**
