@@ -77,6 +77,10 @@ public final class WebUtils
      */
     public static Response getErrorResponse(ServiceException e, Logger logger)
     {
+        if (e.getCode() != null && e.getCode() >= 400 && e.getCode() < 600) {
+            return Response.status(e.getCode()).entity(e.getMessage()).build();
+        }
+
         if (e.getStatus() == null) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
         }
