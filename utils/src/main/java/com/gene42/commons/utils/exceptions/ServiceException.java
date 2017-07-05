@@ -14,8 +14,10 @@ package com.gene42.commons.utils.exceptions;
  */
 public class ServiceException extends Exception
 {
+    private static final Integer DEFAULT_CODE = null;
+
     private final Status status;
-    private final int code;
+    private final Integer code;
 
     /**
      * Constructor. The Status is set to Status.INTERNAL_EXCEPTION.
@@ -51,7 +53,7 @@ public class ServiceException extends Exception
     {
         super();
         this.status = status;
-        this.code = -1;
+        this.code = DEFAULT_CODE;
     }
 
     /**
@@ -74,7 +76,7 @@ public class ServiceException extends Exception
     {
         super(message);
         this.status = status;
-        this.code = -1;
+        this.code = DEFAULT_CODE;
     }
 
     /**
@@ -99,7 +101,7 @@ public class ServiceException extends Exception
     {
         super(message, e);
         this.status = status;
-        this.code = -1;
+        this.code = DEFAULT_CODE;
     }
 
     /**
@@ -124,7 +126,7 @@ public class ServiceException extends Exception
     {
         super(e.getMessage(), e);
         this.status = status;
-        this.code = -1;
+        this.code = DEFAULT_CODE;
     }
 
     /**
@@ -158,6 +160,16 @@ public class ServiceException extends Exception
     public Status getStatus()
     {
         return this.status;
+    }
+
+    /**
+     * Getter for code.
+     *
+     * @return code
+     */
+    public Integer getCode()
+    {
+        return this.code;
     }
 
     /**
