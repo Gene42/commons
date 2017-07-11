@@ -26,10 +26,10 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Provider;
 import javax.inject.Singleton;
-import javax.xml.rpc.ServiceException;
 
 import org.apache.commons.collections.CollectionUtils;
 
+import com.gene42.commons.utils.exceptions.ServiceException;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
