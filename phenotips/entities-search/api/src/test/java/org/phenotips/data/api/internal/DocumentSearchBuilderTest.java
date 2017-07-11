@@ -57,7 +57,6 @@ public class DocumentSearchBuilderTest
     public void tearDown() {
     }
 
-
     @Test
     public void test1() throws Exception
     {
@@ -66,15 +65,13 @@ public class DocumentSearchBuilderTest
         String value = "haha";
 
         query.newNumberFilter("identifier").setMinValue(0);
-        query.newStringFilter("visibility").setSpaceAndClass("PhenoTips.VisibilityClass")
-            .setValues(Arrays.asList("private", "public", "open")).back()
-            .newObjectFilter().setSpaceAndClass("PhenoTips.SourceFileClass").back()
-
+        query.newObjectFilter().setSpaceAndClass("PhenoTips.SourceFileClass").back()
             .newExpression().setJoinModeToOr()
             .newStringFilter("first_name").setValue(value).back()
             .newStringFilter("last_name").setValue(value).back()
             .newStringFilter("fileName").setValue(value).setSpaceAndClass("PhenoTips.SourceFileClass").back()
             .back()
+            .onlyForUser("xwiki:Xwiki.Bob", Arrays.asList("xwiki:Groups.Administrators"))
         .setSortOrder("first_name", "desc");
 
         System.out.println(query.build().toString(4));

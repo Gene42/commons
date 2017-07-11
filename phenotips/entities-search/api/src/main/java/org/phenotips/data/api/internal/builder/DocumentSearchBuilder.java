@@ -11,7 +11,9 @@ import org.phenotips.data.api.EntitySearch;
 import org.phenotips.data.api.internal.DocumentQuery;
 import org.phenotips.data.api.internal.SpaceAndClass;
 import org.phenotips.data.api.internal.filter.OrderFilter;
+import org.phenotips.data.api.internal.filter.StringFilter;
 
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -196,6 +198,36 @@ public class DocumentSearchBuilder implements Builder<JSONObject>
                 this.setSortDesc(propertyName);
             }
         }
+        return this;
+    }
+
+    /**
+     * Adds an inner query which checks for ownership (user), visibility (public, open) and collaborators
+     * (both user and groups the user belongs to). Should be used on non Admin users.
+     * They are checked with an OR operator, so only one of them is needed to match.
+     *
+     * @param fullUserName the full user name to use for checking ownership and collaboration status
+     *                     ie: xwiki:XWiki.TestUser
+     * @param fullUserGroupNames the full names of all groups the user with the given name belongs to
+     *                           ie: xwiki:Groups.TestGroup
+     * @return this object
+     */
+    public DocumentSearchBuilder onlyForUser(String fullUserName, List<String> fullUserGroupNames)
+    {
+        this.newSubQuery(this.docSpaceAndClass)
+            .setJoinModeToOr()
+            .newStringFilter("owner")
+                .setMatch(StringFilter.MATCH_EXACT)
+                .setSpaceAndClass("PhenoTips.OwnerClass")
+                .setValue(fullUserName).back()
+            .newStringFilter("visibility")
+                .setSpaceAndClass("PhenoTips.VisibilityClass")
+                .setValues(Arrays.asList("public", "open")).back()
+            .newStringFilter("collaborator")
+                .setMatch(StringFilter.MATCH_EXACT)
+                .setSpaceAndClass("PhenoTips.CollaboratorClass")
+                .setValue(fullUserName)
+                .addValues(fullUserGroupNames).back();
         return this;
     }
 

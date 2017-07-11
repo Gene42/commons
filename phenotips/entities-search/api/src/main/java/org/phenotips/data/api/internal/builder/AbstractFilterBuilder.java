@@ -11,7 +11,6 @@ import org.phenotips.data.api.internal.PropertyName;
 import org.phenotips.data.api.internal.SpaceAndClass;
 import org.phenotips.data.api.internal.filter.AbstractFilter;
 
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
@@ -104,7 +103,9 @@ public abstract class AbstractFilterBuilder<T> implements Builder<JSONObject>
      */
     public AbstractFilterBuilder<T> addValues(List<T> values)
     {
-        this.values.addAll(values);
+        if (CollectionUtils.isNotEmpty(values)) {
+            this.values.addAll(values);
+        }
         return this;
     }
 
@@ -128,7 +129,11 @@ public abstract class AbstractFilterBuilder<T> implements Builder<JSONObject>
      */
     public AbstractFilterBuilder<T> setValue(T value)
     {
-        return this.setValues(Collections.singletonList(value));
+        if (CollectionUtils.isNotEmpty(this.values)) {
+            this.values = new LinkedList<>();
+        }
+
+        return this.addValue(value);
     }
 
     /**

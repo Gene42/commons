@@ -65,6 +65,18 @@
       <artifactId>xwiki-platform-bridge</artifactId>
       <version>${xwiki.version}</version>
     </dependency>
+
+    <dependency>
+      <groupId>org.phenotips</groupId>
+      <artifactId>phenotips-authorization</artifactId>
+      <version>${phenotips.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>${phenotips.groupId}</groupId>
+      <artifactId>patient-data-api</artifactId>
+      <version>${phenotips.version}</version>
+    </dependency>
   </dependencies>
 
 </project>
