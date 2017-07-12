@@ -214,7 +214,7 @@ public class DocumentSearchBuilder implements Builder<JSONObject>
      */
     public DocumentSearchBuilder onlyForUser(String fullUserName, List<String> fullUserGroupNames)
     {
-        this.newSubQuery(this.docSpaceAndClass)
+        this.newExpression()
             .setJoinModeToOr()
             .newStringFilter("owner")
                 .setMatch(StringFilter.MATCH_EXACT)
