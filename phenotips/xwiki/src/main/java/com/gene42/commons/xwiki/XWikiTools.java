@@ -56,7 +56,7 @@ public final class XWikiTools
     private static final String ADMINISTRATORS_SUFFIX = " Administrators";
 
     @Inject
-    private UserManager users;
+    private UserManager userManager;
 
     @Inject
     @Named("default")
@@ -74,7 +74,17 @@ public final class XWikiTools
      */
     public boolean isCurrentUserAdmin()
     {
-        return isUserAdmin(this.users.getCurrentUser());
+        return isUserAdmin(this.userManager.getCurrentUser());
+    }
+
+    /**
+     * Getter for userManager.
+     *
+     * @return userManager
+     */
+    public UserManager getUserManager()
+    {
+        return this.userManager;
     }
 
     /**

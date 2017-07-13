@@ -19,7 +19,6 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
@@ -109,7 +108,10 @@ public class XWikiToolsTest
         this.groupService = mock(XWikiGroupService.class);
         when(this.wiki.getGroupService(any(XWikiContext.class))).thenReturn(this.groupService);
         when(this.context.getWiki()).thenReturn(this.wiki);
-        when(this.contextProvider.get()).thenReturn(this.context);
+
+        Provider<XWikiContext> provider = this.mocker.getInstance(XWikiContext.TYPE_PROVIDER);
+
+        when(provider.get()).thenReturn(this.context);
 
         TestUser.MAP.clear();
         Group.MAP.clear();
@@ -122,7 +124,7 @@ public class XWikiToolsTest
     public void tearDown() {
     }
 
-    @Ignore
+    //@Ignore
     @Test
     public void test1() throws Exception
     {
@@ -130,6 +132,9 @@ public class XWikiToolsTest
         TestUser user = TestUser.createUser("Bob");
 
         DocumentReference userDoc = new DocumentReference("xwiki", "XWiki", "Bob");
+
+        Group.addGroup("GroupA");
+        TestUser.addToGroup("Bob", "GroupA");
 
         when(this.groupService.getAllGroupsReferencesForMember(userDoc, 1000, 0, this.context)).thenReturn(TestUser.getDocRefs(user));
 
@@ -158,7 +163,7 @@ public class XWikiToolsTest
         static Collection<DocumentReference> getDocRefs(TestUser user)
         {
             Collection<DocumentReference> result = new LinkedList<>();
-            for (Group group : MAP.values()) {
+            for (Group group : Group.MAP.values()) {
                 if (doesGroupHaveUser(group, user)) {
                     DocumentReference docRef = new DocumentReference("xwiki", "Groups", group.name);
                     result.add(docRef);
@@ -222,6 +227,13 @@ public class XWikiToolsTest
 
         String name;
         Set<String> children = new HashSet<>();
+
+        static void addGroup(String name)
+        {
+            Group group = new Group();
+            group.name = name;
+            MAP.put(name, group);
+        }
 
         static void addToGroup(String name, String nameOfGroupToAddTo)
         {
