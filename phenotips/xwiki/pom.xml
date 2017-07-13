@@ -19,6 +19,10 @@
   <artifactId>gene42-commons-xwiki</artifactId>
   <name>Gene42 - Commons - PhenoTips - XWiki</name>
 
+  <properties>
+    <coverage.instructionRatio>0.5</coverage.instructionRatio>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>${project.groupId}</groupId>
