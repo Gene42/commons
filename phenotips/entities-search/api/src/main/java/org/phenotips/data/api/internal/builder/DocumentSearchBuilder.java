@@ -14,6 +14,7 @@ import org.phenotips.data.api.internal.filter.OrderFilter;
 import org.phenotips.data.api.internal.filter.StringFilter;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -212,7 +213,7 @@ public class DocumentSearchBuilder implements Builder<JSONObject>
      *                           ie: xwiki:Groups.TestGroup
      * @return this object
      */
-    public DocumentSearchBuilder onlyForUser(String fullUserName, List<String> fullUserGroupNames)
+    public DocumentSearchBuilder onlyForUser(String fullUserName, Collection<String> fullUserGroupNames)
     {
         this.newExpression()
             .setJoinModeToOr()

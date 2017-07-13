@@ -11,16 +11,19 @@ import org.phenotips.Constants;
 import org.phenotips.security.authorization.AuthorizationService;
 
 import org.xwiki.component.annotation.Component;
+import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.DocumentReferenceResolver;
 import org.xwiki.model.reference.EntityReference;
 import org.xwiki.security.authorization.Right;
 import org.xwiki.users.User;
 import org.xwiki.users.UserManager;
+import org.xwiki.velocity.tools.EscapeTool;
 
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -28,12 +31,15 @@ import javax.inject.Provider;
 import javax.inject.Singleton;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import com.gene42.commons.utils.exceptions.ServiceException;
+import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
+import com.xpn.xwiki.user.api.XWikiGroupService;
 
 /**
  * Utilities for XWiki related code.
@@ -45,6 +51,10 @@ import com.xpn.xwiki.objects.BaseObject;
 @Singleton
 public final class XWikiTools
 {
+    private static final int MAX_NUM_OF_GROUPS = 1000;
+
+    private static final String ADMINISTRATORS_SUFFIX = " Administrators";
+
     @Inject
     private UserManager users;
 
@@ -88,21 +98,64 @@ public final class XWikiTools
      * @return a List of string names
      * @throws ServiceException if any error happens while retrieving the group names
      */
-    public List<String> getGroupsUserBelongsTo(User user) throws ServiceException
+    public Set<String> getGroupsUserBelongsTo(User user) throws ServiceException
     {
         try {
-            XWikiContext context = this.contextProvider.get();
-            Collection<String> groups = context.getWiki()
-                .getGroupService(context)
-                .getAllGroupsNamesForMember(user.getProfileDocument().toString(), 10000, 0, context);
 
-            if (CollectionUtils.isNotEmpty(groups)) {
-                return new ArrayList<>(groups);
-            }
+            XWikiContext context = this.contextProvider.get();
+            XWiki wiki = context.getWiki();
+            XWikiGroupService groupService = wiki.getGroupService(context);
+
+            return getGroupsRecursive(
+                user.getProfileDocument(),
+                new HashSet<>(),
+                context,
+                groupService,
+                new EscapeTool(),
+                false
+            );
         } catch (XWikiException e) {
             throw new ServiceException(e.getLocalizedMessage(), e);
         }
-        return new ArrayList<>();
+    }
+
+    private static Set<String> getGroupsRecursive(DocumentReference entity, Set<String> groupSet, XWikiContext
+        context, XWikiGroupService groupService, EscapeTool escapeTool, boolean addEntity) throws XWikiException
+    {
+        if (groupSet.size() >= MAX_NUM_OF_GROUPS) {
+            return groupSet;
+        }
+
+        String entityFullName = getSanitizedGroupName(entity.toString(), escapeTool);
+
+        if (groupSet.contains(entityFullName)) {
+            return groupSet;
+        }
+
+        if (addEntity) {
+            groupSet.add(entityFullName);
+        }
+
+        Collection<DocumentReference> groups =
+            groupService.getAllGroupsReferencesForMember(entity, MAX_NUM_OF_GROUPS, 0, context);
+
+        if (CollectionUtils.isNotEmpty(groups)) {
+            for (DocumentReference group : groups) {
+                getGroupsRecursive(group, groupSet, context, groupService, escapeTool, true);
+            }
+        }
+
+        return groupSet;
+    }
+
+    private static String getSanitizedGroupName(String groupName, EscapeTool escapeTool)
+    {
+        String entityFullName = escapeTool.sql(groupName);
+        if (StringUtils.endsWith(entityFullName, ADMINISTRATORS_SUFFIX)) {
+            return StringUtils.removeEnd(entityFullName, ADMINISTRATORS_SUFFIX);
+        } else {
+            return entityFullName;
+        }
     }
 
     /**
