@@ -17,11 +17,14 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import javax.inject.Provider;
 
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -36,8 +39,10 @@ import org.mockito.MockitoAnnotations;
 
 import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiContext;
+import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.user.api.XWikiGroupService;
 
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -52,7 +57,7 @@ public class XWikiToolsTest
     @Rule
     public TestRule watcher = new TestWatcher() {
         protected void starting(Description description) {
-            System.out.println("Running test: " + description.getMethodName());
+            System.out.println("Running : " + description.getMethodName());
         }
     };
 
@@ -60,23 +65,11 @@ public class XWikiToolsTest
     public final MockitoComponentMockingRule<XWikiTools> mocker =
         new MockitoComponentMockingRule<>(XWikiTools.class);
 
-    //@Mock
-    private XWiki wiki;
-
-    //@Mock
-    private XWikiContext context;
-
     @Mock
     private Provider<XWikiContext> contextProvider;
 
-
-
-    //@Mock
-    private XWikiGroupService groupService;
-    //private XWikiTools xWikiTools;
-
-    //@Mock
-    //private XWiki wiki;
+    private XWikiGroupService groupService = new GroupServiceStub();
+    private TestUser bob;
 
     public XWikiToolsTest() throws Exception
     {
@@ -109,19 +102,23 @@ public class XWikiToolsTest
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
 
-        this.wiki = mock(XWiki.class);
-        this.context = mock(XWikiContext.class);
+        XWiki wiki = mock(XWiki.class);
+        XWikiContext context = mock(XWikiContext.class);
 
-        this.groupService = mock(XWikiGroupService.class);
-        when(this.wiki.getGroupService(any(XWikiContext.class))).thenReturn(this.groupService);
-        when(this.context.getWiki()).thenReturn(this.wiki);
+        when(wiki.getGroupService(any(XWikiContext.class))).thenReturn(this.groupService);
+        when(context.getWiki()).thenReturn(wiki);
 
         Provider<XWikiContext> provider = this.mocker.getInstance(XWikiContext.TYPE_PROVIDER);
 
-        when(provider.get()).thenReturn(this.context);
+        when(provider.get()).thenReturn(context);
 
         TestUser.MAP.clear();
         Group.MAP.clear();
+
+        this.bob = TestUser.createUser("Bob");
+        Group.addGroup("GroupA");
+        Group.addGroup("GroupB");
+        Group.addGroup("GroupC");
     }
 
     /**
@@ -131,23 +128,76 @@ public class XWikiToolsTest
     public void tearDown() {
     }
 
-    //@Ignore
     @Test
-    public void test1() throws Exception
+    public void getGroupsUserBelongsToMultipleGroupsTest() throws Exception
     {
-        //DocumentReference var1, int var2, int var3, XWikiContext var4
-        TestUser user = TestUser.createUser("Bob");
 
-        DocumentReference userDoc = new DocumentReference("xwiki", "XWiki", "Bob");
+    }
 
-        Group.addGroup("GroupA");
+    @Test
+    public void getGroupsUserBelongsToNestedGroupsTest() throws Exception
+    {
+        Group.addGroup("GroupZ");
+        Group.addGroup("GroupY");
+        Group.addGroup("GroupM");
+        Group.addGroup("GroupN");
+        Group.addToGroup("GroupB", "GroupA");
+        Group.addToGroup("GroupB", "GroupC");
+        Group.addToGroup("GroupZ", "GroupY");
+        Group.addToGroup("GroupC", "GroupZ");
+
+        Group.addToGroup("GroupM", "GroupN");
+        Group.addToGroup("GroupM", "GroupB");
+
+        TestUser.addToGroup("Bob", "GroupB");
+
+
+        Set<String> groups = this.mocker.getComponentUnderTest().getGroupsUserBelongsTo(this.bob);
+
+        //System.out.println("result  : " + Arrays.toString(groups.toArray()));
+
+        Collection<String> expected = Arrays.asList(
+            getGroupName("GroupA"), getGroupName("GroupB"),
+            getGroupName("GroupC"), getGroupName("GroupZ"), getGroupName("GroupY"));
+
+        //System.out.println("expected: " + Arrays.toString(expected.toArray()));
+
+        assertTrue(CollectionUtils.isNotEmpty(groups));
+        assertTrue(CollectionUtils.containsAll(expected, groups));
+    }
+
+    @Test
+    public void getGroupsUserBelongsToCircularGroupsTest() throws Exception
+    {
+        Group.addToGroup("GroupB", "GroupA");
+        Group.addToGroup("GroupC", "GroupB");
+        Group.addToGroup("GroupA", "GroupC");
+
         TestUser.addToGroup("Bob", "GroupA");
 
-        when(this.groupService.getAllGroupsReferencesForMember(userDoc, 1000, 0, this.context)).thenReturn(TestUser.getDocRefs(user));
+        Collection<String> expected = Arrays.asList(
+            getGroupName("GroupA"), getGroupName("GroupB"), getGroupName("GroupC"));
 
-        Set<String> groups = this.mocker.getComponentUnderTest().getGroupsUserBelongsTo(user);
+        Set<String> groups = this.mocker.getComponentUnderTest().getGroupsUserBelongsTo(this.bob);
 
-        System.out.println(Arrays.toString(groups.toArray()));
+        //System.out.println("result  : " + Arrays.toString(groups.toArray()));
+
+        assertTrue(CollectionUtils.isNotEmpty(groups));
+        assertTrue(CollectionUtils.containsAll(expected, groups));
+    }
+
+    @Test
+    public void getGroupsUserBelongsToNoGroupsTest() throws Exception
+    {
+        Group.addToGroup("GroupB", "GroupA");
+
+        Set<String> groups = this.mocker.getComponentUnderTest().getGroupsUserBelongsTo(this.bob);
+        assertTrue(CollectionUtils.isEmpty(groups));
+    }
+
+    private static String getGroupName(String name)
+    {
+        return "xwiki:Groups." + name;
     }
 
     private static class TestUser extends Group implements User
@@ -162,16 +212,21 @@ public class XWikiToolsTest
             return user;
         }
 
-        static boolean doesGroupHaveUser(Group group, TestUser user)
+        static TestUser getUser(String name)
         {
-            return group.children.contains(user.name);
+            return MAP.get(name);
         }
 
-        static Collection<DocumentReference> getDocRefs(TestUser user)
+        static boolean doesGroupHaveUser(Group group, String userName)
+        {
+            return group.children.contains(userName);
+        }
+
+        static Collection<DocumentReference> getDocRefs(String userName)
         {
             Collection<DocumentReference> result = new LinkedList<>();
             for (Group group : Group.MAP.values()) {
-                if (doesGroupHaveUser(group, user)) {
+                if (doesGroupHaveUser(group, userName)) {
                     DocumentReference docRef = new DocumentReference("xwiki", "Groups", group.name);
                     result.add(docRef);
                 }
@@ -245,6 +300,121 @@ public class XWikiToolsTest
         static void addToGroup(String name, String nameOfGroupToAddTo)
         {
             MAP.get(nameOfGroupToAddTo).children.add(name);
+        }
+    }
+
+
+    private static class GroupServiceStub implements XWikiGroupService
+    {
+        @Override public void init(XWiki xWiki, XWikiContext xWikiContext) throws XWikiException
+        {
+
+        }
+
+        @Override public void initCache(XWikiContext xWikiContext) throws XWikiException
+        {
+
+        }
+
+        @Override public void initCache(int i, XWikiContext xWikiContext) throws XWikiException
+        {
+
+        }
+
+        @Override public void flushCache()
+        {
+
+        }
+
+        @Override public Collection<String> listGroupsForUser(String s, XWikiContext xWikiContext) throws XWikiException
+        {
+            return null;
+        }
+
+        @Override public void addUserToGroup(String s, String s1, String s2, XWikiContext xWikiContext)
+            throws XWikiException
+        {
+
+        }
+
+        @Override public void removeUserOrGroupFromAllGroups(String s, String s1, String s2, XWikiContext xWikiContext)
+            throws XWikiException
+        {
+
+        }
+
+        @Override public List<String> listMemberForGroup(String s, XWikiContext xWikiContext) throws XWikiException
+        {
+            return null;
+        }
+
+        @Override public List<String> listAllGroups(XWikiContext xWikiContext) throws XWikiException
+        {
+            return null;
+        }
+
+        @Override public List<?> getAllMatchedUsers(Object[][] objects, boolean b, int i, int i1, Object[][] objects1,
+            XWikiContext xWikiContext) throws XWikiException
+        {
+            return null;
+        }
+
+        @Override public List<?> getAllMatchedGroups(Object[][] objects, boolean b, int i, int i1, Object[][] objects1,
+            XWikiContext xWikiContext) throws XWikiException
+        {
+            return null;
+        }
+
+        @Override public int countAllMatchedUsers(Object[][] objects, XWikiContext xWikiContext) throws XWikiException
+        {
+            return 0;
+        }
+
+        @Override public int countAllMatchedGroups(Object[][] objects, XWikiContext xWikiContext) throws XWikiException
+        {
+            return 0;
+        }
+
+        @Override
+        public Collection<String> getAllGroupsNamesForMember(String s, int i, int i1, XWikiContext xWikiContext)
+            throws XWikiException
+        {
+            return null;
+        }
+
+        @Override
+        public Collection<DocumentReference> getAllGroupsReferencesForMember(DocumentReference user, int var2, int
+            var3, XWikiContext var4) throws
+            XWikiException
+        {
+            String name = user.toString();
+            String [] tokens = StringUtils.split(name, ".");
+            return TestUser.getDocRefs(tokens[1]);
+        }
+
+        @Override
+        public Collection<String> getAllMembersNamesForGroup(String s, int i, int i1, XWikiContext xWikiContext)
+            throws XWikiException
+        {
+            return null;
+        }
+
+        @Override
+        public Collection<String> getAllMatchedMembersNamesForGroup(String s, String s1, int i, int i1,
+            Boolean aBoolean,
+            XWikiContext xWikiContext) throws XWikiException
+        {
+            return null;
+        }
+
+        @Override public int countAllGroupsNamesForMember(String s, XWikiContext xWikiContext) throws XWikiException
+        {
+            return 0;
+        }
+
+        @Override public int countAllMembersNamesForGroup(String s, XWikiContext xWikiContext) throws XWikiException
+        {
+            return 0;
         }
     }
 }
