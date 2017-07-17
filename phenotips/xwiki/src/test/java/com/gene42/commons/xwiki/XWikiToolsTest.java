@@ -42,6 +42,8 @@ import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.user.api.XWikiGroupService;
 
+import net.jcip.annotations.NotThreadSafe;
+
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
@@ -52,6 +54,7 @@ import static org.mockito.Mockito.when;
  *
  * @version $Id$
  */
+@NotThreadSafe
 public class XWikiToolsTest
 {
     @Rule
@@ -112,8 +115,8 @@ public class XWikiToolsTest
 
         when(provider.get()).thenReturn(context);
 
-        TestUser.MAP.clear();
-        Group.MAP.clear();
+        TestUser.clearUsers();
+        Group.clearGroups();
 
         this.bob = TestUser.createUser("Bob");
         Group.addGroup("GroupA");
@@ -234,6 +237,12 @@ public class XWikiToolsTest
             return result;
         }
 
+        static void clearUsers()
+        {
+            MAP.values().forEach(Group::clearGroup);
+            MAP.clear();
+        }
+
         @Override
         public boolean exists()
         {
@@ -300,6 +309,18 @@ public class XWikiToolsTest
         static void addToGroup(String name, String nameOfGroupToAddTo)
         {
             MAP.get(nameOfGroupToAddTo).children.add(name);
+        }
+
+        static void clearGroup(Group group)
+        {
+            group.children.clear();
+            group.name = null;
+        }
+
+        static void clearGroups()
+        {
+            MAP.values().forEach(Group::clearGroup);
+            MAP.clear();
         }
     }
 
