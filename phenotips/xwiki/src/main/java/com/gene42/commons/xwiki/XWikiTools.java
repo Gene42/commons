@@ -103,7 +103,8 @@ public final class XWikiTools
     }
 
     /**
-     * Returns a list of groups names which the given user belongs to. A max of 10k results will be returned.
+     * Returns a list of groups names which the given user belongs to. A max of {@value XWikiTools#MAX_NUM_OF_GROUPS}
+     * results will be returned.
      * @param user the user whose groups to search for
      * @return a List of string names
      * @throws ServiceException if any error happens while retrieving the group names
