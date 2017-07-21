@@ -18,6 +18,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 
+import com.gene42.commons.utils.json.JSONTools;
 import com.xpn.xwiki.objects.PropertyInterface;
 import com.xpn.xwiki.objects.classes.BaseClass;
 
@@ -43,7 +44,7 @@ public class BooleanFilter extends AbstractFilter<Integer>
     {
         super.init(input, parent, expressionParent);
 
-        String value = SearchUtils.getValue(input, VALUES_KEY);
+        String value = JSONTools.getValue(input, VALUES_KEY);
 
         if (StringUtils.isBlank(value)) {
             return this;

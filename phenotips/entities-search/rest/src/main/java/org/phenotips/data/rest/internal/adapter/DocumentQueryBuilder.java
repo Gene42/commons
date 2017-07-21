@@ -27,6 +27,8 @@ import org.apache.commons.lang3.builder.Builder;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import com.gene42.commons.utils.json.JSONTools;
+
 /**
  * This is a builder class for a document query input object.
  *
@@ -139,7 +141,7 @@ public class DocumentQueryBuilder implements Builder<DocumentQueryBuilder>
             String sortPropName = this.orderFilter.getString(PropertyName.PROPERTY_NAME_KEY);
             if (this.filters.containsKey(sortPropName)) {
                 JSONObject filter = this.filters.get(sortPropName);
-                this.orderFilter.put(SpaceAndClass.CLASS_KEY, SearchUtils.getValue(filter, SpaceAndClass.CLASS_KEY,
+                this.orderFilter.put(SpaceAndClass.CLASS_KEY, JSONTools.getValue(filter, SpaceAndClass.CLASS_KEY,
                     this.orderFilter.getString(SpaceAndClass.CLASS_KEY)));
             }
         }

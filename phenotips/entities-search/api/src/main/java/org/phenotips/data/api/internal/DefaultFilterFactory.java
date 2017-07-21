@@ -31,6 +31,7 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.gene42.commons.utils.json.JSONTools;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.objects.PropertyInterface;
@@ -86,7 +87,7 @@ public class DefaultFilterFactory extends AbstractFilterFactory
             return null;
         }
 
-        String className = SearchUtils.getValue(input, SpaceAndClass.CLASS_KEY);
+        String className = JSONTools.getValue(input, SpaceAndClass.CLASS_KEY);
         String propertyName = input.getString(PropertyName.PROPERTY_NAME_KEY);
 
         XWikiContext context = this.contextProvider.get();

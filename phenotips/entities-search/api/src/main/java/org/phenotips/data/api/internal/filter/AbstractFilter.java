@@ -28,6 +28,7 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.gene42.commons.utils.json.JSONTools;
 import com.xpn.xwiki.objects.PropertyInterface;
 import com.xpn.xwiki.objects.classes.BaseClass;
 
@@ -143,7 +144,7 @@ public abstract class AbstractFilter<T> implements QueryElement
         if (preppedInput.has(AbstractFilter.PARENT_LEVEL_KEY)) {
             this.reference = true;
             this.parent = getParent(parent,
-                Integer.valueOf(SearchUtils.getValue(preppedInput, AbstractFilter.PARENT_LEVEL_KEY)));
+                Integer.valueOf(JSONTools.getValue(preppedInput, AbstractFilter.PARENT_LEVEL_KEY)));
         } else {
             this.parent = parent;
         }
@@ -154,7 +155,7 @@ public abstract class AbstractFilter<T> implements QueryElement
             throw new IllegalArgumentException(String.format("[%s] key not present", SpaceAndClass.CLASS_KEY));
         }
 
-        this.negate = SearchUtils.BOOLEAN_TRUE_SET.contains(SearchUtils.getValue(preppedInput, AbstractFilter.NOT_KEY));
+        this.negate = SearchUtils.BOOLEAN_TRUE_SET.contains(JSONTools.getValue(preppedInput, AbstractFilter.NOT_KEY));
 
         this.joinMode = StringUtils.lowerCase(preppedInput.optString(AbstractFilter.JOIN_MODE_KEY));
 
@@ -164,7 +165,7 @@ public abstract class AbstractFilter<T> implements QueryElement
         }
 
         this.validatesQuery = SearchUtils.BOOLEAN_TRUE_SET.contains(
-            SearchUtils.getValue(preppedInput, VALIDATES_QUERY_KEY, IterableUtils.get(SearchUtils.BOOLEAN_TRUE_SET, 0))
+            JSONTools.getValue(preppedInput, VALIDATES_QUERY_KEY, IterableUtils.get(SearchUtils.BOOLEAN_TRUE_SET, 0))
         );
 
 
@@ -703,7 +704,7 @@ public abstract class AbstractFilter<T> implements QueryElement
 
     private void handleRefValues(JSONObject input)
     {
-        for (Object refValueObj : SearchUtils.getJSONArray(input, AbstractFilter.REF_VALUES_KEY)) {
+        for (Object refValueObj : JSONTools.getJSONArray(input, AbstractFilter.REF_VALUES_KEY)) {
 
             if (!(refValueObj instanceof JSONObject)) {
                 continue;

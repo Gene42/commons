@@ -10,13 +10,13 @@ package org.phenotips.data.api.internal.filter;
 import org.phenotips.data.api.internal.DocumentQuery;
 import org.phenotips.data.api.internal.QueryBuffer;
 import org.phenotips.data.api.internal.QueryExpression;
-import org.phenotips.data.api.internal.SearchUtils;
 
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 
+import com.gene42.commons.utils.json.JSONTools;
 import com.xpn.xwiki.objects.PropertyInterface;
 import com.xpn.xwiki.objects.classes.BaseClass;
 
@@ -55,7 +55,7 @@ public class OrderFilter extends AbstractFilter<String>
     {
         super.init(input, parent, expressionParent);
 
-        this.orderDir = SearchUtils.getValue(input, VALUES_KEY, DESC);
+        this.orderDir = JSONTools.getValue(input, VALUES_KEY, DESC);
         if (!StringUtils.equals(this.orderDir, ASC) && !StringUtils.equals(this.orderDir, DESC)) {
             this.orderDir = DESC;
         }

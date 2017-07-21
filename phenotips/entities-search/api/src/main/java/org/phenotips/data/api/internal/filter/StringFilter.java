@@ -17,9 +17,9 @@ import java.util.List;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-
 import org.json.JSONObject;
 
+import com.gene42.commons.utils.json.JSONTools;
 import com.xpn.xwiki.objects.PropertyInterface;
 import com.xpn.xwiki.objects.classes.BaseClass;
 
@@ -73,9 +73,9 @@ public class StringFilter extends AbstractFilter<String>
         this.match = input.optString(StringFilter.MATCH_KEY);
 
         this.nullValue = SearchUtils.BOOLEAN_TRUE_SET.contains(
-            SearchUtils.getValue(input, StringFilter.NULL_VALUE_KEY, "false"));
+            JSONTools.getValue(input, StringFilter.NULL_VALUE_KEY, "false"));
 
-        this.setValues(SearchUtils.getValues(input, VALUES_KEY));
+        this.setValues(JSONTools.getValues(input, VALUES_KEY));
 
         if (this.nullValue) {
             this.addNullValue();

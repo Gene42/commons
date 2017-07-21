@@ -18,6 +18,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import com.gene42.commons.utils.json.JSONTools;
+
 /**
  * This class represents a queyr expression which is a block in a query surrounded by round brackets '()'. A
  * QueryExpression can hold filters, other expressions and document queries.
@@ -125,14 +127,14 @@ public class QueryExpression implements QueryElement
     public QueryExpression init(JSONObject input)
     {
 
-        this.joinMode = SearchUtils.getValue(input, QueryExpression.JOIN_MODE_KEY,
+        this.joinMode = JSONTools.getValue(input, QueryExpression.JOIN_MODE_KEY,
             QueryExpression.JOIN_MODE_DEFAULT_VALUE);
 
         if (!StringUtils.equals(this.joinMode, "and") && !StringUtils.equals(this.joinMode, "or")) {
             this.joinMode = QueryExpression.JOIN_MODE_DEFAULT_VALUE;
         }
 
-        if (SearchUtils.BOOLEAN_TRUE_SET.contains(SearchUtils.getValue(input, QueryExpression.NEGATE_KEY))) {
+        if (SearchUtils.BOOLEAN_TRUE_SET.contains(JSONTools.getValue(input, QueryExpression.NEGATE_KEY))) {
             this.not = " not ";
         } else {
             this.not = "";
@@ -232,7 +234,7 @@ public class QueryExpression implements QueryElement
             return;
         }
 
-        if (StringUtils.isBlank(SearchUtils.getValue(queryJson, EntitySearch.Keys.CLASS_KEY))) {
+        if (StringUtils.isBlank(JSONTools.getValue(queryJson, EntitySearch.Keys.CLASS_KEY))) {
             QueryExpression expr = new QueryExpression(this.parentQuery).init(queryJson);
             if (expr.isValid()) {
                 this.expressions.add(expr);

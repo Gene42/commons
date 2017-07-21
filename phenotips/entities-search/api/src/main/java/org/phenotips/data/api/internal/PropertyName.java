@@ -10,6 +10,8 @@ package org.phenotips.data.api.internal;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 
+import com.gene42.commons.utils.json.JSONTools;
+
 /**
  * This class is a container for a filter property and all its associated variables.
  *
@@ -72,7 +74,7 @@ public class PropertyName
     public PropertyName(JSONObject input, String objectType)
 
     {
-        this(SearchUtils.getValue(input, PropertyName.PROPERTY_NAME_KEY), objectType);
+        this(JSONTools.getValue(input, PropertyName.PROPERTY_NAME_KEY), objectType);
 
         this.extended = SearchUtils.BOOLEAN_TRUE_SET.contains(String.valueOf(input.opt(PropertyName.SUBTERMS_KEY)));
 

@@ -10,7 +10,6 @@ package org.phenotips.data.api.internal.filter;
 import org.phenotips.data.api.internal.DocumentQuery;
 import org.phenotips.data.api.internal.QueryBuffer;
 import org.phenotips.data.api.internal.QueryExpression;
-import org.phenotips.data.api.internal.SearchUtils;
 
 import java.util.Arrays;
 import java.util.List;
@@ -25,6 +24,7 @@ import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.json.JSONObject;
 
+import com.gene42.commons.utils.json.JSONTools;
 import com.xpn.xwiki.objects.PropertyInterface;
 import com.xpn.xwiki.objects.classes.BaseClass;
 
@@ -67,21 +67,21 @@ public class DateFilter extends AbstractFilter<DateTime>
     {
         super.init(input, parent, expressionParent);
 
-        List<String> stringValues = SearchUtils.getValues(input, VALUES_KEY);
+        List<String> stringValues = JSONTools.getValues(input, VALUES_KEY);
 
         for (String strValue : stringValues) {
             this.addValue(this.getValue(strValue));
         }
 
-        this.setMin(this.getValue(SearchUtils.getValue(input, MIN_KEY)));
-        this.setMax(this.getValue(SearchUtils.getValue(input, MAX_KEY)));
+        this.setMin(this.getValue(JSONTools.getValue(input, MIN_KEY)));
+        this.setMax(this.getValue(JSONTools.getValue(input, MAX_KEY)));
 
         if (this.getMax() != null) {
             this.setMax(this.getMax().plusDays(1));
         }
 
         if (input.has(AGE_KEY)) {
-            this.handleAge(SearchUtils.getValue(input, AGE_KEY));
+            this.handleAge(JSONTools.getValue(input, AGE_KEY));
         }
 
         return this;

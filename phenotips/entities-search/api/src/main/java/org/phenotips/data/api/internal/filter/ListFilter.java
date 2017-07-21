@@ -10,13 +10,13 @@ package org.phenotips.data.api.internal.filter;
 import org.phenotips.data.api.internal.DocumentQuery;
 import org.phenotips.data.api.internal.QueryBuffer;
 import org.phenotips.data.api.internal.QueryExpression;
-import org.phenotips.data.api.internal.SearchUtils;
 
 import java.util.List;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.json.JSONObject;
 
+import com.gene42.commons.utils.json.JSONTools;
 import com.xpn.xwiki.objects.PropertyInterface;
 import com.xpn.xwiki.objects.classes.BaseClass;
 import com.xpn.xwiki.objects.classes.ListClass;
@@ -59,7 +59,7 @@ public class ListFilter extends AbstractFilter<String>
     {
         super.init(input, parent, expressionParent);
 
-        this.setValues(SearchUtils.getValues(input, VALUES_KEY));
+        this.setValues(JSONTools.getValues(input, VALUES_KEY));
 
         return this;
     }

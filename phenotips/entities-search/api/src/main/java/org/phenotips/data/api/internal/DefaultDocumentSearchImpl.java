@@ -35,6 +35,7 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 
 import com.gene42.commons.utils.exceptions.ServiceException;
+import com.gene42.commons.utils.json.JSONTools;
 import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiContext;
 
@@ -74,7 +75,7 @@ public class DefaultDocumentSearchImpl implements EntitySearch<DocumentReference
             offset = 0;
         }
 
-        int limit = Integer.parseInt(SearchUtils.getValue(
+        int limit = Integer.parseInt(JSONTools.getValue(
             queryParameters, EntitySearch.Keys.LIMIT_KEY, DefaultDocumentSearchImpl.LIMIT_DEFAULT)
         );
 

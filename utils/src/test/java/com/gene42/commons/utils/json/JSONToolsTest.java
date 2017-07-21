@@ -5,12 +5,9 @@
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  */
-package org.phenotips.data.api.internal;
+package com.gene42.commons.utils.json;
 
-import org.xwiki.text.StringUtils;
-
-import java.util.Arrays;
-
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -18,14 +15,14 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
- * DESCRIPTION.
+ * Test class for JSONTools.
  *
  * @version $Id$
  */
-public class SearchUtilsTest
+public class JSONToolsTest
 {
     /**
      * Class set up.
@@ -60,12 +57,13 @@ public class SearchUtilsTest
     public void tearDown() {
     }
 
+
     @Test
-    public void getFirstStringTest() throws Exception
+    public void getJSONArrayTest() throws Exception
     {
-        assertEquals(StringUtils.EMPTY, SearchUtils.getFirstString(null));
-        assertEquals(StringUtils.EMPTY, SearchUtils.getFirstString(StringUtils.EMPTY));
-        assertEquals("test", SearchUtils.getFirstString(new Object [] {"test", "blah"}));
-        assertEquals("7", SearchUtils.getFirstString(Arrays.asList(7, "blah", new JSONObject())));
+        String key = "key";
+        JSONObject obj = new JSONObject();
+        JSONArray arr = JSONTools.getJSONArray(obj, key);
+        assertNotNull(arr);
     }
 }

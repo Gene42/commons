@@ -13,6 +13,8 @@ import org.phenotips.data.api.EntitySearch;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 
+import com.gene42.commons.utils.json.JSONTools;
+
 /**
  * Container for PhenoTips Space and Class.
  *
@@ -61,7 +63,7 @@ public class SpaceAndClass
      */
     public SpaceAndClass(JSONObject input)
     {
-        this(SearchUtils.getValue(input, SpaceAndClass.CLASS_KEY));
+        this(JSONTools.getValue(input, SpaceAndClass.CLASS_KEY));
     }
 
     /**
