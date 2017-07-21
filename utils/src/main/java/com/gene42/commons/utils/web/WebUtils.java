@@ -150,6 +150,19 @@ public final class WebUtils
     }
 
     /**
+     * Returns a Response object based on the given parameters.
+     * @param status the status to set
+     * @param exception the exception to grab the message from
+     * @param uri the source uri to set in the response
+     * @param param the source param to set in the response
+     * @return a Response object
+     */
+    public static Response getErrorResponse(Response.Status status, Throwable exception, String uri, String param)
+    {
+        return getErrorResponse(status, exception.getMessage(), uri, param);
+    }
+
+    /**
      * Does nothing.
      * @param e exception
      */
