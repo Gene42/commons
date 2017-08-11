@@ -23,8 +23,8 @@ import org.phenotips.security.encryption.internal.EncryptedClass;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.annotation.Nonnull;
 import javax.inject.Provider;
-import javax.validation.constraints.NotNull;
 
 import org.apache.commons.collections4.SetUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -138,12 +138,12 @@ public class DefaultFilterFactory extends AbstractFilterFactory
         return returnValue;
     }
 
-    @NotNull
+    @Nonnull
     private AbstractFilter getPropertyFilter(String propertyName, BaseClass baseClass)
     {
         PropertyInterface property = baseClass.get(propertyName);
 
-        AbstractFilter returnValue;
+        AbstractFilter returnValue = null;
 
         if (property instanceof NumberClass) {
             returnValue = new NumberFilter(property, baseClass);
@@ -165,8 +165,9 @@ public class DefaultFilterFactory extends AbstractFilterFactory
 
         } else if (isListFilter(property)) {
             returnValue = new ListFilter(property, baseClass);
+        }
 
-        } else {
+        if (returnValue == null) {
             returnValue = new StringFilter(property, baseClass);
         }
 

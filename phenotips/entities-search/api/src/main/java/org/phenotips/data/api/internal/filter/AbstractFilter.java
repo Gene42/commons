@@ -20,15 +20,13 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
-import javax.validation.constraints.NotNull;
+import javax.annotation.Nonnull;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.IterableUtils;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.gene42.commons.utils.json.JSONTools;
 import com.xpn.xwiki.objects.PropertyInterface;
@@ -75,9 +73,6 @@ public abstract class AbstractFilter<T> implements QueryElement
 
     /** Param key. */
     public static final String NOT_KEY = "negate";
-
-    /** Logger, can be used by implementing classes. */
-    public static final Logger LOGGER = LoggerFactory.getLogger(AbstractFilter.class);
 
     private static final List<String> VALUE_PROPERTY_NAMES = ListUtils.unmodifiableList(
         Arrays.asList(AbstractFilter.VALUES_KEY, AbstractFilter.REF_VALUES_KEY)
@@ -139,7 +134,7 @@ public abstract class AbstractFilter<T> implements QueryElement
      * @param parentExpression the parent expression this filter belongs to
      * @return this AbstractPropertyFilter object
      */
-    public AbstractFilter<T> init(final JSONObject input, @NotNull DocumentQuery parent,
+    public AbstractFilter<T> init(final JSONObject input, @Nonnull DocumentQuery parent,
         QueryExpression parentExpression)
     {
         JSONObject preppedInput = this.prepInput(input);
@@ -668,7 +663,7 @@ public abstract class AbstractFilter<T> implements QueryElement
      * @param levelsUp the number of levels to go up the chain
      * @return a DocumentQuery object
      */
-    public static DocumentQuery getParent(@NotNull DocumentQuery parent, int levelsUp)
+    public static DocumentQuery getParent(@Nonnull DocumentQuery parent, int levelsUp)
     {
         DocumentQuery parentToReturn = parent;
 
