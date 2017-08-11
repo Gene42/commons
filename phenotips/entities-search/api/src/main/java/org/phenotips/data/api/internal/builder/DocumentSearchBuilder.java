@@ -228,7 +228,7 @@ public class DocumentSearchBuilder implements Builder<JSONObject>
                 .setMatch(StringFilter.MATCH_EXACT)
                 .setSpaceAndClass("PhenoTips.CollaboratorClass")
                 .setValue(fullUserName)
-                .addValues(fullUserGroupNames).back();
+                .addValues(fullUserGroupNames);
         return this;
     }
 

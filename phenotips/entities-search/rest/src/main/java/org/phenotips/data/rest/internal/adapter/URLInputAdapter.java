@@ -91,7 +91,7 @@ public class URLInputAdapter implements LiveTableInputAdapter
 
         queryObj.put(EntitySearch.Keys.LIMIT_KEY, RequestUtils.getFirst(queryParameters, EntitySearch.Keys.LIMIT_KEY));
         queryObj.put(EntitySearch.Keys.OFFSET_KEY,
-            Integer.valueOf(RequestUtils.getFirst(queryParameters, EntitySearch.Keys.OFFSET_KEY, "1")) - 1);
+            Integer.parseInt(RequestUtils.getFirst(queryParameters, EntitySearch.Keys.OFFSET_KEY, "1")) - 1);
         queryObj.put(EntitySearch.Keys.COLUMN_LIST_KEY, this.getColumnList(documentClassName, queryParameters));
 
         return queryObj;

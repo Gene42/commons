@@ -44,8 +44,6 @@ public class DocumentQuery
     /** Key: space.class, value: query object name/alias. */
     private Map<SpaceAndClass, String> objNameMap = new LinkedHashMap<>();
 
-    private Map<String, String> orExprObjNameMap = new LinkedHashMap<>();
-
     /** Key is space.class, value is map of [property name, table alias/property type]. */
     private Map<SpaceAndClass, Set<PropertyName>> propertyNameMap = new LinkedHashMap<>();
 

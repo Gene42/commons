@@ -20,6 +20,8 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
+import javax.validation.constraints.NotNull;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.IterableUtils;
 import org.apache.commons.collections4.ListUtils;
@@ -137,14 +139,15 @@ public abstract class AbstractFilter<T> implements QueryElement
      * @param parentExpression the parent expression this filter belongs to
      * @return this AbstractPropertyFilter object
      */
-    public AbstractFilter<T> init(final JSONObject input, DocumentQuery parent, QueryExpression parentExpression)
+    public AbstractFilter<T> init(final JSONObject input, @NotNull DocumentQuery parent,
+        QueryExpression parentExpression)
     {
         JSONObject preppedInput = this.prepInput(input);
 
         if (preppedInput.has(AbstractFilter.PARENT_LEVEL_KEY)) {
             this.reference = true;
             this.parent = getParent(parent,
-                Integer.valueOf(JSONTools.getValue(preppedInput, AbstractFilter.PARENT_LEVEL_KEY)));
+                Integer.parseInt(JSONTools.getValue(preppedInput, AbstractFilter.PARENT_LEVEL_KEY)));
         } else {
             this.parent = parent;
         }
@@ -665,7 +668,7 @@ public abstract class AbstractFilter<T> implements QueryElement
      * @param levelsUp the number of levels to go up the chain
      * @return a DocumentQuery object
      */
-    public static DocumentQuery getParent(DocumentQuery parent, int levelsUp)
+    public static DocumentQuery getParent(@NotNull DocumentQuery parent, int levelsUp)
     {
         DocumentQuery parentToReturn = parent;
 

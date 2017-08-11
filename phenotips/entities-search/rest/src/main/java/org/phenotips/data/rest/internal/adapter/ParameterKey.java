@@ -98,7 +98,7 @@ public class ParameterKey
             this.propertyName = param;
         }
 
-        if (CollectionUtils.isEmpty(this.parents)) {
+        if (this.parents.isEmpty()) {
             this.parents.add(new NameAndTag(defaultDocClassName, ParameterKey.QUERY_TAG_DEFAULT,
                 ParameterKey.DEFAULT_OPERATION, false));
         }

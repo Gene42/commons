@@ -51,8 +51,6 @@ public class DocumentQueryBuilder implements Builder<DocumentQueryBuilder>
 
     private ParameterKey.NameAndTag classAndTag;
 
-    private DocumentQueryBuilder parent;
-
     private DocumentQueryBuilder root;
 
     private boolean built;
@@ -88,7 +86,7 @@ public class DocumentQueryBuilder implements Builder<DocumentQueryBuilder>
         boolean negate)
     {
         this.classAndTag = new ParameterKey.NameAndTag(docClassName, tagName, operation, negate);
-        this.parent = parent;
+
         if (parent == null) {
             this.root = this;
         } else {

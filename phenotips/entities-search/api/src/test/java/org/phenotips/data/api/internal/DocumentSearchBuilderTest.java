@@ -72,6 +72,7 @@ public class DocumentSearchBuilderTest
             .newStringFilter("fileName").setValue(value).setSpaceAndClass("PhenoTips.SourceFileClass").back()
             .back()
             .onlyForUser("xwiki:Xwiki.Bob", Arrays.asList("xwiki:Groups.Administrators"))
+             .newSubQuery("TestClass").back()
         .setSortOrder("first_name", "desc");
 
         System.out.println(query.build().toString(4));

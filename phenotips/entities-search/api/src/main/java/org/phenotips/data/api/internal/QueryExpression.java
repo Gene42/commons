@@ -13,6 +13,8 @@ import org.phenotips.data.api.internal.filter.AbstractFilter;
 import java.util.LinkedList;
 import java.util.List;
 
+import javax.validation.constraints.NotNull;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
@@ -62,7 +64,7 @@ public class QueryExpression implements QueryElement
      * Constructor.
      * @param parentQuery the parent query of this expression
      */
-    public QueryExpression(DocumentQuery parentQuery)
+    public QueryExpression(@NotNull DocumentQuery parentQuery)
     {
         this.parentQuery = parentQuery;
     }

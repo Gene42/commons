@@ -143,6 +143,12 @@ public interface BaseObjectJSONConverter
     @FunctionalInterface
     interface XObjToJSON
     {
+        /**
+         * Takes the field from the BaseObject and inserts it into the given JSONObject.
+         * @param from BaseObject to take from
+         * @param to JSONObject to insert into
+         * @param fieldName the field name to grab from the BaseObject
+         */
         void apply(BaseObject from, JSONObject to, String fieldName);
     }
 
@@ -152,6 +158,12 @@ public interface BaseObjectJSONConverter
     @FunctionalInterface
     interface JSONToXObj
     {
+        /**
+         * Takes the field from the JSONObject and inserts it into the given BaseObject.
+         * @param from JSONObject to take from
+         * @param to BaseObject to insert into
+         * @param fieldName the field name to grab from the JSONObject
+         */
         void apply(JSONObject from, BaseObject to, String fieldName, XWikiContext context);
     }
 }

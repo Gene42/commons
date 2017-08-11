@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import javax.inject.Provider;
+import javax.validation.constraints.NotNull;
 
 import org.apache.commons.collections4.SetUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -137,6 +138,7 @@ public class DefaultFilterFactory extends AbstractFilterFactory
         return returnValue;
     }
 
+    @NotNull
     private AbstractFilter getPropertyFilter(String propertyName, BaseClass baseClass)
     {
         PropertyInterface property = baseClass.get(propertyName);
