@@ -164,12 +164,10 @@ public class DefaultLiveTableSearchImpl implements LiveTableSearch
         JSONArray rows = new JSONArray();
         responseObject.put("rows", rows);
 
-        XWikiContext context = this.xContextProvider.get();
-
         List<TableColumn> cols = this.getColumns(inputObject);
 
         for (DocumentReference docRef : documentSearchResult.getItems()) {
-            JSONObject row = this.responseRowHandler.getRow(this.getDocument(docRef), context, cols, queryParameters);
+            JSONObject row = this.responseRowHandler.getRow(this.getDocument(docRef), cols, queryParameters);
             if (row != null) {
                 rows.put(row);
             }

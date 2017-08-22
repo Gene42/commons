@@ -11,7 +11,6 @@ import org.phenotips.data.rest.LiveTableColumnHandler;
 import org.phenotips.data.rest.LiveTableRowHandler;
 
 import org.xwiki.component.annotation.Component;
-import org.xwiki.component.manager.ComponentManager;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.DocumentReferenceResolver;
 import org.xwiki.security.authorization.AuthorizationManager;
@@ -23,7 +22,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
-import javax.inject.Named;
+import javax.inject.Provider;
 import javax.inject.Singleton;
 
 import org.apache.commons.lang3.StringUtils;
@@ -49,10 +48,6 @@ public class DefaultLiveTableRowHandler implements LiveTableRowHandler
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultLiveTableRowHandler.class);
 
     @Inject
-    @Named("context")
-    private ComponentManager componentManager;
-
-    @Inject
     private AuthorizationManager access;
 
     @Inject
@@ -61,10 +56,12 @@ public class DefaultLiveTableRowHandler implements LiveTableRowHandler
     @Inject
     private LiveTableColumnHandler columnHandler;
 
+    @Inject
+    private Provider<XWikiContext> contextProvider;
 
     @Override
-    public JSONObject getRow(XWikiDocument doc, XWikiContext context, List<TableColumn> cols,
-        Map<String, List<String>> queryParameters) throws XWikiException
+    public JSONObject getRow(XWikiDocument doc, List<TableColumn> cols, Map<String, List<String>> queryParameters)
+        throws XWikiException
     {
         if (doc == null) {
             return null;
@@ -74,6 +71,8 @@ public class DefaultLiveTableRowHandler implements LiveTableRowHandler
         String fullName = docRef.toString();
 
         JSONObject row = new JSONObject();
+
+        XWikiContext context = this.contextProvider.get();
 
         XWiki wiki = context.getWiki();
 
@@ -108,7 +107,7 @@ public class DefaultLiveTableRowHandler implements LiveTableRowHandler
         this.createURLs(row, doc, context);
 
         for (TableColumn col : cols) {
-            this.columnHandler.addColumn(row, col, doc, context, this.componentManager, queryParameters);
+            this.columnHandler.addColumn(row, col, doc, queryParameters);
         }
 
         return row;

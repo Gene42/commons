@@ -16,7 +16,6 @@ import java.util.Map;
 
 import org.json.JSONObject;
 
-import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
 
@@ -31,12 +30,11 @@ public interface LiveTableRowHandler
     /**
      * Returns a new row object, using the list of TableColumn definitions provided.
      * @param doc the document used to get the necessary info for populating the column
-     * @param context the wiki context
      * @param cols the column definitions
      * @param queryParameters the request query parameters
      * @return a JSONObject representing a row
      * @throws XWikiException if any error is encountered while attempting to build the column
      */
-    JSONObject getRow(XWikiDocument doc, XWikiContext context, List<TableColumn> cols,
-        Map<String, List<String>> queryParameters) throws XWikiException;
+    JSONObject getRow(XWikiDocument doc, List<TableColumn> cols, Map<String, List<String>> queryParameters)
+        throws XWikiException;
 }
