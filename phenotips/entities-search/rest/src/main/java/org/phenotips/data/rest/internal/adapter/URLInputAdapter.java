@@ -128,9 +128,12 @@ public class URLInputAdapter implements LiveTableInputAdapter
                 obj.put(TableColumn.TYPE_KEY, EntityType.OBJECT.toString());
 
                 String key = token + ParameterKey.PROPERTY_DELIMITER + SpaceAndClass.CLASS_KEY;
+                String specialKey = token + ParameterKey.PROPERTY_CLASS_SUFFIX;
 
                 if (queryParameters.containsKey(key)) {
                     obj.put(TableColumn.CLASS_KEY, RequestUtils.getFirst(queryParameters, key));
+                } else if (queryParameters.containsKey(specialKey)) {
+                    obj.put(TableColumn.CLASS_KEY, RequestUtils.getFirst(queryParameters, specialKey));
                 } else {
                     obj.put(TableColumn.CLASS_KEY, className);
                 }

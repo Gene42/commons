@@ -65,7 +65,7 @@ import com.xpn.xwiki.web.XWikiRequest;
 public class DefaultLiveTableSearchImpl implements LiveTableSearch
 {
 
-    private static final String COLUMN_LIST_KEY = "collist";
+    //private static final String COLUMN_LIST_KEY = "collist";
 
     @Inject
     private Provider<XWikiContext> xContextProvider;
@@ -198,12 +198,12 @@ public class DefaultLiveTableSearchImpl implements LiveTableSearch
 
     private List<TableColumn> getColumns(JSONObject jsonObject)
     {
-        if (jsonObject.optJSONArray(DefaultLiveTableSearchImpl.COLUMN_LIST_KEY) == null) {
+        if (jsonObject.optJSONArray(EntitySearch.Keys.COLUMN_LIST_KEY) == null) {
             throw new IllegalArgumentException(String.format("No %1$s key found.",
-                DefaultLiveTableSearchImpl.COLUMN_LIST_KEY));
+                EntitySearch.Keys.COLUMN_LIST_KEY));
         }
 
-        JSONArray columnArray = jsonObject.getJSONArray(DefaultLiveTableSearchImpl.COLUMN_LIST_KEY);
+        JSONArray columnArray = jsonObject.getJSONArray(EntitySearch.Keys.COLUMN_LIST_KEY);
 
         List<TableColumn> columns = new LinkedList<>();
 

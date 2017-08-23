@@ -40,6 +40,7 @@ import javax.inject.Named;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -73,6 +74,10 @@ import com.xpn.xwiki.web.ViewAction;
     })
 public class DefaultLiveTableColumnHandler implements LiveTableColumnHandler
 {
+    private static final String CUSTOM_DISPLAY = "customDisplay";
+
+    private static final char MULTI_RESULT_DELIMITER = '|';
+
     @Inject
     private LocalizationContext localizationContext;
 
@@ -123,6 +128,9 @@ public class DefaultLiveTableColumnHandler implements LiveTableColumnHandler
     private void handleXObject(ValueWrapper valueWrapper, BaseObject baseObject, XWikiDocument doc, TableColumn col,
         EntityReference wikiRef, String translationPrefix) throws XWikiException
     {
+        if (baseObject == null) {
+            return;
+        }
         PropertyInterface field = baseObject.getField(col.getPropertyName());
         this.addDisplayValue(valueWrapper, baseObject, col, doc, field, translationPrefix);
         this.addValueAndURL(valueWrapper, baseObject, col, wikiRef, field);
@@ -159,8 +167,8 @@ public class DefaultLiveTableColumnHandler implements LiveTableColumnHandler
             }
         }
 
-        valueWrapper.values.add(value);
-        valueWrapper.urls.add(valueURL);
+        CollectionUtils.addIgnoreNull(valueWrapper.values, StringUtils.defaultIfEmpty(value, null));
+        CollectionUtils.addIgnoreNull(valueWrapper.urls, StringUtils.defaultIfEmpty(valueURL, null));
     }
 
     private void addDisplayValue(ValueWrapper valueWrapper, BaseObject baseObject, TableColumn col,
@@ -172,7 +180,7 @@ public class DefaultLiveTableColumnHandler implements LiveTableColumnHandler
         if (field instanceof PropertyClass) {
             customDisplay = ((PropertyClass) field).getCustomDisplay();
         } else {
-            customDisplay = getStringValue(baseObject, "customDisplay");
+            customDisplay = getStringValue(baseObject, CUSTOM_DISPLAY);
         }
 
         XWikiContext context = this.contextProvider.get();
@@ -197,7 +205,7 @@ public class DefaultLiveTableColumnHandler implements LiveTableColumnHandler
         displayValue = displayValue.replaceFirst(Pattern.quote("{{html clean=\"false\" wiki=\"false\"}}"), "");
         displayValue = displayValue.replaceAll(Pattern.quote("{{/html}}"), "");
 
-        valueWrapper.displayValues.add(displayValue);
+        CollectionUtils.addIgnoreNull(valueWrapper.displayValues, StringUtils.defaultIfEmpty(displayValue, null));
     }
 
     private static boolean isStringValue(PropertyInterface field, String customDisplay)
@@ -216,9 +224,9 @@ public class DefaultLiveTableColumnHandler implements LiveTableColumnHandler
 
     private void addColumnToRow(JSONObject row, String columnName, ValueWrapper valueWrapper)
     {
-        row.put(columnName, StringUtils.join(valueWrapper.displayValues, ','));
-        row.put(columnName + "_value", StringUtils.join(valueWrapper.values, ','));
-        row.put(columnName + "_url", StringUtils.join(valueWrapper.urls, ','));
+        row.put(columnName, valueWrapper.getDisplayValue());
+        row.put(columnName + "_value", valueWrapper.getValue());
+        row.put(columnName + "_url", valueWrapper.getURL());
     }
 
     private String render(Block block, String outputSyntaxId, ComponentManager componentManager)
@@ -308,6 +316,30 @@ public class DefaultLiveTableColumnHandler implements LiveTableColumnHandler
         protected List<String> displayValues = new LinkedList<>();
         protected List<String> values = new LinkedList<>();
         protected List<String> urls = new LinkedList<>();
+
+        protected String getDisplayValue()
+        {
+            return joinList(this.displayValues);
+        }
+
+        protected String getValue()
+        {
+            return joinList(this.values);
+        }
+
+        protected String getURL()
+        {
+            return joinList(this.urls);
+        }
+
+        private static String joinList(List<String> list)
+        {
+            if (CollectionUtils.isEmpty(list)) {
+                return StringUtils.EMPTY;
+            } else {
+                return StringUtils.join(list, MULTI_RESULT_DELIMITER);
+            }
+        }
     }
 }
 
