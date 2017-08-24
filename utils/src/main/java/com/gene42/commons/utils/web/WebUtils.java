@@ -9,10 +9,13 @@ package com.gene42.commons.utils.web;
 
 import java.util.EnumMap;
 
+import javax.annotation.Nonnull;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 
 import com.gene42.commons.utils.exceptions.ServiceException;
@@ -24,6 +27,7 @@ import com.gene42.commons.utils.json.JsonApiErrorBuilder;
  *
  * @version $Id$
  */
+@SuppressWarnings("checkstyle:cyclomaticcomplexity")
 public final class WebUtils
 {
     /** Key for offset in a json result object. */
@@ -150,6 +154,35 @@ public final class WebUtils
     }
 
     /**
+     * Attempts to get the value found at the given key.
+     * Throws a Bad Request exception if the given JSONObject does not have the given key,
+     * or if the type does not match the provided Class.
+     * @param object the JSONObject to check
+     * @param key the key to check for
+     * @param clazz the Class of the key's value
+     * @param <T> clazz
+     * @return the value of the key
+     */
+    @Nonnull
+    @SuppressWarnings("unchecked")
+    public static <T> T getJSONObjectValue(JSONObject object, String key, Class<T> clazz)
+    {
+        Object value = object.opt(key);
+
+        if (value == null) {
+            throw new WebApplicationException(getErrorResponse(
+                Response.Status.BAD_REQUEST, "Key is missing", object.toString(), key));
+        }
+
+        if (jsonBadCast(value, clazz)) {
+            throw new WebApplicationException(getErrorResponse(
+                Response.Status.BAD_REQUEST, "Key is of wrong type", object.toString(), key));
+        }
+
+        return (T) value;
+    }
+
+    /**
      * Returns a Response object based on the given parameters.
      * @param status the status to set
      * @param exception the exception to grab the message from
@@ -169,5 +202,20 @@ public final class WebUtils
     public static void doNothing(Exception e)
     {
         // Do nothing
+    }
+
+    private static <T> boolean jsonBadCast(Object value, Class<T> clazz)
+    {
+        boolean stringBool = clazz == String.class && (value instanceof String);
+        boolean jsonObjectBool = clazz == JSONObject.class && (value instanceof JSONObject);
+        boolean jsonArrayBool = clazz == JSONArray.class && (value instanceof JSONArray);
+        boolean boolBool = clazz == Boolean.class && (value instanceof Boolean);
+        boolean one = stringBool || jsonObjectBool || jsonArrayBool || boolBool;
+
+        boolean intBool = clazz == Integer.class && (value instanceof Integer);
+        boolean doubleBool = clazz == Double.class && (value instanceof Double);
+        boolean longBool = clazz == Long.class && (value instanceof Long);
+        boolean two = intBool || doubleBool || longBool;
+        return !(one || two);
     }
 }
