@@ -14,6 +14,7 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -160,7 +161,7 @@ public final class WebUtils
      * @param object the JSONObject to check
      * @param key the key to check for
      * @param clazz the Class of the key's value
-     * @param <T> clazz
+     * @param <T> the class of the instance to return
      * @return the value of the key
      */
     @Nonnull
@@ -180,6 +181,26 @@ public final class WebUtils
         }
 
         return (T) value;
+    }
+
+    /**
+     * Attempts to cast the given object to one of the possible Classes a JSONObject might return.
+     * @param object the object to cast
+     * @param clazz the Class of the object to cast to
+     * @param <T> the class of the instance to return
+     * @return the casted object
+     */
+    @Nonnull
+    @SuppressWarnings("unchecked")
+    public static <T> T castJSONObject(@Nonnull Object object, Class<T> clazz)
+    {
+        if (jsonBadCast(object, clazz)) {
+            throw new WebApplicationException(getErrorResponse(
+                Response.Status.BAD_REQUEST, "Object is of wrong type", object.toString(), StringUtils
+                    .substringAfterLast(clazz.toString(), ".")));
+        }
+
+        return (T) object;
     }
 
     /**

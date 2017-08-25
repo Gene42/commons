@@ -53,4 +53,17 @@ public class WebUtilsTest
             // Pass
         }
     }
+
+    @Test
+    public void castJSONObjectTest() throws Exception
+    {
+        try {
+            WebUtils.castJSONObject(new JSONArray(), JSONObject.class);
+            fail();
+        } catch (WebApplicationException e) {
+            System.out.println(e.getResponse().getEntity().toString());
+            // Pass
+        }
+    }
+
 }
