@@ -16,6 +16,7 @@ import javax.ws.rs.core.Response;
 
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 
@@ -201,6 +202,28 @@ public final class WebUtils
         }
 
         return (T) object;
+    }
+
+    /**
+     * Attempts to parse the given string into a JSONObject and throws a WebApplicationException if it does not succeed:
+     * invalid json, or null/empty input.
+     * @param jsonString the input to parse
+     * @return a JSONObject
+     */
+    @Nonnull
+    public static JSONObject parseToJSONObject(String jsonString)
+    {
+        if (StringUtils.isEmpty(jsonString)) {
+            throw new WebApplicationException(getErrorResponse("Empty JSON.", Response.Status.BAD_REQUEST));
+        }
+
+        try {
+            return new JSONObject(jsonString);
+        } catch (JSONException e) {
+            throw new WebApplicationException(
+                getErrorResponse(Response.Status.BAD_REQUEST, "Could not parse JSON.", e.getMessage(), jsonString)
+            );
+        }
     }
 
     /**
