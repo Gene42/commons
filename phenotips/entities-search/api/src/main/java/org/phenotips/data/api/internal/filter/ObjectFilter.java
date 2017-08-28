@@ -18,7 +18,7 @@ import com.xpn.xwiki.objects.PropertyInterface;
 import com.xpn.xwiki.objects.classes.BaseClass;
 
 /**
- * Filter checking for the existence of ojjects of a specific class in a document.
+ * Filter checking for the existence of objects of a specific class in a document.
  *
  * @version $Id$
  */

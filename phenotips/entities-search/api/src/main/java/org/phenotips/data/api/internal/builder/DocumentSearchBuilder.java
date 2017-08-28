@@ -9,6 +9,7 @@ package org.phenotips.data.api.internal.builder;
 
 import org.phenotips.data.api.EntitySearch;
 import org.phenotips.data.api.internal.DocumentQuery;
+import org.phenotips.data.api.internal.QueryExpression;
 import org.phenotips.data.api.internal.SpaceAndClass;
 import org.phenotips.data.api.internal.filter.OrderFilter;
 import org.phenotips.data.api.internal.filter.StringFilter;
@@ -31,6 +32,8 @@ import org.json.JSONObject;
  */
 public class DocumentSearchBuilder implements Builder<JSONObject>
 {
+    private static final String PHENO_TIPS_COLLABORATOR_CLASS = "PhenoTips.CollaboratorClass";
+
     private JSONObject searchQuery = new JSONObject();
 
     private String docSpaceAndClass;
@@ -43,29 +46,15 @@ public class DocumentSearchBuilder implements Builder<JSONObject>
 
     private DocumentSearchBuilder parent;
 
+    private boolean negate;
+
     /**
      * Constructor.
      * @param docSpaceAndClass the document space and class (should be null if expression)
      */
     public DocumentSearchBuilder(String docSpaceAndClass)
     {
-        this(null, docSpaceAndClass, 0, 25);
-    }
-
-    /**
-     * Constructor.
-     * @param docSpaceAndClass the document space and class (should be null if expression)
-     * @param offset the offset of the query
-     * @param limit the limit of the query result
-     */
-    public DocumentSearchBuilder(String docSpaceAndClass, int offset, int limit)
-    {
-        this(null, docSpaceAndClass, offset, limit);
-    }
-
-    private DocumentSearchBuilder(DocumentSearchBuilder parent, String docSpaceAndClass)
-    {
-        this(parent, docSpaceAndClass, 0, 25);
+        this(null, docSpaceAndClass);
     }
 
     private DocumentSearchBuilder(DocumentSearchBuilder parent)
@@ -73,20 +62,10 @@ public class DocumentSearchBuilder implements Builder<JSONObject>
         this.parent = parent;
     }
 
-    private DocumentSearchBuilder(DocumentSearchBuilder parent, String docSpaceAndClass, int offset, int limit)
+    private DocumentSearchBuilder(DocumentSearchBuilder parent, String docSpaceAndClass)
     {
         this.parent = parent;
-
         this.docSpaceAndClass = docSpaceAndClass;
-
-        if (this.parent == null) {
-            this.setOffset(offset).setLimit(limit);
-            this.sortFilter = new StringFilterBuilder("doc.name", this)
-                .setSpaceAndClass(this.docSpaceAndClass)
-                .setType(OrderFilter.TYPE)
-                .setValue(OrderFilter.ASC);
-        }
-
         this.setJoinModeToAnd();
     }
 
@@ -122,6 +101,18 @@ public class DocumentSearchBuilder implements Builder<JSONObject>
         DocumentSearchBuilder newSubQuery = new DocumentSearchBuilder(this, docClass);
         this.queries.add(newSubQuery);
         return newSubQuery;
+    }
+
+    /**
+     *  Adds the given DocumentSearchBuilder as a new subquery of this query.
+     * @param subQuery the subQuery to add
+     * @return the given subQuery
+     */
+    public DocumentSearchBuilder newSubQuery(DocumentSearchBuilder subQuery)
+    {
+        subQuery.parent = this;
+        this.queries.add(subQuery);
+        return subQuery;
     }
 
     /**
@@ -164,6 +155,7 @@ public class DocumentSearchBuilder implements Builder<JSONObject>
      */
     public DocumentSearchBuilder setSortAsc(String propertyName)
     {
+        this.checkSortFilter();
         if (this.sortFilter != null) {
             this.sortFilter.setValue(OrderFilter.ASC).setPropertyName(propertyName);
         }
@@ -177,6 +169,7 @@ public class DocumentSearchBuilder implements Builder<JSONObject>
      */
     public DocumentSearchBuilder setSortDesc(String propertyName)
     {
+        this.checkSortFilter();
         if (this.sortFilter != null) {
             this.sortFilter.setValue(OrderFilter.DESC).setPropertyName(propertyName);
         }
@@ -215,20 +208,52 @@ public class DocumentSearchBuilder implements Builder<JSONObject>
      */
     public DocumentSearchBuilder onlyForUser(String fullUserName, Collection<String> fullUserGroupNames)
     {
-        this.newExpression()
+        return this.onlyForUser(fullUserName, fullUserGroupNames, null);
+    }
+
+    /**
+     * Adds an inner query which checks for ownership (user), visibility (public, open) and collaborators
+     * (both user and groups the user belongs to). Should be used on non Admin users.
+     * They are checked with an OR operator, so only one of them is needed to match.
+     *
+     * @param fullUserName the full user name to use for checking ownership and collaboration status
+     *                     ie: xwiki:XWiki.TestUser
+     * @param fullUserGroupNames the full names of all groups the user with the given name belongs to
+     *                           ie: xwiki:Groups.TestGroup
+     * @param accessRight the access right the user has over a document in order for it to be included in the search
+     *                    result
+     * @return this object
+     */
+    public DocumentSearchBuilder onlyForUser(String fullUserName, Collection<String> fullUserGroupNames,
+        String accessRight)
+    {
+        DocumentSearchBuilder builder = this.newExpression()
             .setJoinModeToOr()
             .newStringFilter("owner")
-                .setMatch(StringFilter.MATCH_EXACT)
-                .setSpaceAndClass("PhenoTips.OwnerClass")
-                .setValue(fullUserName).back()
+            .setMatch(StringFilter.MATCH_EXACT)
+            .setSpaceAndClass("PhenoTips.OwnerClass")
+            .setValue(fullUserName).back()
             .newStringFilter("visibility")
-                .setSpaceAndClass("PhenoTips.VisibilityClass")
-                .setValues(Arrays.asList("public", "open")).back()
-            .newStringFilter("collaborator")
+            .setSpaceAndClass("PhenoTips.VisibilityClass")
+            .setValues(Arrays.asList("public", "open")).back();
+
+        if (accessRight != null) {
+            builder = builder
+                .newExpression()
+                .setJoinModeToAnd()
+                .newStringFilter("access")
                 .setMatch(StringFilter.MATCH_EXACT)
-                .setSpaceAndClass("PhenoTips.CollaboratorClass")
-                .setValue(fullUserName)
-                .addValues(fullUserGroupNames);
+                .setSpaceAndClass(PHENO_TIPS_COLLABORATOR_CLASS)
+                .setValue(accessRight)
+                .back();
+        }
+
+        builder.newStringFilter("collaborator")
+            .setMatch(StringFilter.MATCH_EXACT)
+            .setSpaceAndClass(PHENO_TIPS_COLLABORATOR_CLASS)
+            .setValue(fullUserName)
+            .addValues(fullUserGroupNames);
+
         return this;
     }
 
@@ -250,7 +275,9 @@ public class DocumentSearchBuilder implements Builder<JSONObject>
      */
     public DocumentSearchBuilder setOffset(int offset)
     {
-        this.searchQuery.put(EntitySearch.Keys.OFFSET_KEY, offset);
+        if (this.parent == null) {
+            this.searchQuery.put(EntitySearch.Keys.OFFSET_KEY, offset);
+        }
         return this;
     }
 
@@ -272,7 +299,9 @@ public class DocumentSearchBuilder implements Builder<JSONObject>
      */
     public DocumentSearchBuilder setLimit(int limit)
     {
-        this.searchQuery.put(EntitySearch.Keys.LIMIT_KEY, limit);
+        if (this.parent == null) {
+            this.searchQuery.put(EntitySearch.Keys.LIMIT_KEY, limit);
+        }
         return this;
     }
 
@@ -309,6 +338,27 @@ public class DocumentSearchBuilder implements Builder<JSONObject>
         ObjectFilterBuilder filter = new ObjectFilterBuilder(this);
         this.filters.add(filter);
         return filter;
+    }
+
+    /**
+     * Negates this query, ie 'exits' becomes 'not exists'. If you call this twice it will go back to original value.
+     * !!true = true
+     * @return this object
+     */
+    public DocumentSearchBuilder negate()
+    {
+        this.negate = !this.negate;
+        return this;
+    }
+
+    /**
+     * Getter for negate.
+     *
+     * @return negate
+     */
+    public boolean isNegated()
+    {
+        return this.negate;
     }
 
     /**
@@ -352,12 +402,29 @@ public class DocumentSearchBuilder implements Builder<JSONObject>
             }
         }
 
+        this.checkSortFilter();
+
         if (this.sortFilter != null) {
             this.searchQuery.put(EntitySearch.Keys.SORT_KEY, this.sortFilter.build());
         }
 
         this.searchQuery.put(SpaceAndClass.CLASS_KEY, this.docSpaceAndClass);
 
+        if (this.negate) {
+            this.searchQuery.put(QueryExpression.NEGATE_KEY, true);
+        }
+
         return new JSONObject(this.searchQuery.toString());
+    }
+
+    private DocumentSearchBuilder checkSortFilter()
+    {
+        if (this.parent == null && this.sortFilter == null) {
+            this.sortFilter = new StringFilterBuilder("doc.name", this)
+                .setSpaceAndClass(this.docSpaceAndClass)
+                .setType(OrderFilter.TYPE)
+                .setValue(OrderFilter.ASC);
+        }
+        return this;
     }
 }

@@ -59,13 +59,13 @@ import com.xpn.xwiki.web.XWikiRequest;
  */
 @SuppressWarnings({ "checkstyle:classfanoutcomplexity", "checkstyle:classdataabstractioncoupling" })
 @Component
-@Named("org.phenotips.data.rest.internal.DefaultLiveTableSearchImpl")
+@Named(DefaultLiveTableSearchImpl.NAME)
 @InstantiationStrategy(ComponentInstantiationStrategy.SINGLETON)
 @Singleton
 public class DefaultLiveTableSearchImpl implements LiveTableSearch
 {
-
-    //private static final String COLUMN_LIST_KEY = "collist";
+    /** Name of this Component. */
+    public static final String NAME = "org.phenotips.data.rest.internal.DefaultLiveTableSearchImpl";
 
     @Inject
     private Provider<XWikiContext> xContextProvider;
@@ -103,11 +103,8 @@ public class DefaultLiveTableSearchImpl implements LiveTableSearch
     @Override
     public Response search()
     {
-
         XWikiRequest xwikiRequest = this.xContextProvider.get().getRequest();
-
         HttpServletRequest httpServletRequest = xwikiRequest.getHttpServletRequest();
-
 
         try {
             StopWatches stopWatches = new StopWatches();
@@ -121,7 +118,13 @@ public class DefaultLiveTableSearchImpl implements LiveTableSearch
 
             this.authorize(inputObject);
 
-            JSONObject responseObject = this.getResponseObject(inputObject, queryParameters, stopWatches);
+            stopWatches.getSearchStopWatch().start();
+            EntitySearchResult<DocumentReference> documentSearchResult = this.documentSearch.search(inputObject);
+            stopWatches.getSearchStopWatch().stop();
+
+            stopWatches.getTableStopWatch().start();
+            JSONObject responseObject = this.getTableObject(documentSearchResult, inputObject, queryParameters);
+            stopWatches.getTableStopWatch().stop();
 
             responseObject.put(EntitySearch.Keys.REQUEST_NUMBER_KEY, Long.valueOf(RequestUtils.getFirst(queryParameters,
                 EntitySearch.Keys.REQUEST_NUMBER_KEY, "0")));
@@ -150,15 +153,18 @@ public class DefaultLiveTableSearchImpl implements LiveTableSearch
         return Response.serverError().build();
     }
 
-    private JSONObject getResponseObject(JSONObject inputObject, Map<String, List<String>> queryParameters,
-        StopWatches stopWatches) throws XWikiException, ServiceException
+    /**
+     * Returns a response JSONObject based on the given EntitySearchResult.
+     * @param documentSearchResult the EntitySearchResult to use to generate the result table
+     * @param inputObject the query input object
+     * @param queryParameters the query parameters
+     * @return a JSONObject
+     * @throws XWikiException on an XWiki error
+     */
+    public JSONObject getTableObject(EntitySearchResult<DocumentReference> documentSearchResult,
+        JSONObject inputObject, Map<String, List<String>> queryParameters)
+        throws XWikiException
     {
-        stopWatches.getSearchStopWatch().start();
-        EntitySearchResult<DocumentReference> documentSearchResult = this.documentSearch.search(inputObject);
-        stopWatches.getSearchStopWatch().stop();
-
-        stopWatches.getTableStopWatch().start();
-
         JSONObject responseObject = new JSONObject();
 
         JSONArray rows = new JSONArray();
@@ -176,8 +182,6 @@ public class DefaultLiveTableSearchImpl implements LiveTableSearch
         responseObject.put("totalrows", documentSearchResult.getTotalRows());
         responseObject.put("returnedrows", documentSearchResult.getReturnedRows());
         responseObject.put("offset", documentSearchResult.getOffset() + 1);
-
-        stopWatches.getTableStopWatch().stop();
 
         return responseObject;
     }

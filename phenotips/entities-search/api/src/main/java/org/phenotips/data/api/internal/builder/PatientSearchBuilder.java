@@ -15,24 +15,15 @@ package org.phenotips.data.api.internal.builder;
  */
 public class PatientSearchBuilder extends DocumentSearchBuilder
 {
-    private static final String PATIENT_CLASS = "PhenoTips.PatientClass";
+    /** Class name of a Patient Document. */
+    public static final String PATIENT_CLASS = "PhenoTips.PatientClass";
 
     /**
      * Constructor.
      */
-    private PatientSearchBuilder()
+    public PatientSearchBuilder()
     {
-        this(0, 25);
-    }
-
-    /**
-     * Constructor.
-     * @param offset the offset of the query
-     * @param limit the limit of the query result
-     */
-    public PatientSearchBuilder(int offset, int limit)
-    {
-        super(PATIENT_CLASS, offset, limit);
+        super(PATIENT_CLASS);
         this.addIdentifierFilter();
     }
 

@@ -9,6 +9,7 @@ package org.phenotips.data.rest;
 
 import org.phenotips.rest.RequiredAccess;
 
+import org.xwiki.component.annotation.Role;
 import org.xwiki.rest.XWikiRestComponent;
 
 import javax.ws.rs.GET;
@@ -22,6 +23,7 @@ import javax.ws.rs.core.Response;
  *
  * @version $Id$
  */
+@Role
 @Path("/entities")
 public interface LiveTableSearch extends XWikiRestComponent
 {
