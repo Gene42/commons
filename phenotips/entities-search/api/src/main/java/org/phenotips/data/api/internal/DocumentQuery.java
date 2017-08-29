@@ -268,6 +268,16 @@ public class DocumentQuery
         return this.root == this;
     }
 
+    /**
+     * Getter for expression.
+     *
+     * @return expression
+     */
+    public QueryExpression getExpression()
+    {
+        return this.expression;
+    }
+
     private void addObjectBinding(SpaceAndClass spaceAndClass)
     {
         if (this.objNameMap.containsKey(spaceAndClass)) {

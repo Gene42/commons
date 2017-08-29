@@ -42,6 +42,7 @@ public abstract class AbstractFilterBuilder<T> implements Builder<JSONObject>
     private String minKey;
     private String maxKey;
     private List<T> values = new LinkedList<>();
+    private List<ReferenceValue> refValues = new LinkedList<>();
 
     /**
      * Constructor.
@@ -135,6 +136,69 @@ public abstract class AbstractFilterBuilder<T> implements Builder<JSONObject>
         }
 
         return this.addValue(value);
+    }
+
+    /**
+     * Setter for refValues.
+     *
+     * @param refValues refValues to set
+     * @return this object
+     */
+    public AbstractFilterBuilder<T> setReferenceValues(List<ReferenceValue> refValues)
+    {
+        this.refValues = refValues;
+        return this;
+    }
+
+    /**
+     * Adds all given refValues to the refValues list.
+     *
+     * @param refValues refValues to set
+     * @return this object
+     */
+    public AbstractFilterBuilder<T> addReferenceValues(Collection<ReferenceValue> refValues)
+    {
+        if (CollectionUtils.isNotEmpty(refValues)) {
+            this.refValues.addAll(refValues);
+        }
+        return this;
+    }
+
+    /**
+     * Adds the refValue to the refValues list.
+     *
+     * @param refValue refValue to add
+     * @return this object
+     */
+    public AbstractFilterBuilder<T> addReferenceValue(ReferenceValue refValue)
+    {
+        this.refValues.add(refValue);
+        return this;
+    }
+
+    /**
+     * Replaces the current list of refValues with the given one.
+     *
+     * @param refValue refValue to add
+     * @return this object
+     */
+    public AbstractFilterBuilder<T> setReferenceValue(ReferenceValue refValue)
+    {
+        if (CollectionUtils.isNotEmpty(this.refValues)) {
+            this.refValues = new LinkedList<>();
+        }
+
+        return this.addReferenceValue(refValue);
+    }
+
+    /**
+     * Getter for refValues.
+     *
+     * @return refValues
+     */
+    public List<ReferenceValue> getRefValues()
+    {
+        return this.refValues;
     }
 
     /**
@@ -322,6 +386,7 @@ public abstract class AbstractFilterBuilder<T> implements Builder<JSONObject>
         return this;
     }
 
+    @SuppressWarnings("CyclomaticComplexity")
     @Override
     public JSONObject build()
     {
@@ -349,6 +414,18 @@ public abstract class AbstractFilterBuilder<T> implements Builder<JSONObject>
             }
 
             filter.put(AbstractFilter.VALUES_KEY, valuesArray);
+        }
+
+        if (CollectionUtils.isNotEmpty(this.refValues)) {
+            JSONArray refValuesArray = new JSONArray();
+
+            for (ReferenceValue refValue : this.refValues) {
+                if (refValue != null) {
+                    refValuesArray.put(refValue.toJSONObject());
+                }
+            }
+
+            filter.put(AbstractFilter.REF_VALUES_KEY, refValuesArray);
         }
 
         if (StringUtils.isNotBlank(this.type)) {

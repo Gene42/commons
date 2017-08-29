@@ -9,48 +9,30 @@ package org.phenotips.data.rest.internal;
 
 import org.phenotips.data.api.EntitySearch;
 import org.phenotips.data.api.EntitySearchResult;
-import org.phenotips.data.api.internal.SpaceAndClass;
+import org.phenotips.data.rest.LiveTableGenerator;
 import org.phenotips.data.rest.LiveTableInputAdapter;
-import org.phenotips.data.rest.LiveTableRowHandler;
 import org.phenotips.data.rest.LiveTableSearch;
 
-import org.xwiki.bridge.DocumentAccessBridge;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.component.annotation.InstantiationStrategy;
 import org.xwiki.component.descriptor.ComponentInstantiationStrategy;
-import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.DocumentReference;
-import org.xwiki.model.reference.EntityReference;
-import org.xwiki.model.reference.EntityReferenceResolver;
-import org.xwiki.security.authorization.AuthorizationManager;
-import org.xwiki.security.authorization.Right;
-import org.xwiki.users.User;
-import org.xwiki.users.UserManager;
 
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.inject.Provider;
 import javax.inject.Singleton;
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import org.apache.commons.lang3.time.StopWatch;
-import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 
 import com.gene42.commons.utils.exceptions.ServiceException;
-import com.xpn.xwiki.XWikiContext;
-import com.xpn.xwiki.XWikiException;
-import com.xpn.xwiki.doc.XWikiDocument;
-import com.xpn.xwiki.web.XWikiRequest;
 
 /**
  * This is the default implementation of the LiveTableSearch REST API.
@@ -68,24 +50,13 @@ public class DefaultLiveTableSearchImpl implements LiveTableSearch
     public static final String NAME = "org.phenotips.data.rest.internal.DefaultLiveTableSearchImpl";
 
     @Inject
-    private Provider<XWikiContext> xContextProvider;
+    private LiveTableGenerator<DocumentReference> liveTableGenerator;
 
     @Inject
-    private LiveTableRowHandler responseRowHandler;
-
-    /** Fills in missing reference fields with those from the current context document to create a full reference. */
-    @Inject
-    @Named("current")
-    private EntityReferenceResolver<EntityReference> currentResolver;
+    private LiveTableFacade liveTableFacade;
 
     @Inject
     private Logger logger;
-
-    @Inject
-    private UserManager users;
-
-    @Inject
-    private AuthorizationManager access;
 
     @Inject
     private EntitySearch<DocumentReference> documentSearch;
@@ -94,46 +65,31 @@ public class DefaultLiveTableSearchImpl implements LiveTableSearch
     @Named("url")
     private LiveTableInputAdapter inputAdapter;
 
-    /**
-     * Provides access to the underlying data storage.
-     */
-    @Inject
-    private DocumentAccessBridge documentAccessBridge;
-
     @Override
     public Response search()
     {
-        XWikiRequest xwikiRequest = this.xContextProvider.get().getRequest();
-        HttpServletRequest httpServletRequest = xwikiRequest.getHttpServletRequest();
-
         try {
-            StopWatches stopWatches = new StopWatches();
+            LiveTableStopWatches stopWatches = new LiveTableStopWatches();
 
-            Map<String, List<String>> queryParameters = RequestUtils.getQueryParameters(httpServletRequest
-                .getQueryString());
+            Map<String, List<String>> queryParameters = this.liveTableFacade.getQueryParameters();
 
             stopWatches.getAdapterStopWatch().start();
             JSONObject inputObject = this.inputAdapter.convert(queryParameters);
             stopWatches.getAdapterStopWatch().stop();
 
-            this.authorize(inputObject);
+            this.liveTableFacade.authorizeEntitySearchInput(inputObject);
 
             stopWatches.getSearchStopWatch().start();
             EntitySearchResult<DocumentReference> documentSearchResult = this.documentSearch.search(inputObject);
             stopWatches.getSearchStopWatch().stop();
 
             stopWatches.getTableStopWatch().start();
-            JSONObject responseObject = this.getTableObject(documentSearchResult, inputObject, queryParameters);
+            JSONObject responseObject =
+                this.liveTableGenerator.generateTable(documentSearchResult, inputObject, queryParameters);
             stopWatches.getTableStopWatch().stop();
 
-            responseObject.put(EntitySearch.Keys.REQUEST_NUMBER_KEY, Long.valueOf(RequestUtils.getFirst(queryParameters,
-                EntitySearch.Keys.REQUEST_NUMBER_KEY, "0")));
-
-            responseObject.put(EntitySearch.Keys.OFFSET_KEY, Long.valueOf(RequestUtils.getFirst(queryParameters,
-                EntitySearch.Keys.OFFSET_KEY, "0")));
-
-            JSONObject timingsJSON = getTimingsJSON(stopWatches);
-            responseObject.put("timings", timingsJSON);
+            JSONObject timingsJSON = stopWatches.toJSONObject();
+            responseObject.put(LiveTableSearch.Keys.TIMINGS, timingsJSON);
 
             if (this.logger.isDebugEnabled()) {
                 this.logger.debug(timingsJSON.toString(4));
@@ -144,105 +100,11 @@ public class DefaultLiveTableSearchImpl implements LiveTableSearch
             return response.build();
         } catch (SecurityException e) {
             this.handleError(e, Status.UNAUTHORIZED);
-        } catch (XWikiException e) {
-            this.handleError(e, Status.INTERNAL_SERVER_ERROR);
         } catch (ServiceException | IllegalArgumentException e) {
             this.handleError(e, Status.BAD_REQUEST);
         }
 
         return Response.serverError().build();
-    }
-
-    /**
-     * Returns a response JSONObject based on the given EntitySearchResult.
-     * @param documentSearchResult the EntitySearchResult to use to generate the result table
-     * @param inputObject the query input object
-     * @param queryParameters the query parameters
-     * @return a JSONObject
-     * @throws XWikiException on an XWiki error
-     */
-    public JSONObject getTableObject(EntitySearchResult<DocumentReference> documentSearchResult,
-        JSONObject inputObject, Map<String, List<String>> queryParameters)
-        throws XWikiException
-    {
-        JSONObject responseObject = new JSONObject();
-
-        JSONArray rows = new JSONArray();
-        responseObject.put("rows", rows);
-
-        List<TableColumn> cols = this.getColumns(inputObject);
-
-        for (DocumentReference docRef : documentSearchResult.getItems()) {
-            JSONObject row = this.responseRowHandler.getRow(this.getDocument(docRef), cols, queryParameters);
-            if (row != null) {
-                rows.put(row);
-            }
-        }
-
-        responseObject.put("totalrows", documentSearchResult.getTotalRows());
-        responseObject.put("returnedrows", documentSearchResult.getReturnedRows());
-        responseObject.put("offset", documentSearchResult.getOffset() + 1);
-
-        return responseObject;
-    }
-
-    private XWikiDocument getDocument(DocumentReference docRef) throws XWikiException
-    {
-        if (docRef == null) {
-            return null;
-        }
-
-        try {
-            return (XWikiDocument) this.documentAccessBridge.getDocument(docRef);
-
-        } catch (Exception e) {
-            throw new XWikiException("Error while getting document " + docRef.getName(), e);
-        }
-    }
-
-    private List<TableColumn> getColumns(JSONObject jsonObject)
-    {
-        if (jsonObject.optJSONArray(EntitySearch.Keys.COLUMN_LIST_KEY) == null) {
-            throw new IllegalArgumentException(String.format("No %1$s key found.",
-                EntitySearch.Keys.COLUMN_LIST_KEY));
-        }
-
-        JSONArray columnArray = jsonObject.getJSONArray(EntitySearch.Keys.COLUMN_LIST_KEY);
-
-        List<TableColumn> columns = new LinkedList<>();
-
-        for (Object obj : columnArray) {
-            if (!(obj instanceof JSONObject)) {
-                throw new IllegalArgumentException(String.format("Column %1$s is not a JSONObject", obj));
-            }
-
-            columns.add(new TableColumn().populate((JSONObject) obj));
-        }
-
-        return columns;
-    }
-
-    private void authorize(JSONObject inputObject)
-    {
-        SpaceAndClass spaceAndClass = new SpaceAndClass(inputObject);
-
-        User currentUser = this.users.getCurrentUser();
-
-        EntityReference spaceRef = new EntityReference(spaceAndClass.getSpaceName(), EntityType.SPACE);
-
-        if (!this.access.hasAccess(Right.VIEW, currentUser == null ? null : currentUser.getProfileDocument(),
-            this.currentResolver.resolve(spaceRef, EntityType.SPACE))) {
-            throw new SecurityException(String.format("User [%s] is not authorized to access this data", currentUser));
-        }
-    }
-
-    private JSONObject getTimingsJSON(StopWatches stopWatches)
-    {
-        JSONObject timingsJSON = new JSONObject();
-        timingsJSON.put("adapter", stopWatches.getAdapterStopWatch().getTime());
-        timingsJSON.put("search", stopWatches.getSearchStopWatch().getTime());
-        timingsJSON.put("table", stopWatches.getTableStopWatch().getTime());
-        return timingsJSON;
     }
 
     private void handleError(Exception e, Status status)
@@ -251,27 +113,5 @@ public class DefaultLiveTableSearchImpl implements LiveTableSearch
             this.logger.debug("Error encountered", e);
         }
         throw new WebApplicationException(e, status);
-    }
-
-    private static class StopWatches
-    {
-        private StopWatch adapterStopWatch = new StopWatch();
-        private StopWatch searchStopWatch = new StopWatch();
-        private StopWatch tableStopWatch = new StopWatch();
-
-        public StopWatch getAdapterStopWatch()
-        {
-            return this.adapterStopWatch;
-        }
-
-        public StopWatch getSearchStopWatch()
-        {
-            return this.searchStopWatch;
-        }
-
-        public StopWatch getTableStopWatch()
-        {
-            return this.tableStopWatch;
-        }
     }
 }

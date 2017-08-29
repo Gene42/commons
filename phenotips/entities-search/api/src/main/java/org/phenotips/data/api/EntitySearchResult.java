@@ -24,7 +24,7 @@ public class EntitySearchResult<T>
 {
     private long totalRows;
 
-    private int offset;
+    private long offset;
 
     private List<T> items = new LinkedList<>();
 
@@ -66,7 +66,7 @@ public class EntitySearchResult<T>
      *
      * @return offset
      */
-    public int getOffset()
+    public long getOffset()
     {
         return this.offset;
     }
@@ -77,7 +77,7 @@ public class EntitySearchResult<T>
      * @param offset offset to set
      * @return this object
      */
-    public EntitySearchResult<T> setOffset(int offset)
+    public EntitySearchResult<T> setOffset(long offset)
     {
         this.offset = offset;
         return this;

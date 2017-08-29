@@ -91,7 +91,12 @@ public class DefaultDocumentSearchImpl implements EntitySearch<DocumentReference
 
         List<String> results;
         try {
-            results = this.getQueryResults(scriptQuery.execute());
+            if (Boolean.valueOf(JSONTools.getValue(queryParameters, Keys.COUNT_ONLY, "false"))) {
+                results = Collections.emptyList();
+            } else {
+                results = this.getQueryResults(scriptQuery.execute());
+            }
+
         } catch (QueryException e) {
             throw new ServiceException(e);
         }

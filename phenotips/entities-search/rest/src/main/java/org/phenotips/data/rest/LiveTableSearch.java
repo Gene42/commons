@@ -9,7 +9,6 @@ package org.phenotips.data.rest;
 
 import org.phenotips.rest.RequiredAccess;
 
-import org.xwiki.component.annotation.Role;
 import org.xwiki.rest.XWikiRestComponent;
 
 import javax.ws.rs.GET;
@@ -23,7 +22,6 @@ import javax.ws.rs.core.Response;
  *
  * @version $Id$
  */
-@Role
 @Path("/entities")
 public interface LiveTableSearch extends XWikiRestComponent
 {
@@ -38,5 +36,40 @@ public interface LiveTableSearch extends XWikiRestComponent
     @Produces(MediaType.APPLICATION_JSON)
     @RequiredAccess("view")
     Response search();
+
+    /**
+     * Holder for key values.
+     */
+    final class Keys
+    {
+        /**
+         * Result key.
+         */
+        public static final String TOTAL_ROWS = "totalrows";
+
+        /**
+         * Result key.
+         */
+        public static final String RETURNED_ROWS = "returnedrows";
+
+        /**
+         * Result key.
+         */
+        public static final String OFFSET = "offset";
+
+        /**
+         * Result key.
+         */
+        public static final String ROWS = "rows";
+
+        /**
+         * Result key.
+         */
+        public static final String TIMINGS = "timings";
+
+        private Keys()
+        { }
+
+    }
 }
 

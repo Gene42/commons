@@ -59,6 +59,9 @@ public interface EntitySearch<T>
         /** Input key. */
         public static final String FILTERS_KEY = "filters";
 
+        /** Input key. */
+        public static final String COUNT_ONLY = "count_only";
+
         private Keys()
         {
             // Empty

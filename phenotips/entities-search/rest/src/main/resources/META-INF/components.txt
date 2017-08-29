@@ -1,5 +1,7 @@
 org.phenotips.data.rest.internal.DefaultLiveTableSearchImpl
 org.phenotips.data.rest.internal.DefaultLiveTableRowHandler
 org.phenotips.data.rest.internal.DefaultLiveTableColumnHandler
+org.phenotips.data.rest.internal.LiveTableFacade
+org.phenotips.data.rest.internal.DocumentLiveTableGenerator
 org.phenotips.data.rest.internal.adapter.URLInputAdapter
 

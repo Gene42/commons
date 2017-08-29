@@ -58,7 +58,7 @@ public class QueryExpression implements QueryElement
     private SpaceAndClass spaceAndClass;
     private PropertyName propertyName;
 
-    private String not;
+    private String negatePrefix;
 
     /**
      * Constructor.
@@ -137,9 +137,9 @@ public class QueryExpression implements QueryElement
         }
 
         if (SearchUtils.BOOLEAN_TRUE_SET.contains(JSONTools.getValue(input, QueryExpression.NEGATE_KEY))) {
-            this.not = " not ";
+            this.negatePrefix = " not ";
         } else {
-            this.not = "";
+            this.negatePrefix = "";
         }
 
         this.orMode = StringUtils.equals(this.joinMode, "or");
@@ -182,14 +182,14 @@ public class QueryExpression implements QueryElement
 
         where.appendOperator().saveAndReset(this.joinMode);
 
-        where.append(" (");
+        where.append(this.negatePrefix).append(" (");
 
         for (QueryElement expression : this.expressions) {
             expression.addValueConditions(where, bindingValues);
         }
 
         for (DocumentQuery documentQuery : this.documentQueries) {
-            where.appendOperator().append(this.not).append(" exists(");
+            where.appendOperator().append(documentQuery.getExpression().negatePrefix).append(" exists(");
             documentQuery.hql(where, bindingValues).append(") ");
         }
 

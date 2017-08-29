@@ -14,6 +14,8 @@ import org.phenotips.data.api.internal.SpaceAndClass;
 import org.phenotips.data.api.internal.filter.OrderFilter;
 import org.phenotips.data.api.internal.filter.StringFilter;
 
+import org.xwiki.users.User;
+
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedList;
@@ -33,6 +35,9 @@ import org.json.JSONObject;
 public class DocumentSearchBuilder implements Builder<JSONObject>
 {
     private static final String PHENO_TIPS_COLLABORATOR_CLASS = "PhenoTips.CollaboratorClass";
+    private static final String AND = "and";
+    private static final String OR = "or";
+    private static final String DEFAULT_SORT_PARAM = "doc.name";
 
     private JSONObject searchQuery = new JSONObject();
 
@@ -41,12 +46,9 @@ public class DocumentSearchBuilder implements Builder<JSONObject>
     private AbstractFilterBuilder<String> sortFilter;
 
     private List<DocumentSearchBuilder> queries = new LinkedList<>();
-
     private List<AbstractFilterBuilder> filters = new LinkedList<>();
 
     private DocumentSearchBuilder parent;
-
-    private boolean negate;
 
     /**
      * Constructor.
@@ -104,7 +106,7 @@ public class DocumentSearchBuilder implements Builder<JSONObject>
     }
 
     /**
-     *  Adds the given DocumentSearchBuilder as a new subquery of this query.
+     *  Adds the given DocumentSearchBuilder as a new sub-query of this query.
      * @param subQuery the subQuery to add
      * @return the given subQuery
      */
@@ -134,7 +136,7 @@ public class DocumentSearchBuilder implements Builder<JSONObject>
      */
     public DocumentSearchBuilder setJoinModeToAnd()
     {
-        this.searchQuery.put(DocumentQuery.JOIN_MODE_KEY, "and");
+        this.searchQuery.put(DocumentQuery.JOIN_MODE_KEY, AND);
         return this;
     }
 
@@ -144,7 +146,7 @@ public class DocumentSearchBuilder implements Builder<JSONObject>
      */
     public DocumentSearchBuilder setJoinModeToOr()
     {
-        this.searchQuery.put(DocumentQuery.JOIN_MODE_KEY, "or");
+        this.searchQuery.put(DocumentQuery.JOIN_MODE_KEY, OR);
         return this;
     }
 
@@ -208,7 +210,7 @@ public class DocumentSearchBuilder implements Builder<JSONObject>
      */
     public DocumentSearchBuilder onlyForUser(String fullUserName, Collection<String> fullUserGroupNames)
     {
-        return this.onlyForUser(fullUserName, fullUserGroupNames, null);
+        return this.onlyForUser(fullUserName, fullUserGroupNames, true, Arrays.asList("public", "open"), null);
     }
 
     /**
@@ -220,22 +222,29 @@ public class DocumentSearchBuilder implements Builder<JSONObject>
      *                     ie: xwiki:XWiki.TestUser
      * @param fullUserGroupNames the full names of all groups the user with the given name belongs to
      *                           ie: xwiki:Groups.TestGroup
+     * @param checkOwnership if true, an ownership filter will be added
+     * @param visibilityValues a list of visibility values to filter on. If empty/null no filter will be added
      * @param accessRight the access right the user has over a document in order for it to be included in the search
      *                    result
      * @return this object
      */
     public DocumentSearchBuilder onlyForUser(String fullUserName, Collection<String> fullUserGroupNames,
-        String accessRight)
+        boolean checkOwnership, List<String> visibilityValues, String accessRight)
     {
-        DocumentSearchBuilder builder = this.newExpression()
-            .setJoinModeToOr()
-            .newStringFilter("owner")
-            .setMatch(StringFilter.MATCH_EXACT)
-            .setSpaceAndClass("PhenoTips.OwnerClass")
-            .setValue(fullUserName).back()
-            .newStringFilter("visibility")
-            .setSpaceAndClass("PhenoTips.VisibilityClass")
-            .setValues(Arrays.asList("public", "open")).back();
+        DocumentSearchBuilder builder = this.newExpression().setJoinModeToOr();
+
+        if (checkOwnership) {
+            builder.newStringFilter("owner")
+                .setMatch(StringFilter.MATCH_EXACT)
+                .setSpaceAndClass("PhenoTips.OwnerClass")
+                .setValue(fullUserName);
+        }
+
+        if (CollectionUtils.isNotEmpty(visibilityValues)) {
+            builder.newStringFilter("visibility")
+                .setSpaceAndClass("PhenoTips.VisibilityClass")
+                .setValues(visibilityValues);
+        }
 
         if (accessRight != null) {
             builder = builder
@@ -248,13 +257,37 @@ public class DocumentSearchBuilder implements Builder<JSONObject>
                 .back();
         }
 
-        builder.newStringFilter("collaborator")
-            .setMatch(StringFilter.MATCH_EXACT)
-            .setSpaceAndClass(PHENO_TIPS_COLLABORATOR_CLASS)
-            .setValue(fullUserName)
-            .addValues(fullUserGroupNames);
+        if (CollectionUtils.isNotEmpty(fullUserGroupNames)) {
+            builder.newStringFilter("collaborator")
+                   .setMatch(StringFilter.MATCH_EXACT)
+                   .setSpaceAndClass(PHENO_TIPS_COLLABORATOR_CLASS)
+                   .setValue(fullUserName)
+                   .addValues(fullUserGroupNames);
+        }
 
         return this;
+    }
+
+    /**
+     * Adds an inner query which checks for ownership (user), visibility (public, open) and collaborators
+     * (both user and groups the user belongs to). Should be used on non Admin users.
+     * They are checked with an OR operator, so only one of them is needed to match.
+     *
+     * @param user the user to use for checking ownership and collaboration status
+     *                     ie: xwiki:XWiki.TestUser
+     * @param fullUserGroupNames the full names of all groups the user with the given name belongs to
+     *                           ie: xwiki:Groups.TestGroup
+     * @param checkOwnership if true, an ownership filter will be added
+     * @param visibilityValues a list of visibility values to filter on. If empty/null no filter will be added
+     * @param accessRight the access right the user has over a document in order for it to be included in the search
+     *                    result
+     * @return this object
+     */
+    public DocumentSearchBuilder onlyForUser(User user, Collection<String> fullUserGroupNames,
+        boolean checkOwnership, List<String> visibilityValues, String accessRight)
+    {
+        return this.onlyForUser(
+            user.getProfileDocument().toString(), fullUserGroupNames, checkOwnership, visibilityValues, accessRight);
     }
 
     /**
@@ -341,24 +374,27 @@ public class DocumentSearchBuilder implements Builder<JSONObject>
     }
 
     /**
-     * Negates this query, ie 'exits' becomes 'not exists'. If you call this twice it will go back to original value.
-     * !!true = true
+     * Setter for negate.
+     *
+     * @param negate negate to set
      * @return this object
      */
-    public DocumentSearchBuilder negate()
+    public DocumentSearchBuilder setNegate(boolean negate)
     {
-        this.negate = !this.negate;
+        this.searchQuery.put(QueryExpression.NEGATE_KEY, negate);
         return this;
     }
 
     /**
-     * Getter for negate.
+     * Setter for countOnly.
      *
-     * @return negate
+     * @param countOnly countOnly to set
+     * @return this object
      */
-    public boolean isNegated()
+    public DocumentSearchBuilder setCountOnly(boolean countOnly)
     {
-        return this.negate;
+        this.searchQuery.put(EntitySearch.Keys.COUNT_ONLY, countOnly);
+        return this;
     }
 
     /**
@@ -378,7 +414,7 @@ public class DocumentSearchBuilder implements Builder<JSONObject>
      */
     public String getJoinMode()
     {
-        return this.searchQuery.optString(DocumentQuery.JOIN_MODE_KEY, "and");
+        return this.searchQuery.optString(DocumentQuery.JOIN_MODE_KEY, AND);
     }
 
     @Override
@@ -410,17 +446,13 @@ public class DocumentSearchBuilder implements Builder<JSONObject>
 
         this.searchQuery.put(SpaceAndClass.CLASS_KEY, this.docSpaceAndClass);
 
-        if (this.negate) {
-            this.searchQuery.put(QueryExpression.NEGATE_KEY, true);
-        }
-
         return new JSONObject(this.searchQuery.toString());
     }
 
     private DocumentSearchBuilder checkSortFilter()
     {
         if (this.parent == null && this.sortFilter == null) {
-            this.sortFilter = new StringFilterBuilder("doc.name", this)
+            this.sortFilter = new StringFilterBuilder(DEFAULT_SORT_PARAM, this)
                 .setSpaceAndClass(this.docSpaceAndClass)
                 .setType(OrderFilter.TYPE)
                 .setValue(OrderFilter.ASC);
