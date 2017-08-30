@@ -295,7 +295,7 @@ public class DocumentSearchBuilder implements Builder<JSONObject>
      *
      * @return offset
      */
-    public int getOffset()
+    public long getOffset()
     {
         return this.searchQuery.optInt(EntitySearch.Keys.OFFSET_KEY, 0);
     }
@@ -306,7 +306,7 @@ public class DocumentSearchBuilder implements Builder<JSONObject>
      * @param offset offset to set
      * @return this object
      */
-    public DocumentSearchBuilder setOffset(int offset)
+    public DocumentSearchBuilder setOffset(long offset)
     {
         if (this.parent == null) {
             this.searchQuery.put(EntitySearch.Keys.OFFSET_KEY, offset);
