@@ -58,7 +58,7 @@ public class QueryExpression implements QueryElement
     private SpaceAndClass spaceAndClass;
     private PropertyName propertyName;
 
-    private String negatePrefix;
+    private boolean negate;
 
     /**
      * Constructor.
@@ -136,11 +136,7 @@ public class QueryExpression implements QueryElement
             this.joinMode = QueryExpression.JOIN_MODE_DEFAULT_VALUE;
         }
 
-        if (SearchUtils.BOOLEAN_TRUE_SET.contains(JSONTools.getValue(input, QueryExpression.NEGATE_KEY))) {
-            this.negatePrefix = " not ";
-        } else {
-            this.negatePrefix = "";
-        }
+        this.negate = SearchUtils.BOOLEAN_TRUE_SET.contains(JSONTools.getValue(input, QueryExpression.NEGATE_KEY));
 
         this.orMode = StringUtils.equals(this.joinMode, "or");
 
@@ -182,14 +178,17 @@ public class QueryExpression implements QueryElement
 
         where.appendOperator().saveAndReset(this.joinMode);
 
-        where.append(this.negatePrefix).append(" (");
+        // We check if it's a document query because if it is, it will be negated
+        //   by the second for-loop (by the parent)
+        where.append(getNegatePrefix(this.negate && !this.isDocumentQueryExpression())).append(" (");
 
         for (QueryElement expression : this.expressions) {
             expression.addValueConditions(where, bindingValues);
         }
 
         for (DocumentQuery documentQuery : this.documentQueries) {
-            where.appendOperator().append(documentQuery.getExpression().negatePrefix).append(" exists(");
+            where.appendOperator().append(getNegatePrefix(documentQuery.getExpression().negate))
+                .append(" exists(");
             documentQuery.hql(where, bindingValues).append(") ");
         }
 
@@ -217,6 +216,24 @@ public class QueryExpression implements QueryElement
             }
         }
         return this;
+    }
+
+    /**
+     * Returns whether or not this expression is a DocumentQuery expression.
+     * @return true if yes false otherwise
+     */
+    public boolean isDocumentQueryExpression()
+    {
+        return this.parentQuery.getExpression() == this;
+    }
+
+    private static String getNegatePrefix(boolean negate)
+    {
+        if (negate) {
+            return " not ";
+        } else {
+            return StringUtils.EMPTY;
+        }
     }
 
     private PropertyName getFirstProp()
