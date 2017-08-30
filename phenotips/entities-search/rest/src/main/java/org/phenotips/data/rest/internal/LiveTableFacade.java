@@ -57,6 +57,10 @@ public class LiveTableFacade
     @Named("current")
     private EntityReferenceResolver<EntityReference> currentResolver;
 
+    /**
+     * Returns the current REST request query parameters as a map of lists.
+     * @return a Map where the key is the param name, and the value is the parameter's values
+     */
     public Map<String, List<String>> getQueryParameters()
     {
         XWikiRequest xwikiRequest = this.xContextProvider.get().getRequest();
@@ -64,6 +68,12 @@ public class LiveTableFacade
         return RequestUtils.getQueryParameters(httpServletRequest.getQueryString());
     }
 
+    /**
+     * Checks to see if the current user has permission to view the document class which the EntitySearch will use as
+     * input (the document class of the query, for example PhenoTips.PatientClass).
+     *
+     * @param inputObject the JSONObject containing the class entry
+     */
     public void authorizeEntitySearchInput(JSONObject inputObject)
     {
         SpaceAndClass spaceAndClass = new SpaceAndClass(inputObject);
