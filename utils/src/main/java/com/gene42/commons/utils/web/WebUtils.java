@@ -98,7 +98,7 @@ public final class WebUtils
 
         if (status == null) {
             status = Response.Status.INTERNAL_SERVER_ERROR;
-            if (logger != null) {
+            if (logger != null && logger.isErrorEnabled()) {
                 logger.error(status.toString(), e);
             }
             message = "Uh oh, something went wrong on the server. Contact an admin if it persists.";
@@ -176,12 +176,7 @@ public final class WebUtils
                 Response.Status.BAD_REQUEST, "Key is missing", object.toString(), key));
         }
 
-        if (jsonBadCast(value, clazz)) {
-            throw new WebApplicationException(getErrorResponse(
-                Response.Status.BAD_REQUEST, "Key is of wrong type", object.toString(), key));
-        }
-
-        return (T) value;
+        return castJSONObject(value, clazz);
     }
 
     /**
@@ -259,7 +254,8 @@ public final class WebUtils
         boolean intBool = clazz == Integer.class && (value instanceof Integer);
         boolean doubleBool = clazz == Double.class && (value instanceof Double);
         boolean longBool = clazz == Long.class && (value instanceof Long);
-        boolean two = intBool || doubleBool || longBool;
+        boolean numberBool = clazz == Number.class && (value instanceof Number);
+        boolean two = intBool || doubleBool || longBool || numberBool;
         return !(one || two);
     }
 }

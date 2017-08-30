@@ -199,7 +199,7 @@ public class DocumentQuery
             this.expression.createBindings();
         }
 
-        if (input.has(EntitySearch.Keys.SORT_KEY) && !this.countQuery) {
+        if (input.has(EntitySearch.Keys.SORT_KEY)) {
             JSONObject sortFilter = input.getJSONObject(EntitySearch.Keys.SORT_KEY);
             this.orderFilter = this.filterFactory.getFilter(sortFilter).init(sortFilter, this, this.expression);
             this.orderFilter.createBindings();
@@ -297,7 +297,7 @@ public class DocumentQuery
             select.append(" distinct ").append(this.docName).append(".fullName");
         }
 
-        if (this.orderFilter != null) {
+        if (this.orderFilter != null && !this.countQuery) {
             select.append(", ").append(this.orderFilter.getPropertyValueNameForQuery());
         }
 
@@ -355,7 +355,7 @@ public class DocumentQuery
 
         where.append(" and ").append(this.docName).append(".fullName not like '%Template%' ESCAPE '!' ) ");
 
-        if (this.orderFilter != null) {
+        if (this.orderFilter != null && !this.countQuery) {
             this.orderFilter.addValueConditions(where, bindingValues);
         }
 
