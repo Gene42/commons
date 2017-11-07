@@ -11,7 +11,7 @@
   <parent>
     <groupId>com.gene42.commons</groupId>
     <artifactId>gene42-commons-entities-search</artifactId>
-    <version>1.0.7-SNAPSHOT</version>
+    <version>1.0.7</version>
   </parent>
 
   <artifactId>gene42-commons-entities-search-rest</artifactId>
