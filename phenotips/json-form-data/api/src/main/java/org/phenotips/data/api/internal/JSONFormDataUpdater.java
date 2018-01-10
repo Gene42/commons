@@ -17,6 +17,7 @@ import org.xwiki.container.servlet.ServletRequest;
 import org.xwiki.observation.AbstractEventListener;
 import org.xwiki.observation.event.Event;
 
+import java.util.ConcurrentModificationException;
 import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
@@ -104,7 +105,8 @@ public class JSONFormDataUpdater extends AbstractEventListener
         try {
             if (!this.lockWithTimeout.acquireLockOrReturn(patientId, 60, TimeUnit.SECONDS, 2)) {
                 this.logger.error("ActionExecutingEvent: save | failed to acquire lock, will not save");
-                return;
+                throw new ConcurrentModificationException(
+                    String.format("Patient [%s] is already being saved. Refresh data and try again.", patientId));
             }
 
             doc = (XWikiDocument) this.documentAccessBridge.getDocument(doc.getDocumentReference());
