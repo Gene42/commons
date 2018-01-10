@@ -31,6 +31,12 @@
       <version>${phenotips.version}</version>
     </dependency>
 
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>gene42-commons-controllers</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
     <!-- Other -->
     <dependency>
       <groupId>org.hsqldb</groupId>
@@ -42,7 +48,7 @@
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
     </dependency>
-    
+
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
