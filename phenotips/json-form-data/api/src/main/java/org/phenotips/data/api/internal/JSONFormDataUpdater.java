@@ -102,13 +102,13 @@ public class JSONFormDataUpdater extends AbstractEventListener
         JSONObject aggregate = new JSONObject();
 
         String patientId = doc.getDocumentReference().getName();
-        try {
-            if (!this.lockWithTimeout.acquireLockOrReturn(patientId, 60, TimeUnit.SECONDS, 2)) {
-                this.logger.error("ActionExecutingEvent: save | failed to acquire lock, will not save");
-                throw new ConcurrentModificationException(
-                    String.format("Patient [%s] is already being saved. Refresh data and try again.", patientId));
-            }
+        if (!this.lockWithTimeout.acquireLockOrReturn(patientId, 60, TimeUnit.SECONDS, 2)) {
+            this.logger.error("ActionExecutingEvent: save | failed to acquire lock, will not save");
+            throw new ConcurrentModificationException(
+                String.format("Patient [%s] is already being saved. Refresh data and try again.", patientId));
+        }
 
+        try {
             doc = (XWikiDocument) this.documentAccessBridge.getDocument(doc.getDocumentReference());
             // 1. Aggregate all form JSONs into one, so that we don't have to save the document more than once
             for (String jsonString : formUpdate) {
