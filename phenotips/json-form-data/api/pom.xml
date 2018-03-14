@@ -24,6 +24,11 @@
   </properties>
 
   <dependencies>
+    <dependency>
+      <groupId>org.phenotips</groupId>
+      <artifactId>patient-data-default-impl</artifactId>
+    </dependency>
+
     <!-- PhenoTips -->
     <dependency>
       <groupId>${phenotips.groupId}</groupId>
@@ -47,11 +52,6 @@
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <scope>test</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.phenotips</groupId>
-      <artifactId>patient-data-default-impl</artifactId>
     </dependency>
   </dependencies>
 
