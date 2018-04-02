@@ -92,7 +92,7 @@ public class JSONFormDataUpdater extends AbstractEventListener
             }
 
             // 2. Call all controllers
-            new PhenoTipsPatient(doc).loadFromJson(aggregate);
+            new PhenoTipsPatient(doc).updateFromJSON(aggregate, true);
 
         } catch (JSONException e) {
             this.logger.warn(
