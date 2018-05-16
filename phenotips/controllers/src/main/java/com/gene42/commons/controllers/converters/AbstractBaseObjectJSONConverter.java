@@ -13,7 +13,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -89,25 +88,12 @@ public abstract class AbstractBaseObjectJSONConverter implements BaseObjectJSONC
     @Override
     public BaseObject populateBaseObject(JSONObject from, BaseObject to, XWikiContext context)
     {
-        return this.populateBaseObject(from, to, context, this.getKeyTypesMapEntrySet());
-    }
-
-    @Override
-    public BaseObject populateBaseObject(JSONObject from, BaseObject to, XWikiContext context,
-        Set<Map.Entry<String, Class>> keyTypesMapEntrySet)
-    {
-        return this.populateBaseObject(from, to, context, keyTypesMapEntrySet, this.getJSONToXObjFunctionMap());
-    }
-
-    @Override
-    public BaseObject populateBaseObject(JSONObject from, BaseObject to, XWikiContext context,
-        Set<Map.Entry<String, Class>> keyTypesMapEntrySet, Map<Class, JSONToXObj> functionMap)
-    {
         if (from == null || to == null) {
             return to;
         }
+        Map<Class, JSONToXObj> functionMap = this.getJSONToXObjFunctionMap();
 
-        for (Map.Entry<String, Class> entry : keyTypesMapEntrySet) {
+        for (Map.Entry<String, Class> entry : this.getKeyTypesMapEntrySet()) {
             JSONToXObj func = functionMap.get(entry.getValue());
             String key = entry.getKey();
             if (func != null && jsonValueIsNotNull(from, key, entry.getValue())) {
@@ -126,31 +112,34 @@ public abstract class AbstractBaseObjectJSONConverter implements BaseObjectJSONC
     @Override
     public JSONObject populateJSONObject(BaseObject from, JSONObject to)
     {
-        return this.populateJSONObject(from, to, this.getKeyTypesMapEntrySet());
-    }
-
-    @Override
-    public JSONObject populateJSONObject(BaseObject from, JSONObject to,
-        Set<Map.Entry<String, Class>> keyTypesMapEntrySet)
-    {
-        return this.populateJSONObject(from, to, keyTypesMapEntrySet, this.getXObjToJSONFunctionMap());
-    }
-
-    @Override
-    public JSONObject populateJSONObject(BaseObject from, JSONObject to,
-        Set<Map.Entry<String, Class>> keyTypesMapEntrySet, Map<Class, XObjToJSON> functionMap)
-    {
         if (from == null || to == null) {
             return to;
         }
 
-        for (Map.Entry<String, Class> entry : keyTypesMapEntrySet) {
+        Map<Class, XObjToJSON> functionMap = this.getXObjToJSONFunctionMap();
+
+        for (Map.Entry<String, Class> entry : this.getKeyTypesMapEntrySet()) {
             XObjToJSON func = functionMap.get(entry.getValue());
             if (func != null && from.safeget(entry.getKey()) != null) {
                 func.apply(from, to, entry.getKey());
             }
         }
         return to;
+    }
+
+    @Override
+    public boolean equals(JSONObject jsonObject, BaseObject baseObject)
+    {
+        boolean result;
+        if (jsonObject == null && baseObject == null) {
+            result = true;
+        } else if (jsonObject == null || baseObject == null) {
+            result = false;
+        } else {
+            result = false;
+        }
+
+        return result;
     }
 
     @Override
