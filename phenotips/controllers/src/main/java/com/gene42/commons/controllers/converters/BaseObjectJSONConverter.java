@@ -79,19 +79,19 @@ public interface BaseObjectJSONConverter
      *  {"id", String.class}, {"date", String.class}, {"isNormal", Boolean.class}, {"sd", Float.class} ...
      * @return a Set
      */
-    Set<Map.Entry<String, Class>> getKeyTypesMapEntrySet();
+    Set<Map.Entry<String, Class<?>>> getKeyTypesMapEntrySet();
 
     /**
      * Returns the Function map for converting properties of a BaseObject into JSONObject entries.
      * @return a Map
      */
-    Map<Class, XObjToJSON> getXObjToJSONFunctionMap();
+    Map<Class<?>, XObjToJSON> getXObjToJSONFunctionMap();
 
     /**
      * Returns the Function map for converting entries of a JSONObject into  BaseObject properties.
      * @return a Map
      */
-    Map<Class, JSONToXObj> getJSONToXObjFunctionMap();
+    Map<Class<?>, JSONToXObj> getJSONToXObjFunctionMap();
 
     /**
      * Functional Interface for converting a BaseObject to a JSONObject.

@@ -13,6 +13,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -42,9 +43,9 @@ public abstract class AbstractBaseObjectJSONConverter implements BaseObjectJSONC
         UTC_ZONE);
 
     /** Function map from BaseObject to JSON. */
-    protected static final Map<Class, XObjToJSON> X_OBJ_TO_JSON;
+    protected static final Map<Class<?>, XObjToJSON> X_OBJ_TO_JSON;
     static {
-        Map<Class, XObjToJSON> tempMap = new HashMap<>();
+        Map<Class<?>, XObjToJSON> tempMap = new HashMap<>();
         tempMap.put(String.class, (from, to, fieldName)
             -> to.putOpt(fieldName, from.getStringValue(fieldName)));
         tempMap.put(TextAreaClass.class, (from, to, fieldName)
@@ -60,9 +61,9 @@ public abstract class AbstractBaseObjectJSONConverter implements BaseObjectJSONC
     }
 
     /** Function map from BaseObject to JSON. */
-    protected static final Map<Class, JSONToXObj> JSON_TO_X_OBJ;
+    protected static final Map<Class<?>, JSONToXObj> JSON_TO_X_OBJ;
     static {
-        Map<Class, JSONToXObj> tempMap = new HashMap<>();
+        Map<Class<?>, JSONToXObj> tempMap = new HashMap<>();
         tempMap.put(String.class, (from, to, fieldName, context)
             -> to.setStringValue(fieldName, from.getString(fieldName)));
         tempMap.put(TextAreaClass.class, (from, to, fieldName, context)
@@ -91,9 +92,9 @@ public abstract class AbstractBaseObjectJSONConverter implements BaseObjectJSONC
         if (from == null || to == null) {
             return to;
         }
-        Map<Class, JSONToXObj> functionMap = this.getJSONToXObjFunctionMap();
+        Map<Class<?>, JSONToXObj> functionMap = this.getJSONToXObjFunctionMap();
 
-        for (Map.Entry<String, Class> entry : this.getKeyTypesMapEntrySet()) {
+        for (Map.Entry<String, Class<?>> entry : this.getKeyTypesMapEntrySet()) {
             JSONToXObj func = functionMap.get(entry.getValue());
             String key = entry.getKey();
             if (func != null && jsonValueIsNotNull(from, key, entry.getValue())) {
@@ -116,9 +117,9 @@ public abstract class AbstractBaseObjectJSONConverter implements BaseObjectJSONC
             return to;
         }
 
-        Map<Class, XObjToJSON> functionMap = this.getXObjToJSONFunctionMap();
+        Map<Class<?>, XObjToJSON> functionMap = this.getXObjToJSONFunctionMap();
 
-        for (Map.Entry<String, Class> entry : this.getKeyTypesMapEntrySet()) {
+        for (Map.Entry<String, Class<?>> entry : this.getKeyTypesMapEntrySet()) {
             XObjToJSON func = functionMap.get(entry.getValue());
             if (func != null && from.safeget(entry.getKey()) != null) {
                 func.apply(from, to, entry.getKey());
@@ -136,20 +137,35 @@ public abstract class AbstractBaseObjectJSONConverter implements BaseObjectJSONC
         } else if (jsonObject == null || baseObject == null) {
             result = false;
         } else {
-            result = false;
+            result = areJSONObjectsEqual(jsonObject, this.toJSONObject(baseObject));
         }
 
         return result;
     }
 
+    private static boolean areJSONObjectsEqual(JSONObject object1, JSONObject object2)
+    {
+        if (object1.length() != object2.length()) {
+            return false;
+        }
+
+        for (String key : object1.keySet()) {
+            if (!Objects.equals(object1.opt(key), object2.opt(key))) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     @Override
-    public Map<Class, XObjToJSON> getXObjToJSONFunctionMap()
+    public Map<Class<?>, XObjToJSON> getXObjToJSONFunctionMap()
     {
         return X_OBJ_TO_JSON;
     }
 
     @Override
-    public Map<Class, JSONToXObj> getJSONToXObjFunctionMap()
+    public Map<Class<?>, JSONToXObj> getJSONToXObjFunctionMap()
     {
         return JSON_TO_X_OBJ;
     }
