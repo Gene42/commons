@@ -143,13 +143,10 @@ public abstract class AbstractBaseObjectJSONConverter implements BaseObjectJSONC
         return result;
     }
 
-    private static boolean areJSONObjectsEqual(JSONObject object1, JSONObject object2)
+    private boolean areJSONObjectsEqual(JSONObject object1, JSONObject object2)
     {
-        if (object1.length() != object2.length()) {
-            return false;
-        }
-
-        for (String key : object1.keySet()) {
+        for (Map.Entry<String, Class<?>> entry : this.getKeyTypesMapEntrySet()) {
+            String key = entry.getKey();
             if (!Objects.equals(object1.opt(key), object2.opt(key))) {
                 return false;
             }
