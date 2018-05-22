@@ -137,7 +137,7 @@ public abstract class AbstractBaseObjectJSONConverter implements BaseObjectJSONC
         } else if (jsonObject == null || baseObject == null) {
             result = false;
         } else {
-            result = areJSONObjectsEqual(jsonObject, this.toJSONObject(baseObject));
+            result = this.areJSONObjectsEqual(jsonObject, this.toJSONObject(baseObject));
         }
 
         return result;
