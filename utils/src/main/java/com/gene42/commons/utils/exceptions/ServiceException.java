@@ -15,6 +15,7 @@ package com.gene42.commons.utils.exceptions;
 public class ServiceException extends Exception
 {
     private static final Integer DEFAULT_CODE = null;
+    private static final long serialVersionUID = -5902738439069545560L;
 
     private final Status status;
     private final Integer code;
