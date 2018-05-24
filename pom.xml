@@ -163,6 +163,16 @@
             <tagNameFormat combine.self="override">gene42-commons-@{project.version}</tagNameFormat>
           </configuration>
         </plugin>
+        <plugin>
+          <artifactId>maven-javadoc-plugin</artifactId>
+          <configuration>
+            <tagletArtifact>
+              <groupId>${phenotips.groupId}</groupId>
+              <artifactId>phenotips-taglets</artifactId>
+              <version>${buildtools.version}</version>
+            </tagletArtifact>
+          </configuration>
+        </plugin>
       </plugins>
     </pluginManagement>
   </build>
