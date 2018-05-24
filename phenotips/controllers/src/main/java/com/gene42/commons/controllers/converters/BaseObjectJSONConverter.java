@@ -95,6 +95,12 @@ public interface BaseObjectJSONConverter
     Map<Class<?>, JSONToXObj> getJSONToXObjFunctionMap();
 
     /**
+     * Returns the Function map for converting entries of a JSONObject into  BaseObject properties.
+     * @return a Map
+     */
+    Map<Class<?>, CompareXObj> getCompareXObjFunctionMap();
+
+    /**
      * Functional Interface for converting a BaseObject to a JSONObject.
      */
     @FunctionalInterface
@@ -122,5 +128,20 @@ public interface BaseObjectJSONConverter
          * @param fieldName the field name to grab from the JSONObject
          */
         void apply(JSONObject from, BaseObject to, String fieldName, XWikiContext context);
+    }
+
+    /**
+     * Functional Interface for converting a JSONObject to a BaseObject.
+     */
+    @FunctionalInterface
+    interface CompareXObj
+    {
+        /**
+         * Takes the field from the JSONObject and inserts it into the given BaseObject.
+         * @param obj1 BaseObject first object to compare
+         * @param obj2 BaseObject to insert into
+         * @param fieldName the field name to grab from the JSONObject
+         */
+        boolean equals(BaseObject obj1, BaseObject obj2, String fieldName, XWikiContext context);
     }
 }

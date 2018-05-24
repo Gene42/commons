@@ -22,6 +22,7 @@ import org.json.JSONObject;
 import com.gene42.commons.utils.DateTools;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.objects.BaseObject;
+import com.xpn.xwiki.objects.PropertyInterface;
 import com.xpn.xwiki.objects.classes.TextAreaClass;
 
 /**
@@ -76,6 +77,26 @@ public abstract class AbstractBaseObjectJSONConverter implements BaseObjectJSONC
             -> to.setDateValue(fieldName, DateTools.stringToDate(from.getString(fieldName), DATE_TIME_FORMATTER)));
 
         JSON_TO_X_OBJ = Collections.unmodifiableMap(tempMap);
+    }
+
+    /** Function map for comparing BaseObject. */
+    protected static final Map<Class<?>, CompareXObj> COMPARE_X_OBJ;
+    static {
+        Map<Class<?>, CompareXObj> tempMap = new HashMap<>();
+        tempMap.put(String.class, (o1, o2, fieldName, context)
+            -> Objects.equals(o1.getStringValue(fieldName), o2.getStringValue(fieldName)));
+        tempMap.put(TextAreaClass.class, (o1, o2, fieldName, context)
+            -> Objects.equals(o1.getLargeStringValue(fieldName), o2.getLargeStringValue(fieldName)));
+        tempMap.put(Double.class, (o1, o2, fieldName, context)
+            -> Objects.equals(o1.getDoubleValue(fieldName), o2.getDoubleValue(fieldName)));
+        tempMap.put(Boolean.class, (o1, o2, fieldName, context)
+            -> Objects.equals(BooleanUtils.toBoolean(o1.getIntValue(fieldName), 1, 0),
+                BooleanUtils.toBoolean(o2.getIntValue(fieldName), 1, 0)));
+        tempMap.put(Date.class, (o1, o2, fieldName, context)
+            -> Objects.equals(DateTools.dateToString(o1.getDateValue(fieldName), DATE_TIME_FORMATTER),
+                DateTools.dateToString(o2.getDateValue(fieldName), DATE_TIME_FORMATTER)));
+
+        COMPARE_X_OBJ = Collections.unmodifiableMap(tempMap);
     }
 
     @Override
@@ -137,18 +158,26 @@ public abstract class AbstractBaseObjectJSONConverter implements BaseObjectJSONC
         } else if (jsonObject == null || baseObject == null) {
             result = false;
         } else {
-            result = this.areBaseObjectsEqual(this.toBaseObject(jsonObject, context), baseObject);
+            result = this.areBaseObjectsEqual(this.toBaseObject(jsonObject, context), baseObject, context);
         }
 
         return result;
     }
 
-    private boolean areBaseObjectsEqual(BaseObject object1, BaseObject object2)
+    private boolean areBaseObjectsEqual(BaseObject object1, BaseObject object2, XWikiContext context)
     {
+        Map<Class<?>, CompareXObj> functionMap = this.getCompareXObjFunctionMap();
+
         for (Map.Entry<String, Class<?>> entry : this.getKeyTypesMapEntrySet()) {
             String key = entry.getKey();
 
-            if (!Objects.equals(object1.safeget(key), object2.safeget(key))) {
+            PropertyInterface value1 = object1.safeget(key);
+            PropertyInterface value2 = object2.safeget(key);
+
+            CompareXObj func = functionMap.get(entry.getValue());
+
+            if ((value1 == null && value2 != null) || (value2 == null && value1 != null)
+                    || (func != null && !func.equals(object1, object2, key, context))) {
                 return false;
             }
         }
@@ -165,6 +194,11 @@ public abstract class AbstractBaseObjectJSONConverter implements BaseObjectJSONC
     public Map<Class<?>, JSONToXObj> getJSONToXObjFunctionMap()
     {
         return JSON_TO_X_OBJ;
+    }
+
+    @Override
+    public Map<Class<?>, CompareXObj> getCompareXObjFunctionMap() {
+        return COMPARE_X_OBJ;
     }
 
     /**
