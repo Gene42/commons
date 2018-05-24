@@ -129,7 +129,7 @@ public abstract class AbstractBaseObjectJSONConverter implements BaseObjectJSONC
     }
 
     @Override
-    public boolean equals(JSONObject jsonObject, BaseObject baseObject)
+    public boolean equals(JSONObject jsonObject, BaseObject baseObject, XWikiContext context)
     {
         boolean result;
         if (jsonObject == null && baseObject == null) {
@@ -137,21 +137,21 @@ public abstract class AbstractBaseObjectJSONConverter implements BaseObjectJSONC
         } else if (jsonObject == null || baseObject == null) {
             result = false;
         } else {
-            result = this.areJSONObjectsEqual(jsonObject, this.toJSONObject(baseObject));
+            result = this.areBaseObjectsEqual(this.toBaseObject(jsonObject, context), baseObject);
         }
 
         return result;
     }
 
-    private boolean areJSONObjectsEqual(JSONObject object1, JSONObject object2)
+    private boolean areBaseObjectsEqual(BaseObject object1, BaseObject object2)
     {
         for (Map.Entry<String, Class<?>> entry : this.getKeyTypesMapEntrySet()) {
             String key = entry.getKey();
-            if (!Objects.equals(object1.opt(key), object2.opt(key))) {
+
+            if (!Objects.equals(object1.safeget(key), object2.safeget(key))) {
                 return false;
             }
         }
-
         return true;
     }
 

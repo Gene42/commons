@@ -64,9 +64,10 @@ public interface BaseObjectJSONConverter
      * Compares the given JSONObject with the given BaseObject.
      * @param jsonObject a JSONObject
      * @param baseObject an XWiki BaseObject
+     * @param context XWikiContext to use for conversion
      * @return true if both objects contain the same content, false otherwise
      */
-    boolean equals(JSONObject jsonObject, BaseObject baseObject);
+    boolean equals(JSONObject jsonObject, BaseObject baseObject, XWikiContext context);
 
     /**
      * Returns an EntityReference to the XWiki class of the BaseObject.
