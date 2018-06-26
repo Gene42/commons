@@ -179,7 +179,7 @@ public class StringFilter extends AbstractFilter<String>
     public String getPropertyValueNameForQuery()
     {
         if (super.isDocumentProperty()) {
-            return "str(" + this.getPropertyNameForQuery() + ")";
+            return this.getPropertyNameForQuery();
         } else {
             return this.getPropertyNameForQuery() + ".value";
         }
@@ -218,6 +218,8 @@ public class StringFilter extends AbstractFilter<String>
         } else if (docAuthorOrCreator && StringUtils.contains(value, ":")) {
             docPropMatch = StringFilter.MATCH_EXACT;
             docPropValue = StringUtils.substringAfter(value, ":");
+        } else if (StringUtils.isNotBlank(this.match)) {
+            docPropMatch = this.match;
         }
 
         this.handleMatch(where, bindingValues, propName, docPropValue, docPropMatch);
