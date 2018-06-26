@@ -231,41 +231,108 @@ public class DocumentSearchBuilder implements Builder<JSONObject>
     public DocumentSearchBuilder onlyForUser(String fullUserName, Collection<String> fullUserGroupNames,
         boolean checkOwnership, List<String> visibilityValues, String accessRight)
     {
-        DocumentSearchBuilder builder = this.newExpression().setJoinModeToOr();
 
-        if (checkOwnership) {
-            builder.newStringFilter("owner")
-                .setMatch(StringFilter.MATCH_EXACT)
-                .setSpaceAndClass("PhenoTips.OwnerClass")
-                .setValue(fullUserName);
-        }
+        boolean complexCollaborators = (accessRight != null) && CollectionUtils.isNotEmpty(fullUserGroupNames);
+        boolean hasOwnershipOrVisibility = checkOwnership || CollectionUtils.isNotEmpty(visibilityValues);
 
-        if (CollectionUtils.isNotEmpty(visibilityValues)) {
-            builder.newStringFilter("visibility")
-                .setSpaceAndClass("PhenoTips.VisibilityClass")
-                .setValues(visibilityValues);
-        }
+        if (complexCollaborators && hasOwnershipOrVisibility) {
 
-        if (accessRight != null) {
-            builder = builder
-                .newExpression()
-                .setJoinModeToAnd()
-                .newStringFilter("access")
-                .setMatch(StringFilter.MATCH_EXACT)
-                .setSpaceAndClass(PHENO_TIPS_COLLABORATOR_CLASS)
-                .setValue(accessRight)
-                .back();
-        }
+            DocumentSearchBuilder builder = this.newExpression().setJoinModeToAnd().newExpression()
+                   .setJoinModeToOr();
 
-        if (CollectionUtils.isNotEmpty(fullUserGroupNames)) {
-            builder.newStringFilter("collaborator")
-                   .setMatch(StringFilter.MATCH_EXACT)
-                   .setSpaceAndClass(PHENO_TIPS_COLLABORATOR_CLASS)
-                   .setValue(fullUserName)
-                   .addValues(fullUserGroupNames);
+            if (checkOwnership && CollectionUtils.isNotEmpty(visibilityValues)) {
+                // We need (ownership || visib || collab) * (ownership || visib || access)
+                addOwnership(fullUserName, builder);
+                addVisibility(visibilityValues, builder);
+                addCollaborators(fullUserName, fullUserGroupNames, builder);
+
+                builder = builder.back()
+                                 .newExpression()
+                                 .setJoinModeToOr();
+
+                addOwnership(fullUserName, builder);
+                addVisibility(visibilityValues, builder);
+                addAccessRight(accessRight, builder);
+
+            } else if (checkOwnership) {
+                // We need (ownership || collab) * (ownership || access)
+                addOwnership(fullUserName, builder);
+                addCollaborators(fullUserName, fullUserGroupNames, builder);
+
+                builder = builder.back()
+                                 .newExpression()
+                                 .setJoinModeToOr();
+
+                addOwnership(fullUserName, builder);
+                addAccessRight(accessRight, builder);
+            } else {
+                // We need (visib || collab) * (visib || access)
+                addVisibility(visibilityValues, builder);
+                addCollaborators(fullUserName, fullUserGroupNames, builder);
+
+                builder = builder.back()
+                                 .newExpression()
+                                 .setJoinModeToOr();
+
+                addVisibility(visibilityValues, builder);
+                addAccessRight(accessRight, builder);
+            }
+        } else {
+            DocumentSearchBuilder builder = this.newExpression().setJoinModeToOr();
+            if (checkOwnership) {
+                builder = addOwnership(fullUserName, builder);
+            }
+
+            if (CollectionUtils.isNotEmpty(visibilityValues)) {
+                builder = addVisibility(visibilityValues, builder);
+            }
+
+            if (accessRight != null) {
+                builder = addAccessRight(accessRight, builder);
+            }
+
+            if (CollectionUtils.isNotEmpty(fullUserGroupNames)) {
+                addCollaborators(fullUserName, fullUserGroupNames, builder);
+            }
         }
 
         return this;
+    }
+
+    private static DocumentSearchBuilder addOwnership(String fullUserName, DocumentSearchBuilder builder)
+    {
+        return builder.newStringFilter("owner")
+               .setMatch(StringFilter.MATCH_EXACT)
+               .setSpaceAndClass("PhenoTips.OwnerClass")
+               .setValue(fullUserName).back();
+    }
+
+    private static DocumentSearchBuilder addVisibility(List<String> visibilityValues, DocumentSearchBuilder builder)
+    {
+        return builder.newStringFilter("visibility")
+               .setSpaceAndClass("PhenoTips.VisibilityClass")
+               .setValues(visibilityValues).back();
+    }
+
+    private static DocumentSearchBuilder addAccessRight(String accessRight, DocumentSearchBuilder builder)
+    {
+        return builder
+            .newExpression()
+            .newStringFilter("access")
+            .setMatch(StringFilter.MATCH_EXACT)
+            .setSpaceAndClass(PHENO_TIPS_COLLABORATOR_CLASS)
+            .setValue(accessRight)
+            .back();
+    }
+
+    private static DocumentSearchBuilder addCollaborators(String fullUserName, Collection<String> fullUserGroupNames,
+        DocumentSearchBuilder builder)
+    {
+        return builder.newStringFilter("collaborator")
+               .setMatch(StringFilter.MATCH_EXACT)
+               .setSpaceAndClass(PHENO_TIPS_COLLABORATOR_CLASS)
+               .setValue(fullUserName)
+               .addValues(fullUserGroupNames).back();
     }
 
     /**
