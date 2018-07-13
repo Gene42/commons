@@ -21,6 +21,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import com.gene42.commons.utils.json.JSONTools;
+import org.xwiki.rest.model.jaxb.Space;
 
 /**
  * This class represents a queyr expression which is a block in a query surrounded by round brackets '()'. A
@@ -45,12 +46,18 @@ public class QueryExpression implements QueryElement
     /** JSON Object key. */
     public static final String NEGATE_KEY = "negate";
 
+    /** The space part of SpaceAndClass for an or expression. */
+    public static final String OR_GROUP_SPACE = "or";
+
     private static final String JOIN_MODE_DEFAULT_VALUE = "and";
 
     private List<DocumentQuery> documentQueries = new LinkedList<>();
     private List<QueryElement> expressions = new LinkedList<>();
 
+    private List<String> boundObjects = new LinkedList<>();
+
     private DocumentQuery parentQuery;
+    private QueryExpression parentExpression;
 
     private String joinMode;
 
@@ -64,9 +71,10 @@ public class QueryExpression implements QueryElement
      * Constructor.
      * @param parentQuery the parent query of this expression
      */
-    public QueryExpression(@Nonnull DocumentQuery parentQuery)
+    public QueryExpression(@Nonnull DocumentQuery parentQuery, QueryExpression parentExpression)
     {
         this.parentQuery = parentQuery;
+        this.parentExpression = parentExpression;
     }
 
     /**
@@ -182,6 +190,16 @@ public class QueryExpression implements QueryElement
         //   by the second for-loop (by the parent)
         where.append(getNegatePrefix(this.negate && !this.isDocumentQueryExpression())).append(" (");
 
+        // Bound objects
+        if (CollectionUtils.isNotEmpty(this.boundObjects)) {
+            String firstId =  this.boundObjects.get(0);
+
+            for (int i = 1, len = this.boundObjects.size(); i < len; i++) {
+                where.appendOperator();
+                where.append(this.boundObjects.get(i)).append(".id=").append(firstId).append(".id ");
+            }
+        }
+
         for (QueryElement expression : this.expressions) {
             expression.addValueConditions(where, bindingValues);
         }
@@ -203,11 +221,15 @@ public class QueryExpression implements QueryElement
         }
 
         if (this.orMode) {
-            this.spaceAndClass = new SpaceAndClass("group." + this.parentQuery.getNextExpressionIndex());
+            this.spaceAndClass = getOrExpressionSpaceAndClass(this.parentQuery.getNextExpressionIndex());
 
-            this.propertyName = new PropertyName("group_prop", getFirstProp().getObjectType());
+            this.propertyName = new PropertyName(OR_GROUP_SPACE + "_prop", getFirstProp().getObjectType());
 
             this.parentQuery.addPropertyBinding(this.spaceAndClass, this.propertyName);
+
+            if (this.parentExpression != null) {
+                this.parentExpression.boundObjects.add(this.parentQuery.getObjectName(this.spaceAndClass));
+            }
         }
 
         for (QueryElement expression : this.expressions) {
@@ -216,6 +238,10 @@ public class QueryExpression implements QueryElement
             }
         }
         return this;
+    }
+
+    public static SpaceAndClass getOrExpressionSpaceAndClass(int orIndex) {
+        return new SpaceAndClass(OR_GROUP_SPACE + "." + orIndex);
     }
 
     /**
@@ -254,7 +280,7 @@ public class QueryExpression implements QueryElement
         }
 
         if (StringUtils.isBlank(JSONTools.getValue(queryJson, EntitySearch.Keys.CLASS_KEY))) {
-            QueryExpression expr = new QueryExpression(this.parentQuery).init(queryJson);
+            QueryExpression expr = new QueryExpression(this.parentQuery, this).init(queryJson);
             if (expr.isValid()) {
                 this.expressions.add(expr);
             }

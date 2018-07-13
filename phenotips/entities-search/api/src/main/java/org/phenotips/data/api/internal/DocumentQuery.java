@@ -146,14 +146,7 @@ public class DocumentQuery
 
         this.addObjectBinding(spaceAndClass);
 
-        Set<PropertyName> propertySet = this.propertyNameMap.get(spaceAndClass);
-
-        if (propertySet == null) {
-            propertySet = new HashSet<>();
-            this.propertyNameMap.put(spaceAndClass, propertySet);
-        }
-
-        propertySet.add(propertyName);
+        this.propertyNameMap.computeIfAbsent(spaceAndClass, k -> new HashSet<>()).add(propertyName);
     }
 
     /**
@@ -193,7 +186,7 @@ public class DocumentQuery
 
         this.objNameMap.put(this.mainSpaceClass, this.docName + "_obj");
 
-        this.expression = new QueryExpression(this).init(input);
+        this.expression = new QueryExpression(this, null).init(input);
 
         if (this.expression.isValid() && this.expression.validatesQuery()) {
             this.expression.createBindings();
