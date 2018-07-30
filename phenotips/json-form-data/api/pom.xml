@@ -11,7 +11,7 @@
   <parent>
     <groupId>com.gene42.commons</groupId>
     <artifactId>gene42-commons-json-form-data</artifactId>
-    <version>1.0.8-2-SNAPSHOT</version>
+    <version>1.0.8-2</version>
   </parent>
 
   <artifactId>gene42-commons-json-form-data-api</artifactId>
