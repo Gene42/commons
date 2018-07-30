@@ -21,7 +21,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import com.gene42.commons.utils.json.JSONTools;
-import org.xwiki.rest.model.jaxb.Space;
 
 /**
  * This class represents a queyr expression which is a block in a query surrounded by round brackets '()'. A
@@ -49,7 +48,12 @@ public class QueryExpression implements QueryElement
     /** The space part of SpaceAndClass for an or expression. */
     public static final String OR_GROUP_SPACE = "or";
 
-    private static final String JOIN_MODE_DEFAULT_VALUE = "and";
+    private static final String AND = "and";
+    private static final String OR = "or";
+
+    private static final String JOIN_MODE_DEFAULT_VALUE = AND;
+
+    private static final String END_ROUND_BRACKET = ") ";
 
     private List<DocumentQuery> documentQueries = new LinkedList<>();
     private List<QueryElement> expressions = new LinkedList<>();
@@ -70,6 +74,7 @@ public class QueryExpression implements QueryElement
     /**
      * Constructor.
      * @param parentQuery the parent query of this expression
+     * @param parentExpression the parent QueryExpression of this expression
      */
     public QueryExpression(@Nonnull DocumentQuery parentQuery, QueryExpression parentExpression)
     {
@@ -140,13 +145,13 @@ public class QueryExpression implements QueryElement
         this.joinMode = JSONTools.getValue(input, QueryExpression.JOIN_MODE_KEY,
             QueryExpression.JOIN_MODE_DEFAULT_VALUE);
 
-        if (!StringUtils.equals(this.joinMode, "and") && !StringUtils.equals(this.joinMode, "or")) {
+        if (!StringUtils.equals(this.joinMode, AND) && !StringUtils.equals(this.joinMode, OR)) {
             this.joinMode = QueryExpression.JOIN_MODE_DEFAULT_VALUE;
         }
 
         this.negate = SearchUtils.BOOLEAN_TRUE_SET.contains(JSONTools.getValue(input, QueryExpression.NEGATE_KEY));
 
-        this.orMode = StringUtils.equals(this.joinMode, "or");
+        this.orMode = StringUtils.equals(this.joinMode, OR);
 
         if (input.has(QueryExpression.FILTERS_KEY)) {
             JSONArray filterJSONArray = input.getJSONArray(QueryExpression.FILTERS_KEY);
@@ -192,7 +197,7 @@ public class QueryExpression implements QueryElement
 
         // Bound objects
         if (CollectionUtils.isNotEmpty(this.boundObjects)) {
-            String firstId =  this.boundObjects.get(0);
+            String firstId = this.boundObjects.get(0);
 
             for (int i = 1, len = this.boundObjects.size(); i < len; i++) {
                 where.appendOperator();
@@ -207,10 +212,10 @@ public class QueryExpression implements QueryElement
         for (DocumentQuery documentQuery : this.documentQueries) {
             where.appendOperator().append(getNegatePrefix(documentQuery.getExpression().negate))
                 .append(" exists(");
-            documentQuery.hql(where, bindingValues).append(") ");
+            documentQuery.hql(where, bindingValues).append(END_ROUND_BRACKET);
         }
 
-        return where.append(") ").load();
+        return where.append(END_ROUND_BRACKET).load();
     }
 
     @Override
@@ -240,8 +245,17 @@ public class QueryExpression implements QueryElement
         return this;
     }
 
-    public static SpaceAndClass getOrExpressionSpaceAndClass(int orIndex) {
-        return new SpaceAndClass(OR_GROUP_SPACE + "." + orIndex);
+    /**
+     * Returns a space and class container to be used for an or expression.
+     * It concatenates {@value #OR_GROUP_SPACE},{@value SpaceAndClass#SEPARATOR} and the given orIndex together,
+     * and uses that to create a SpaceAndClass object.
+     *
+     * @param orIndex the index of the or statement
+     * @return a SpaceAndClass object
+     */
+    public static SpaceAndClass getOrExpressionSpaceAndClass(int orIndex)
+    {
+        return new SpaceAndClass(OR_GROUP_SPACE + SpaceAndClass.SEPARATOR + orIndex);
     }
 
     /**

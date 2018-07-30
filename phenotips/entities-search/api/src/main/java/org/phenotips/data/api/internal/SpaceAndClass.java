@@ -25,6 +25,9 @@ public class SpaceAndClass
     /** Class property key. */
     public static final String CLASS_KEY = EntitySearch.Keys.CLASS_KEY;
 
+    /** The space and class separator. */
+    public static final String SEPARATOR = ".";
+
     private final String spaceAndClassName;
 
     private final String spaceName;
@@ -115,7 +118,7 @@ public class SpaceAndClass
     @Override
     public boolean equals(Object o)
     {
-        if (o == null || !(o instanceof SpaceAndClass)) {
+        if (!(o instanceof SpaceAndClass)) {
             return false;
         } else {
             return this.spaceAndClassName.equals(((SpaceAndClass) o).spaceAndClassName);
@@ -133,7 +136,7 @@ public class SpaceAndClass
             throw new IllegalArgumentException("class provided is null/empty");
         }
 
-        String [] tokens = StringUtils.split(classAndSpace, ".");
+        String [] tokens = StringUtils.split(classAndSpace, SEPARATOR);
 
         if (tokens.length == 2) {
             return tokens;
