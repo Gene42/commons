@@ -45,12 +45,23 @@ public class QueryExpression implements QueryElement
     /** JSON Object key. */
     public static final String NEGATE_KEY = "negate";
 
-    private static final String JOIN_MODE_DEFAULT_VALUE = "and";
+    /** The space part of SpaceAndClass for an or expression. */
+    public static final String OR_GROUP_SPACE = "or";
+
+    private static final String AND = "and";
+    private static final String OR = "or";
+
+    private static final String JOIN_MODE_DEFAULT_VALUE = AND;
+
+    private static final String END_ROUND_BRACKET = ") ";
 
     private List<DocumentQuery> documentQueries = new LinkedList<>();
     private List<QueryElement> expressions = new LinkedList<>();
 
+    private List<String> boundObjects = new LinkedList<>();
+
     private DocumentQuery parentQuery;
+    private QueryExpression parentExpression;
 
     private String joinMode;
 
@@ -63,10 +74,12 @@ public class QueryExpression implements QueryElement
     /**
      * Constructor.
      * @param parentQuery the parent query of this expression
+     * @param parentExpression the parent QueryExpression of this expression
      */
-    public QueryExpression(@Nonnull DocumentQuery parentQuery)
+    public QueryExpression(@Nonnull DocumentQuery parentQuery, QueryExpression parentExpression)
     {
         this.parentQuery = parentQuery;
+        this.parentExpression = parentExpression;
     }
 
     /**
@@ -132,13 +145,13 @@ public class QueryExpression implements QueryElement
         this.joinMode = JSONTools.getValue(input, QueryExpression.JOIN_MODE_KEY,
             QueryExpression.JOIN_MODE_DEFAULT_VALUE);
 
-        if (!StringUtils.equals(this.joinMode, "and") && !StringUtils.equals(this.joinMode, "or")) {
+        if (!StringUtils.equals(this.joinMode, AND) && !StringUtils.equals(this.joinMode, OR)) {
             this.joinMode = QueryExpression.JOIN_MODE_DEFAULT_VALUE;
         }
 
         this.negate = SearchUtils.BOOLEAN_TRUE_SET.contains(JSONTools.getValue(input, QueryExpression.NEGATE_KEY));
 
-        this.orMode = StringUtils.equals(this.joinMode, "or");
+        this.orMode = StringUtils.equals(this.joinMode, OR);
 
         if (input.has(QueryExpression.FILTERS_KEY)) {
             JSONArray filterJSONArray = input.getJSONArray(QueryExpression.FILTERS_KEY);
@@ -182,6 +195,16 @@ public class QueryExpression implements QueryElement
         //   by the second for-loop (by the parent)
         where.append(getNegatePrefix(this.negate && !this.isDocumentQueryExpression())).append(" (");
 
+        // Bound objects
+        if (CollectionUtils.isNotEmpty(this.boundObjects)) {
+            String firstId = this.boundObjects.get(0);
+
+            for (int i = 1, len = this.boundObjects.size(); i < len; i++) {
+                where.appendOperator();
+                where.append(this.boundObjects.get(i)).append(".id=").append(firstId).append(".id ");
+            }
+        }
+
         for (QueryElement expression : this.expressions) {
             expression.addValueConditions(where, bindingValues);
         }
@@ -189,10 +212,10 @@ public class QueryExpression implements QueryElement
         for (DocumentQuery documentQuery : this.documentQueries) {
             where.appendOperator().append(getNegatePrefix(documentQuery.getExpression().negate))
                 .append(" exists(");
-            documentQuery.hql(where, bindingValues).append(") ");
+            documentQuery.hql(where, bindingValues).append(END_ROUND_BRACKET);
         }
 
-        return where.append(") ").load();
+        return where.append(END_ROUND_BRACKET).load();
     }
 
     @Override
@@ -203,11 +226,15 @@ public class QueryExpression implements QueryElement
         }
 
         if (this.orMode) {
-            this.spaceAndClass = new SpaceAndClass("group." + this.parentQuery.getNextExpressionIndex());
+            this.spaceAndClass = getOrExpressionSpaceAndClass(this.parentQuery.getNextExpressionIndex());
 
-            this.propertyName = new PropertyName("group_prop", getFirstProp().getObjectType());
+            this.propertyName = new PropertyName(OR_GROUP_SPACE + "_prop", getFirstProp().getObjectType());
 
             this.parentQuery.addPropertyBinding(this.spaceAndClass, this.propertyName);
+
+            if (this.parentExpression != null) {
+                this.parentExpression.boundObjects.add(this.parentQuery.getObjectName(this.spaceAndClass));
+            }
         }
 
         for (QueryElement expression : this.expressions) {
@@ -216,6 +243,19 @@ public class QueryExpression implements QueryElement
             }
         }
         return this;
+    }
+
+    /**
+     * Returns a space and class container to be used for an or expression.
+     * It concatenates {@value #OR_GROUP_SPACE},{@value SpaceAndClass#SEPARATOR} and the given orIndex together,
+     * and uses that to create a SpaceAndClass object.
+     *
+     * @param orIndex the index of the or statement
+     * @return a SpaceAndClass object
+     */
+    public static SpaceAndClass getOrExpressionSpaceAndClass(int orIndex)
+    {
+        return new SpaceAndClass(OR_GROUP_SPACE + SpaceAndClass.SEPARATOR + orIndex);
     }
 
     /**
@@ -254,7 +294,7 @@ public class QueryExpression implements QueryElement
         }
 
         if (StringUtils.isBlank(JSONTools.getValue(queryJson, EntitySearch.Keys.CLASS_KEY))) {
-            QueryExpression expr = new QueryExpression(this.parentQuery).init(queryJson);
+            QueryExpression expr = new QueryExpression(this.parentQuery, this).init(queryJson);
             if (expr.isValid()) {
                 this.expressions.add(expr);
             }
