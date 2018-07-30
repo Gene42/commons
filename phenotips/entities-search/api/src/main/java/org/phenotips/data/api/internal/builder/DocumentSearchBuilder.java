@@ -317,7 +317,6 @@ public class DocumentSearchBuilder implements Builder<JSONObject>
     private static DocumentSearchBuilder addAccessRight(String accessRight, DocumentSearchBuilder builder)
     {
         return builder
-            .newExpression()
             .newStringFilter("access")
             .setMatch(StringFilter.MATCH_EXACT)
             .setSpaceAndClass(PHENO_TIPS_COLLABORATOR_CLASS)
