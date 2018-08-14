@@ -113,7 +113,11 @@ public class JsonApiBuilder implements Builder<JSONObject>
         JSONObject result = new JSONObject();
 
         if (CollectionUtils.isEmpty(this.errors)) {
-            addCollection(DATA_FIELD, result, this.data);
+            if (this.data.size() == 1) {
+                result.put(DATA_FIELD, this.data.get(0).build());
+            } else {
+                addCollection(DATA_FIELD, result, this.data);
+            }
         }
 
         addCollection(INCLUDED_FIELD, result, this.included);
