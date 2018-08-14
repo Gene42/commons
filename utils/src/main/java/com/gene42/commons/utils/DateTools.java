@@ -8,6 +8,7 @@
 package com.gene42.commons.utils;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
@@ -96,5 +97,14 @@ public final class DateTools
         } else {
             return formatter.format(date.toInstant());
         }
+    }
+
+    /**
+     * Converts the given Date into a LocalDateTime
+     * @param date the Date to convert
+     * @return the resulting LocalDateTime
+     */
+    public static LocalDateTime dateToLocalDateTime(Date date) {
+        return date.toInstant().atZone(UTC_ZONE).toLocalDateTime();
     }
 }
