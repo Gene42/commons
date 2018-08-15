@@ -1,4 +1,4 @@
-package com.gene42.commons.data;
+package com.gene42.commons.xwiki.data;
 
 import com.gene42.commons.utils.json.JSONafiable;
 
