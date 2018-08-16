@@ -26,7 +26,9 @@ import org.json.JSONObject;
 
 import com.gene42.commons.utils.DateTools;
 import com.xpn.xwiki.XWikiContext;
+import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.objects.BaseObject;
+import com.xpn.xwiki.objects.ListProperty;
 import com.xpn.xwiki.objects.PropertyInterface;
 import com.xpn.xwiki.objects.classes.TextAreaClass;
 
@@ -83,10 +85,8 @@ public abstract class AbstractBaseObjectJSONConverter implements BaseObjectJSONC
             -> to.setIntValue(fieldName, BooleanUtils.toInteger(from.getBoolean(fieldName), 1, 0)));
         tempMap.put(Date.class, (from, to, fieldName, context)
             -> to.setDateValue(fieldName, DateTools.stringToDate(from.getString(fieldName), DATE_TIME_FORMATTER)));
-        tempMap.put(List.class, (from, to, fieldName, context)
-            -> to.setStringListValue(fieldName, fromJSONArrayToList(fieldName, from)));
-        tempMap.put(Set.class, (from, to, fieldName, context)
-            -> to.setStringListValue(fieldName, fromJSONArrayToListWithoutDuplicates(fieldName, from)));
+        tempMap.put(List.class, (from, to, fieldName, context) -> putListInBaseObject(fieldName, from, to));
+        tempMap.put(Set.class, (from, to, fieldName, context) -> putSetInBaseObject(fieldName, from, to));
         JSON_TO_X_OBJ = Collections.unmodifiableMap(tempMap);
     }
 
@@ -269,27 +269,55 @@ public abstract class AbstractBaseObjectJSONConverter implements BaseObjectJSONC
     private static JSONArray toJSONArrayFromList(String propertyName, BaseObject object)
     {
         JSONArray jsonArray = new JSONArray();
-        for (Object obj : object.getListValue(propertyName)) {
-            jsonArray.put(obj);
+
+        try {
+            PropertyInterface property = object.get(propertyName);
+
+            if (!(property instanceof ListProperty)) {
+                return jsonArray;
+            }
+
+            ListProperty listProperty = (ListProperty)property;
+
+            for (String obj : listProperty.getList()) {
+                jsonArray.put(obj);
+            }
+
+        } catch (XWikiException e) {
+            return jsonArray;
         }
+
         return jsonArray;
     }
 
     private static JSONArray toJSONArrayFromSet(String propertyName, BaseObject object)
     {
         JSONArray jsonArray = new JSONArray();
-        Set<Object> current = new HashSet<>();
+        Set<String> current = new HashSet<>();
 
-        for (Object obj : object.getListValue(propertyName)) {
-            if (!current.contains(obj)) {
-                current.add(obj);
-                jsonArray.put(obj);
+        try {
+            PropertyInterface property = object.get(propertyName);
+
+            if (!(property instanceof ListProperty)) {
+                return jsonArray;
             }
+
+            ListProperty listProperty = (ListProperty)property;
+
+            for (String obj : listProperty.getList()) {
+                if (!current.contains(obj)) {
+                    current.add(obj);
+                    jsonArray.put(obj);
+                }
+            }
+        } catch (XWikiException e) {
+            return jsonArray;
         }
+
         return jsonArray;
     }
 
-    private static List fromJSONArrayToList(String propertyName, JSONObject jsonObject)
+    private static List<String> fromJSONArrayToList(String propertyName, JSONObject jsonObject)
     {
         List<String> resultList = new LinkedList<>();
 
@@ -303,7 +331,7 @@ public abstract class AbstractBaseObjectJSONConverter implements BaseObjectJSONC
         return resultList;
     }
 
-    private static List fromJSONArrayToListWithoutDuplicates(String propertyName, JSONObject jsonObject)
+    private static List<String> fromJSONArrayToListWithoutDuplicates(String propertyName, JSONObject jsonObject)
     {
         List<String> resultList = new LinkedList<>();
 
@@ -331,5 +359,27 @@ public abstract class AbstractBaseObjectJSONConverter implements BaseObjectJSONC
         }
 
         return object.getListValue(propertyName);
+    }
+
+    private static void putListInBaseObject(String fieldName, JSONObject from, BaseObject to)
+    {
+        ListProperty listProperty = new ListProperty();
+        listProperty.setList(fromJSONArrayToList(fieldName, from));
+        try {
+            to.put(fieldName, listProperty);
+        } catch (XWikiException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void putSetInBaseObject(String fieldName, JSONObject from, BaseObject to)
+    {
+        ListProperty listProperty = new ListProperty();
+        listProperty.setList(fromJSONArrayToListWithoutDuplicates(fieldName, from));
+        try {
+            to.put(fieldName, listProperty);
+        } catch (XWikiException e) {
+            e.printStackTrace();
+        }
     }
 }

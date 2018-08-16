@@ -10,6 +10,8 @@ package org.phenotips.data.api.internal;
 import org.phenotips.Constants;
 import org.phenotips.data.api.EntitySearch;
 
+import javax.annotation.concurrent.Immutable;
+
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 
@@ -20,6 +22,7 @@ import com.gene42.commons.utils.json.JSONTools;
  *
  * @version $Id$
  */
+@Immutable
 public class SpaceAndClass
 {
     /** Class property key. */
@@ -123,6 +126,12 @@ public class SpaceAndClass
         } else {
             return this.spaceAndClassName.equals(((SpaceAndClass) o).spaceAndClassName);
         }
+    }
+
+    @Override
+    public String toString()
+    {
+        return this.get();
     }
 
     /**
