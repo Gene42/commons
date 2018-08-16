@@ -57,6 +57,15 @@ public class DocumentSearchBuilder implements Builder<JSONObject>
      * Constructor.
      * @param docSpaceAndClass the document space and class (should be null if expression)
      */
+    public DocumentSearchBuilder(SpaceAndClass docSpaceAndClass)
+    {
+        this(null, (docSpaceAndClass == null) ? null : docSpaceAndClass.get());
+    }
+
+    /**
+     * Constructor.
+     * @param docSpaceAndClass the document space and class (should be null if expression)
+     */
     public DocumentSearchBuilder(String docSpaceAndClass)
     {
         this(null, docSpaceAndClass);
