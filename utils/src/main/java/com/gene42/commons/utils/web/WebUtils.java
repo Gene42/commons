@@ -70,7 +70,7 @@ public final class WebUtils
      */
     public static void throwWebApplicationException(ServiceException e, Logger logger)
     {
-        throw new WebApplicationException(e, getErrorResponse(e, logger).getStatus());
+        throw new WebApplicationException(getErrorResponse(e, logger));
     }
 
 
@@ -83,30 +83,44 @@ public final class WebUtils
      */
     public static Response getErrorResponse(ServiceException e, Logger logger)
     {
+        Response.ResponseBuilder builder;
+
         if (e.getCode() != null && e.getCode() >= 400 && e.getCode() < 600) {
-            return Response.status(e.getCode()).entity(e.getMessage()).build();
+            builder = Response.status(e.getCode());
+        } else {
+            builder = Response.status(getReturnStatus(e));
         }
 
-        if (e.getStatus() == null) {
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
-        }
-
-        Response.Status status;
         String message = e.getMessage();
 
-        status = SERVICE_TO_WEB_MAP.get(e.getStatus());
-
-        if (status == null) {
-            status = Response.Status.INTERNAL_SERVER_ERROR;
-            if (logger != null && logger.isErrorEnabled()) {
-                logger.error(status.toString(), e);
-            }
+        if (StringUtils.isBlank(message)) {
             message = "Uh oh, something went wrong on the server. Contact an admin if it persists.";
         }
 
-        return Response.status(status).entity(message).build();
+        builder.entity(message);
+
+
+        if (logger != null && logger.isErrorEnabled()) {
+            logger.error(message, e);
+        }
+
+        return builder.build();
     }
 
+    private static Response.Status getReturnStatus(ServiceException e) {
+
+        Response.Status status = null;
+
+        if (e.getStatus() != null) {
+            status = SERVICE_TO_WEB_MAP.get(e.getStatus());
+        }
+
+        if (status == null) {
+            status = Response.Status.INTERNAL_SERVER_ERROR;
+        }
+
+        return status;
+    }
 
     /**
      * Returns a Response with a status value depending on the given status and the body containing the given message.

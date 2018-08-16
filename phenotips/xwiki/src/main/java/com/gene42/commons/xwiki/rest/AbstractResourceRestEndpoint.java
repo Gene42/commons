@@ -1,11 +1,11 @@
 package com.gene42.commons.xwiki.rest;
 
-import com.gene42.commons.utils.json.JsonApiErrorBuilder;
 import org.phenotips.data.api.EntitySearch;
 import org.phenotips.data.api.EntitySearchResult;
-import org.phenotips.data.api.internal.builder.DocumentSearchBuilder;
+
 import org.xwiki.component.manager.ComponentLookupException;
 import org.xwiki.component.manager.ComponentManager;
+import org.xwiki.model.reference.DocumentReference;
 
 import java.lang.reflect.Type;
 import java.util.List;
@@ -19,13 +19,13 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 
-import com.gene42.commons.xwiki.data.ResourceFacade;
-import com.gene42.commons.xwiki.data.RestResource;
 import com.gene42.commons.utils.exceptions.ServiceException;
 import com.gene42.commons.utils.json.JsonApiBuilder;
+import com.gene42.commons.utils.json.JsonApiErrorBuilder;
 import com.gene42.commons.utils.json.JsonApiResourceBuilder;
 import com.gene42.commons.utils.web.WebUtils;
-import org.xwiki.model.reference.DocumentReference;
+import com.gene42.commons.xwiki.data.ResourceFacade;
+import com.gene42.commons.xwiki.data.RestResource;
 
 /**
  * DESCRIPTION.
