@@ -26,8 +26,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Provider;
@@ -35,6 +33,8 @@ import javax.inject.Singleton;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import com.gene42.commons.utils.exceptions.ServiceException;
 import com.xpn.xwiki.XWiki;
@@ -206,8 +206,8 @@ public final class XWikiTools
      * @param objectType the {@link EntityReference}
      * @return a list of objects of type {@code objectType}
      */
-    @Nonnull
-    public static List<BaseObject> getXObjects(@Nonnull final XWikiContext context,
+    @NotNull
+    public static List<BaseObject> getXObjects(@NotNull final XWikiContext context,
         @Nullable final EntityReference objectType)
     {
         final XWiki xWiki = context.getWiki();
