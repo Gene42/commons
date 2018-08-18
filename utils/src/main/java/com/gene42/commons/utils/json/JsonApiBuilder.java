@@ -41,6 +41,8 @@ public class JsonApiBuilder implements Builder<JSONObject>
     private List<Builder<JSONObject>> included = new LinkedList<>();
     private List<Builder<JSONObject>> errors = new LinkedList<>();
 
+    private boolean singleResourceMode;
+
     /**
      * Adds the given Resource Builder to the data list.
      * @param data the resource builder to add
@@ -107,13 +109,25 @@ public class JsonApiBuilder implements Builder<JSONObject>
         return this;
     }
 
+    /**
+     * If set to true, the 'data' field will be an object not an array.
+     *
+     * @param singleResourceMode singleResourceMode flag to set
+     * @return this object
+     */
+    public JsonApiBuilder setSingleResourceMode(boolean singleResourceMode)
+    {
+        this.singleResourceMode = singleResourceMode;
+        return this;
+    }
+
     @Override
     public JSONObject build()
     {
         JSONObject result = new JSONObject();
 
         if (CollectionUtils.isEmpty(this.errors)) {
-            if (this.data.size() == 1) {
+            if (this.singleResourceMode && !this.data.isEmpty()) {
                 result.put(DATA_FIELD, this.data.get(0).build());
             } else {
                 addCollection(DATA_FIELD, result, this.data);

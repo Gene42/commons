@@ -83,7 +83,7 @@ public abstract class AbstractResourceRestEndpoint<T extends RestResource> imple
         JsonApiBuilder jsonBuilder = new JsonApiBuilder();
 
         try {
-            T resource = this.getResourceFacade().get(resourceId);
+            T resource = this.getResourceFacade().get(resourceId, true);
             this.checkResource(resourceId, resource);
             this.addResourceToBuilder(resourceId, resource, jsonBuilder);
         } catch (ServiceException e) {
@@ -139,7 +139,8 @@ public abstract class AbstractResourceRestEndpoint<T extends RestResource> imple
                 if (idsOnly) {
                     jsonBuilder.addData(new JsonApiResourceBuilder(resourceId, this.getResourceType()));
                 } else {
-                    this.addResourceToBuilder(resourceId, this.getResourceFacade().get(resourceId), jsonBuilder);
+                    this.addResourceToBuilder(resourceId, this.getResourceFacade()
+                                                              .get(resourceId, false), jsonBuilder);
                 }
             }
 
