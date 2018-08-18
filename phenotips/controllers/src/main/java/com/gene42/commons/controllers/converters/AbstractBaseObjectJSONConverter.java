@@ -19,15 +19,18 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import com.gene42.commons.utils.DateTools;
+import com.gene42.commons.utils.exceptions.ServiceException;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.objects.BaseObject;
+import com.xpn.xwiki.objects.DBStringListProperty;
 import com.xpn.xwiki.objects.ListProperty;
 import com.xpn.xwiki.objects.PropertyInterface;
 import com.xpn.xwiki.objects.classes.TextAreaClass;
@@ -85,8 +88,10 @@ public abstract class AbstractBaseObjectJSONConverter implements BaseObjectJSONC
             -> to.setIntValue(fieldName, BooleanUtils.toInteger(from.getBoolean(fieldName), 1, 0)));
         tempMap.put(Date.class, (from, to, fieldName, context)
             -> to.setDateValue(fieldName, DateTools.stringToDate(from.getString(fieldName), DATE_TIME_FORMATTER)));
-        tempMap.put(List.class, (from, to, fieldName, context) -> putListInBaseObject(fieldName, from, to));
-        tempMap.put(Set.class, (from, to, fieldName, context) -> putSetInBaseObject(fieldName, from, to));
+        tempMap.put(List.class, (from, to, fieldName, context)
+            -> putListInBaseObject(fromJSONArrayToList(fieldName, from), fieldName, to));
+        tempMap.put(Set.class, (from, to, fieldName, context)
+            -> putListInBaseObject(fromJSONArrayToListWithoutDuplicates(fieldName, from), fieldName, to));
         JSON_TO_X_OBJ = Collections.unmodifiableMap(tempMap);
     }
 
@@ -319,67 +324,101 @@ public abstract class AbstractBaseObjectJSONConverter implements BaseObjectJSONC
 
     private static List<String> fromJSONArrayToList(String propertyName, JSONObject jsonObject)
     {
-        List<String> resultList = new LinkedList<>();
-
         JSONArray jsonArray = jsonObject.optJSONArray(propertyName);
 
-        if (jsonArray != null) {
-            for (Object obj : jsonArray) {
-                resultList.add(String.valueOf(obj));
-            }
+        if (jsonArray == null) {
+            return null;
         }
+
+        List<String> resultList = new LinkedList<>();
+        for (Object obj : jsonArray) {
+            CollectionUtils.addIgnoreNull(resultList, getStringValue(obj));
+        }
+
         return resultList;
     }
 
     private static List<String> fromJSONArrayToListWithoutDuplicates(String propertyName, JSONObject jsonObject)
     {
-        List<String> resultList = new LinkedList<>();
-
         JSONArray jsonArray = jsonObject.optJSONArray(propertyName);
-        Set<Object> current = new HashSet<>();
+        Set<String> current = new HashSet<>();
 
         if (jsonArray == null) {
-            return resultList;
+            return null;
         }
 
+        List<String> resultList = new LinkedList<>();
         for (Object obj : jsonArray) {
-            if (!current.contains(obj)) {
-                current.add(obj);
-                resultList.add(String.valueOf(obj));
+            if (obj == null) {
+                continue;
+            }
+            String value = String.valueOf(obj);
+            if (!current.contains(value)) {
+                current.add(value);
+                resultList.add(value);
             }
         }
 
         return resultList;
     }
 
-    private static List getList(String propertyName, BaseObject object)
+    private static List<String> getList(String propertyName, BaseObject object)
     {
         if (object == null) {
             return null;
         }
 
-        return object.getListValue(propertyName);
+        List<String> current = new LinkedList<>();
+
+        try {
+            PropertyInterface property = object.get(propertyName);
+
+            if (!(property instanceof ListProperty)) {
+                return current;
+            }
+
+            ListProperty listProperty = (ListProperty)property;
+
+            return new LinkedList<>(listProperty.getList());
+
+        } catch (XWikiException e) {
+            return current;
+        }
     }
 
-    private static void putListInBaseObject(String fieldName, JSONObject from, BaseObject to)
+    private static void putListInBaseObject(List<String> list, String fieldName, BaseObject to)
     {
-        ListProperty listProperty = new ListProperty();
-        listProperty.setList(fromJSONArrayToList(fieldName, from));
+        if (list == null) {
+            return;
+        }
+
         try {
-            to.put(fieldName, listProperty);
-        } catch (XWikiException e) {
+            PropertyInterface propertyInterface = to.get(fieldName);
+            DBStringListProperty listProperty;
+
+            if (propertyInterface == null) {
+                listProperty = new DBStringListProperty();
+                to.put(fieldName, listProperty);
+            } else if (propertyInterface instanceof DBStringListProperty) {
+                listProperty = (DBStringListProperty) propertyInterface;
+            } else {
+                throw new ServiceException(String.format("Property [%s] is of unknown type [%s]",
+                    fieldName, propertyInterface.getClass().getName()));
+            }
+
+            listProperty.setList(list);
+            listProperty.setValueDirty(true);
+
+        } catch (XWikiException | ServiceException e) {
             e.printStackTrace();
         }
     }
 
-    private static void putSetInBaseObject(String fieldName, JSONObject from, BaseObject to)
-    {
-        ListProperty listProperty = new ListProperty();
-        listProperty.setList(fromJSONArrayToListWithoutDuplicates(fieldName, from));
-        try {
-            to.put(fieldName, listProperty);
-        } catch (XWikiException e) {
-            e.printStackTrace();
+    private static String getStringValue(Object object) {
+        if (object == null) {
+            return null;
+        } else {
+            return String.valueOf(object);
         }
     }
 }
