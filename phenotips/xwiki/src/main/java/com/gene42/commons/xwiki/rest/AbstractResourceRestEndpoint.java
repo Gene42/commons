@@ -18,6 +18,7 @@ import javax.ws.rs.core.Response;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.gene42.commons.utils.exceptions.ServiceException;
 import com.gene42.commons.utils.json.JsonApiBuilder;
@@ -34,8 +35,7 @@ import com.gene42.commons.xwiki.data.RestResource;
  */
 public abstract class AbstractResourceRestEndpoint<T extends RestResource> implements ResourceRestEndpoint
 {
-    @Inject
-    private Logger logger;
+    protected Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Inject
     private ComponentManager componentManager;
@@ -74,7 +74,7 @@ public abstract class AbstractResourceRestEndpoint<T extends RestResource> imple
                 WebUtils.getErrorResponse(Response.Status.BAD_REQUEST, e, this.getRootPath(), "n/a"));
         }
 
-        return Response.ok(jsonBuilder.toString(), MediaType.APPLICATION_JSON_TYPE).build();
+        return this.getOkResponse(jsonBuilder);
     }
 
     @Override
@@ -90,7 +90,7 @@ public abstract class AbstractResourceRestEndpoint<T extends RestResource> imple
             WebUtils.throwWebApplicationException(e, this.logger);
         }
 
-        return Response.ok(jsonBuilder.toString(), MediaType.APPLICATION_JSON_TYPE).build();
+        return this.getOkResponse(jsonBuilder);
     }
 
     @Override
@@ -108,7 +108,7 @@ public abstract class AbstractResourceRestEndpoint<T extends RestResource> imple
                 WebUtils.getErrorResponse(Response.Status.BAD_REQUEST, e, this.getResourceUri(resourceId), "n/a"));
         }
 
-        return Response.ok(jsonBuilder.toString(), MediaType.APPLICATION_JSON_TYPE).build();
+        return this.getOkResponse(jsonBuilder);
     }
 
     @Override
@@ -124,7 +124,7 @@ public abstract class AbstractResourceRestEndpoint<T extends RestResource> imple
             WebUtils.throwWebApplicationException(e, this.logger);
         }
 
-        return Response.ok(jsonBuilder.toString(), MediaType.APPLICATION_JSON_TYPE).build();
+        return this.getOkResponse(jsonBuilder);
     }
 
     @Override
@@ -153,17 +153,15 @@ public abstract class AbstractResourceRestEndpoint<T extends RestResource> imple
             WebUtils.throwWebApplicationException(e, this.logger);
         }
 
+        return this.getOkResponse(jsonBuilder);
+    }
+
+    protected Response getOkResponse(JsonApiBuilder jsonBuilder) {
         return Response.ok(jsonBuilder.toString(), MediaType.APPLICATION_JSON_TYPE).build();
     }
 
-    private void checkResource(String resourceId, T resource) throws ServiceException {
-        if (resource == null) {
-            throw new ServiceException(ServiceException.Status.DATA_NOT_FOUND,
-                    String.format("Could not find %s [%s]", this.getResourceType(), resourceId));
-        }
-    }
-
-    private void addResourceToBuilder(String resourceId, T resource, JsonApiBuilder jsonBuilder) {
+    protected <M extends RestResource> void addResourceToBuilder(String resourceId, M resource,
+        JsonApiBuilder jsonBuilder) {
 
         if (resource == null) {
             jsonBuilder.addError(new JsonApiErrorBuilder()
@@ -172,6 +170,13 @@ public abstract class AbstractResourceRestEndpoint<T extends RestResource> imple
             jsonBuilder.addData(new JsonApiResourceBuilder(resource.getId(), resource.getResourceType())
                     .putAttributes(resource.toJSONObject())
             );
+        }
+    }
+
+    private void checkResource(String resourceId, T resource) throws ServiceException {
+        if (resource == null) {
+            throw new ServiceException(ServiceException.Status.DATA_NOT_FOUND,
+                String.format("Could not find %s [%s]", this.getResourceType(), resourceId));
         }
     }
 
