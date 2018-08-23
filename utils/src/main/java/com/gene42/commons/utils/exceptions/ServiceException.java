@@ -203,7 +203,10 @@ public class ServiceException extends Exception
         SERVICE_UNAVAILABLE,
 
         /** Value. */
-        UNAUTHORIZED
+        UNAUTHORIZED,
+
+        /** Value. */
+        FORBIDDEN
     }
 
     private static Status transferStatus(Throwable e, Status defaultStatus)

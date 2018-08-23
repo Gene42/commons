@@ -10,6 +10,7 @@ import org.xwiki.model.reference.DocumentReference;
 import java.lang.reflect.Type;
 import java.util.List;
 
+import javax.annotation.concurrent.ThreadSafe;
 import javax.inject.Inject;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
@@ -26,6 +27,7 @@ import com.gene42.commons.utils.json.JsonApiErrorBuilder;
 import com.gene42.commons.utils.json.JsonApiResourceBuilder;
 import com.gene42.commons.utils.web.WebUtils;
 import com.gene42.commons.xwiki.data.ResourceFacade;
+import com.gene42.commons.xwiki.data.ResourceOperation;
 import com.gene42.commons.xwiki.data.RestResource;
 
 /**
@@ -36,6 +38,8 @@ import com.gene42.commons.xwiki.data.RestResource;
 public abstract class AbstractResourceRestEndpoint<T extends RestResource> implements ResourceRestEndpoint
 {
     protected Logger logger = LoggerFactory.getLogger(this.getClass());
+
+    protected static final NoAccessResource NO_ACCESS_RESOURCE = new NoAccessResource();
 
     @Inject
     private ComponentManager componentManager;
@@ -64,8 +68,8 @@ public abstract class AbstractResourceRestEndpoint<T extends RestResource> imple
         JsonApiBuilder jsonBuilder = new JsonApiBuilder();
 
         try {
+            this.getResourceFacade().hasAccess(ResourceOperation.CREATE, (T) null, true);
             T newResource = this.getResourceFacade().create(new JSONObject(jsonString));
-
             this.addResourceToBuilder("n/a", newResource, jsonBuilder);
         } catch (ServiceException e) {
             WebUtils.throwWebApplicationException(e, this.logger);
@@ -84,7 +88,7 @@ public abstract class AbstractResourceRestEndpoint<T extends RestResource> imple
 
         try {
             T resource = this.getResourceFacade().get(resourceId, true);
-            this.checkResource(resourceId, resource);
+            this.getResourceFacade().hasAccess(ResourceOperation.GET, resource, true);
             this.addResourceToBuilder(resourceId, resource, jsonBuilder);
         } catch (ServiceException e) {
             WebUtils.throwWebApplicationException(e, this.logger);
@@ -99,7 +103,8 @@ public abstract class AbstractResourceRestEndpoint<T extends RestResource> imple
         JsonApiBuilder jsonBuilder = new JsonApiBuilder();
 
         try {
-            T resource = this.getResourceFacade().update(resourceId, new JSONObject(jsonString));
+            T resource = this.getResourceFacade().update(resourceId, new JSONObject(jsonString), true);
+            this.getResourceFacade().hasAccess(ResourceOperation.UPDATE, resource, true);
             this.addResourceToBuilder(resourceId, resource, jsonBuilder);
         } catch (ServiceException e) {
             WebUtils.throwWebApplicationException(e, this.logger);
@@ -117,8 +122,8 @@ public abstract class AbstractResourceRestEndpoint<T extends RestResource> imple
         JsonApiBuilder jsonBuilder = new JsonApiBuilder();
 
         try {
-            T resource = this.getResourceFacade().delete(resourceId);
-            this.checkResource(resourceId, resource);
+            this.getResourceFacade().hasAccess(ResourceOperation.DELETE, resourceId, true);
+            T resource = this.getResourceFacade().delete(resourceId, true);
             this.addResourceToBuilder(resourceId, resource, jsonBuilder);
         } catch (ServiceException e) {
             WebUtils.throwWebApplicationException(e, this.logger);
@@ -133,14 +138,19 @@ public abstract class AbstractResourceRestEndpoint<T extends RestResource> imple
         JsonApiBuilder jsonBuilder = new JsonApiBuilder();
 
         try {
+            this.getResourceFacade().hasAccess(ResourceOperation.SEARCH, (T) null, true);
             EntitySearchResult<String> searchResult = this.getResourceFacade().search(filters, sorts, offset, limit);
 
             for (String resourceId : searchResult.getItems()) {
                 if (idsOnly) {
                     jsonBuilder.addData(new JsonApiResourceBuilder(resourceId, this.getResourceType()));
                 } else {
-                    this.addResourceToBuilder(resourceId, this.getResourceFacade()
-                                                              .get(resourceId, false), jsonBuilder);
+                    T resource = this.getResourceFacade().get(resourceId, false);
+                    if (this.getResourceFacade().hasAccess(ResourceOperation.GET, resource, false)) {
+                        this.addResourceToBuilder(resourceId, resource, jsonBuilder);
+                    } else {
+                        this.addResourceToBuilder(resourceId, NO_ACCESS_RESOURCE, jsonBuilder);
+                    }
                 }
             }
 
@@ -173,10 +183,24 @@ public abstract class AbstractResourceRestEndpoint<T extends RestResource> imple
         }
     }
 
-    private void checkResource(String resourceId, T resource) throws ServiceException {
-        if (resource == null) {
-            throw new ServiceException(ServiceException.Status.DATA_NOT_FOUND,
-                String.format("Could not find %s [%s]", this.getResourceType(), resourceId));
+    @ThreadSafe
+    protected static class NoAccessResource implements RestResource {
+        @Override
+        public String getId()
+        {
+            return "-";
+        }
+
+        @Override
+        public String getResourceType()
+        {
+            return "no-access";
+        }
+
+        @Override
+        public JSONObject toJSONObject()
+        {
+            return new JSONObject();
         }
     }
 
