@@ -199,8 +199,7 @@ public final class XWikiTools
     }
 
     /**
-     * Allows to retrieve to retrieve a list of {@link BaseObject} given the XWiki {@code context} and
-     * {@code objectType}.
+     * Allows to retrieve a list of {@link BaseObject} given the XWiki {@code context} and {@code objectType}.
      *
      * @param context the {@link XWikiContext}
      * @param objectType the {@link EntityReference}
