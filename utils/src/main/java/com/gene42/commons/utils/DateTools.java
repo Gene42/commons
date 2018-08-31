@@ -7,6 +7,7 @@
  */
 package com.gene42.commons.utils;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -28,9 +29,11 @@ import java.util.Optional;
  */
 public final class DateTools
 {
-    private static final String ZULU_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
+    /** Zulu time string format. */
+    public static final String ZULU_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
 
-    private static final ZoneId UTC_ZONE = ZoneId.of("UTC");
+    /** The UTC ZoneId. */
+    public static final ZoneId UTC_ZONE = ZoneId.of("UTC");
 
     private static final DateTimeFormatter ZULU_FORMATTER = getDateFormatter(ZULU_TIME_FORMAT);
 
@@ -99,6 +102,35 @@ public final class DateTools
         return Date.from(dateTime.toInstant(ZoneOffset.UTC));
     }
 
+
+    /**
+     * Parses the given string with the given formatter (in UTC) to get the milliseconds from the epoch
+     * of 1970-01-01T00:00:00Z.
+     * @param value the string value to parse
+     * @param formatter the formatter to use for parsing. If null, the ZULU formatter is used
+     * @return the resulting millisecond value
+     */
+    public static long stringToMillis(String value, DateTimeFormatter formatter)
+    {
+        if (formatter == null) {
+            return LocalDateTime.parse(value, ZULU_FORMATTER).toInstant(ZoneOffset.UTC).toEpochMilli();
+        } else {
+            return LocalDateTime.parse(value, formatter).toInstant(ZoneOffset.UTC).toEpochMilli();
+        }
+    }
+
+    /**
+     * Converts the given the milliseconds from the epoch of 1970-01-01T00:00:00Z, into a string given the
+     * formatter. The UTC Zone is used.
+     * @param value the milliseconds value to use
+     * @param formatter the formatter to use. If null, the ZULU formatter is used
+     * @return a String
+     */
+    public static String millisToString(long value, DateTimeFormatter formatter)
+    {
+        return localDateTimeToString(millisToLocalDateTime(value), formatter);
+    }
+
     /**
      * Converts the given date in a String using the given format pattern. The UTC Zone is used.
      * @param date the Date to convert
@@ -125,5 +157,44 @@ public final class DateTools
     private static DateTimeFormatter getDateFormatter(DateTimeFormatter formatter)
     {
         return Optional.ofNullable(formatter).orElse(ZULU_FORMATTER).withResolverStyle(ResolverStyle.LENIENT);
+    /**
+     * Converts the given Date into a LocalDateTime (UTC)
+     * @param date the Date to convert
+     * @return the resulting LocalDateTime
+     */
+    public static LocalDateTime dateToLocalDateTime(Date date) {
+        return date.toInstant().atZone(UTC_ZONE).toLocalDateTime();
+    }
+
+    /**
+     * Converts milliseconds from the epoch of 1970-01-01T00:00:00Z to a LocalDateTime (UTC)
+     * @param milliseconds milliseconds to convert
+     * @return the resulting LocalDateTime
+     */
+    public static LocalDateTime millisToLocalDateTime(long milliseconds) {
+        return LocalDateTime.ofInstant(Instant.ofEpochMilli(milliseconds), UTC_ZONE);
+    }
+
+    /**
+     * Converts given LocalDateTime (UTC) to milliseconds from the epoch of 1970-01-01T00:00:00Z
+     * @param localDateTime LocalDateTime to convert
+     * @return the resulting millisecond value
+     */
+    public static long localDateTimeToMillis(LocalDateTime localDateTime) {
+        return localDateTime.toInstant(ZoneOffset.UTC).toEpochMilli();
+    }
+
+    /**
+     * Converts the given LocalDateTime into a String using the given formatter. The UTC Zone is used.
+     * @param localDateTime the LocalDateTime to convert
+     * @param formatter the formatter to use. If null, the ZULU formatter is ued
+     * @return a String
+     */
+    public static String localDateTimeToString(LocalDateTime localDateTime, DateTimeFormatter formatter) {
+        if (formatter == null) {
+            return ZULU_FORMATTER.format(localDateTime.toInstant(ZoneOffset.UTC));
+        } else {
+            return formatter.format(localDateTime.toInstant(ZoneOffset.UTC));
+        }
     }
 }
