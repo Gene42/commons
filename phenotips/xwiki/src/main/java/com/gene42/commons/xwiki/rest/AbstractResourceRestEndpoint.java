@@ -171,7 +171,7 @@ public abstract class AbstractResourceRestEndpoint<T extends RestResource> imple
     }
 
     protected <M extends RestResource> void addResourceToBuilder(String resourceId, M resource,
-        JsonApiBuilder jsonBuilder) {
+        JsonApiBuilder jsonBuilder) throws ServiceException {
 
         if (resource == null) {
             jsonBuilder.addError(new JsonApiErrorBuilder()

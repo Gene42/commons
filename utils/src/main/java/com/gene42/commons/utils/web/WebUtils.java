@@ -71,7 +71,7 @@ public final class WebUtils
      */
     public static void throwWebApplicationException(ServiceException e, Logger logger)
     {
-        throw new WebApplicationException(getErrorResponse(e, logger));
+        throw new WebApplicationException(e, getErrorResponse(e, logger));
     }
 
 
