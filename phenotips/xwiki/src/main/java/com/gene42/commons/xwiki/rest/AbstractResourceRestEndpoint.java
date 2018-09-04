@@ -12,7 +12,6 @@ import java.util.List;
 
 import javax.annotation.concurrent.ThreadSafe;
 import javax.inject.Inject;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -33,13 +32,16 @@ import com.gene42.commons.xwiki.data.RestResource;
 /**
  * DESCRIPTION.
  *
+ * @param <T> entity extending the RestResource interface
  * @version $Id$
  */
 public abstract class AbstractResourceRestEndpoint<T extends RestResource> implements ResourceRestEndpoint
 {
-    protected Logger logger = LoggerFactory.getLogger(this.getClass());
+    public static final String N_A = "n/a";
 
     protected static final NoAccessResource NO_ACCESS_RESOURCE = new NoAccessResource();
+
+    protected Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Inject
     private ComponentManager componentManager;
@@ -47,12 +49,32 @@ public abstract class AbstractResourceRestEndpoint<T extends RestResource> imple
     @Inject
     private EntitySearch<DocumentReference> documentSearch;
 
+    /**
+     * Return the type of REST resource this endpoint provides. This is the type to be used in the JSONAPI
+     * data type field.
+     * @return the type
+     */
     public abstract String getResourceType();
 
+    /**
+     * Return the Type (used for reflection) of the facade responsible with dealing with this REST resource
+     * at the business level. This will be used to instantiate the facade.
+     * @return the Type
+     */
     public abstract Type getResourceFacadeType();
 
-    public abstract String getRootPath();
+    /**
+     * Return the root path of the REST endpoint for this particular resource. If the root REST path is
+     * '/rest' for example, the root resource path be as follows `/rest/{rootPath}`
+     * @return the resource root path
+     */
+    public abstract String getResourceRootPath();
 
+    /**
+     * Uses the getResourceFacadeType() in order to instantiate the ResourceFacade needed for this resource.
+     * @return a ResourceFacade of given Type
+     * @throws ServiceException if any issues occur during instantiation
+     */
     protected ResourceFacade<T> getResourceFacade() throws ServiceException
     {
         try {
@@ -70,12 +92,11 @@ public abstract class AbstractResourceRestEndpoint<T extends RestResource> imple
         try {
             this.getResourceFacade().hasAccess(ResourceOperation.CREATE, (T) null, true);
             T newResource = this.getResourceFacade().create(new JSONObject(jsonString));
-            this.addResourceToBuilder("n/a", newResource, jsonBuilder);
+            this.addResourceToBuilder(N_A, newResource, jsonBuilder);
         } catch (ServiceException e) {
-            WebUtils.throwWebApplicationException(e, this.logger);
+            return WebUtils.getErrorResponse(e, this.logger);
         } catch (JSONException e) {
-            throw new WebApplicationException(
-                WebUtils.getErrorResponse(Response.Status.BAD_REQUEST, e, this.getRootPath(), "n/a"));
+            return WebUtils.getErrorResponse(Response.Status.BAD_REQUEST, e, this.getResourceRootPath(), N_A);
         }
 
         return this.getOkResponse(jsonBuilder);
@@ -91,7 +112,7 @@ public abstract class AbstractResourceRestEndpoint<T extends RestResource> imple
             this.getResourceFacade().hasAccess(ResourceOperation.GET, resource, true);
             this.addResourceToBuilder(resourceId, resource, jsonBuilder);
         } catch (ServiceException e) {
-            WebUtils.throwWebApplicationException(e, this.logger);
+            return WebUtils.getErrorResponse(e, this.logger);
         }
 
         return this.getOkResponse(jsonBuilder);
@@ -107,10 +128,9 @@ public abstract class AbstractResourceRestEndpoint<T extends RestResource> imple
             this.getResourceFacade().hasAccess(ResourceOperation.UPDATE, resource, true);
             this.addResourceToBuilder(resourceId, resource, jsonBuilder);
         } catch (ServiceException e) {
-            WebUtils.throwWebApplicationException(e, this.logger);
+            return WebUtils.getErrorResponse(e, this.logger);
         } catch (JSONException e) {
-            throw new WebApplicationException(
-                WebUtils.getErrorResponse(Response.Status.BAD_REQUEST, e, this.getResourceUri(resourceId), "n/a"));
+            return WebUtils.getErrorResponse(Response.Status.BAD_REQUEST, e, this.getResourceUri(resourceId), N_A);
         }
 
         return this.getOkResponse(jsonBuilder);
@@ -126,7 +146,7 @@ public abstract class AbstractResourceRestEndpoint<T extends RestResource> imple
             T resource = this.getResourceFacade().delete(resourceId, true);
             this.addResourceToBuilder(resourceId, resource, jsonBuilder);
         } catch (ServiceException e) {
-            WebUtils.throwWebApplicationException(e, this.logger);
+            return WebUtils.getErrorResponse(e, this.logger);
         }
 
         return this.getOkResponse(jsonBuilder);
@@ -160,7 +180,7 @@ public abstract class AbstractResourceRestEndpoint<T extends RestResource> imple
                     .putMeta(WebUtils.RETURNED_KEY, searchResult.getItems().size());
 
         } catch (ServiceException e) {
-            WebUtils.throwWebApplicationException(e, this.logger);
+            return WebUtils.getErrorResponse(e, this.logger);
         }
 
         return this.getOkResponse(jsonBuilder);
@@ -205,6 +225,6 @@ public abstract class AbstractResourceRestEndpoint<T extends RestResource> imple
     }
 
     private String getResourceUri(String resourceId) {
-        return this.getRootPath() + "/" + resourceId;
+        return this.getResourceRootPath() + "/" + resourceId;
     }
 }

@@ -13,7 +13,15 @@ import org.xwiki.rest.XWikiRestComponent;
 
 import java.util.List;
 
-import javax.ws.rs.*;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -35,6 +43,7 @@ public interface ResourceRestEndpoint extends XWikiRestComponent
 
     /**
      * Creates a new resource and populates it with the contents of the given JSON.
+     * @param jsonString json content to use for creating the resource
      * @return a Response object containing the resource with its generated id
      */
     @Consumes(MediaType.APPLICATION_JSON)
@@ -55,6 +64,8 @@ public interface ResourceRestEndpoint extends XWikiRestComponent
 
     /**
      * Updates the resources identified by the given id with the contents of the given JSON.
+     * @param resourceId the id of the resource to update
+     * @param jsonString json content to use for updating the resource
      * @return a Response object containing the updated resource
      */
     @Path(ID_PATH)

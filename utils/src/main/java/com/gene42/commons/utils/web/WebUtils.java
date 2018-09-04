@@ -8,6 +8,7 @@
 package com.gene42.commons.utils.web;
 
 import java.util.EnumMap;
+import java.util.Objects;
 
 import javax.annotation.Nonnull;
 import javax.ws.rs.WebApplicationException;
@@ -86,10 +87,16 @@ public final class WebUtils
     {
         Response.ResponseBuilder builder;
 
-        if (e.getCode() != null && e.getCode() >= 400 && e.getCode() < 600) {
-            builder = Response.status(e.getCode());
+        Integer code = e.getCode();
+        Response.Status status = getReturnStatus(e);
+
+        boolean internalError;
+        if (code != null && code >= 400 && code < 600) {
+            builder = Response.status(code);
+            internalError = code >= 500;
         } else {
-            builder = Response.status(getReturnStatus(e));
+            builder = Response.status(status);
+            internalError = Objects.equals(Response.Status.INTERNAL_SERVER_ERROR, status);
         }
 
         String message = e.getMessage();
@@ -98,11 +105,18 @@ public final class WebUtils
             message = "Uh oh, something went wrong on the server. Contact an admin if it persists.";
         }
 
-        builder.entity(message);
+        builder.entity(new JsonApiBuilder()
+            .addError(new JsonApiErrorBuilder()
+                .setStatus(String.valueOf(status.getStatusCode()))
+                .setDetail(message)
+                .setTitle(status.toString()))
+                .build().toString());
+        builder.type(MediaType.APPLICATION_JSON);
 
-
-        if (logger != null && logger.isErrorEnabled()) {
-            logger.error(message, e);
+        if (internalError) {
+            e.printStackTrace();
+        } else if (logger != null) {
+            logger.warn("Client error {}: {}", code == null ? status : code, message);
         }
 
         return builder.build();
