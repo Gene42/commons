@@ -3,12 +3,16 @@ package com.gene42.commons.xwiki.data;
 import java.util.Objects;
 
 /**
- * DESCRIPTION.
+ * Class defining rest operations available through the ResourceRestEndpoint interface.
+ * Basic CRUD operations plus a search operation.
  *
  * @version $Id$
  */
 public class ResourceOperation
 {
+    /**
+     * Default CRUD operations.
+     */
     public static class Names {
         public static final String CREATE = "create";
         public static final String GET = "get";
@@ -22,9 +26,14 @@ public class ResourceOperation
     public static final ResourceOperation UPDATE = new ResourceOperation(Names.UPDATE);
     public static final ResourceOperation DELETE = new ResourceOperation(Names.DELETE);
     public static final ResourceOperation SEARCH = new ResourceOperation(Names.SEARCH);
+
     private final String name;
 
-    public ResourceOperation(String name){
+    /**
+     * Constructor.
+     * @param name The name of the operation.
+     */
+    public ResourceOperation(String name) {
         this.name = name;
     }
 
