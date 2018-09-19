@@ -13,7 +13,7 @@
   <parent>
     <groupId>com.gene42.commons</groupId>
     <artifactId>gene42-commons-phenotips-parent</artifactId>
-    <version>1.2.3-SNAPSHOT</version>
+    <version>1.3</version>
   </parent>
 
   <artifactId>gene42-commons-json-form-data</artifactId>
