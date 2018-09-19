@@ -33,7 +33,6 @@
     <dependency>
       <groupId>${phenotips.groupId}</groupId>
       <artifactId>patient-data-api</artifactId>
-      <version>${phenotips.version}</version>
     </dependency>
 
     <!-- Gene42 -->
