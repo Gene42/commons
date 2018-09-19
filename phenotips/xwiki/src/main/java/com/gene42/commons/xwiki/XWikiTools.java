@@ -20,6 +20,7 @@ import org.xwiki.users.UserManager;
 import org.xwiki.velocity.tools.EscapeTool;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -32,6 +33,8 @@ import javax.inject.Singleton;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import com.gene42.commons.utils.exceptions.ServiceException;
 import com.xpn.xwiki.XWiki;
@@ -54,6 +57,10 @@ public final class XWikiTools
     private static final int MAX_NUM_OF_GROUPS = 1000;
 
     private static final String ADMINISTRATORS_SUFFIX = " Administrators";
+
+    private static final String XWIKI = "XWiki";
+
+    private static final String XWIKI_PREFS = "XWikiPreferences";
 
     @Inject
     private UserManager userManager;
@@ -189,5 +196,26 @@ public final class XWikiTools
         }
 
         return result;
+    }
+
+    /**
+     * Allows to retrieve a list of {@link BaseObject} given the XWiki {@code context} and {@code objectType}.
+     *
+     * @param context the {@link XWikiContext}
+     * @param objectType the {@link EntityReference}
+     * @return a list of objects of type {@code objectType}
+     */
+    @NotNull
+    public static List<BaseObject> getXObjects(@NotNull final XWikiContext context,
+        @Nullable final EntityReference objectType)
+    {
+        final XWiki xWiki = context.getWiki();
+        try {
+            final DocumentReference ref = new DocumentReference(xWiki.getDatabase(), XWIKI, XWIKI_PREFS);
+            final XWikiDocument prefsDoc = xWiki.getDocument(ref, context);
+            return XWikiTools.getXObjects(prefsDoc, objectType);
+        } catch (final XWikiException e) {
+            return Collections.emptyList();
+        }
     }
 }
