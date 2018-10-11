@@ -11,7 +11,8 @@ import java.lang.annotation.Target;
  * @version $Id$
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-public @interface JsonApiResource {
-    String type();
+@Target({ElementType.FIELD})
+public @interface JsonApiRelationship {
+    String type() default "";
+    String relationshipName() default "";
 }

@@ -41,6 +41,12 @@
     </dependency>
 
     <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+    </dependency>
+
+
+    <dependency>
       <groupId>com.gene42.devops</groupId>
       <artifactId>gene42-devops-shared</artifactId>
       <version>3.1.0</version>

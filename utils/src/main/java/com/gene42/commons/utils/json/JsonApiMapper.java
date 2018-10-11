@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
@@ -26,6 +27,8 @@ import com.gene42.devops.shared.utils.Utils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.NullNode;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 
 /**
  * DESCRIPTION.
@@ -36,18 +39,21 @@ public class JsonApiMapper {
 
     private ObjectMapper mapper;
 
+    private static Cache<Class, Map<String, PropertyDescriptor>> PROPERTY_DESCRIPTOR_MAP =
+        CacheBuilder.newBuilder().maximumSize(100).build();
+
     public JsonApiMapper(ObjectMapper mapper) {
         this.mapper = mapper;
     }
 
-    public JsonApiBuilder map(Object obj, Class clazz) throws Gene42Exception {
+    public JsonApiResourceBuilder map(Object obj, Class clazz, JsonApiBuilder builder) throws Gene42Exception {
 
         JsonApiResource classApiResourceAnnotation = (JsonApiResource) clazz.getAnnotation(JsonApiResource.class);
 
-        JsonApiBuilder builder = new JsonApiBuilder();
+        //JsonApiBuilder builder = new JsonApiBuilder();
 
         if (classApiResourceAnnotation == null) {
-            return builder;
+            return null;
         }
 
         Map<String, PropertyDescriptor> propMap = new HashMap<>();
@@ -75,7 +81,7 @@ public class JsonApiMapper {
 
             if (propMap.containsKey(field.getName())) {
 
-                JsonApiResource fieldJsonApiResourceAnnotation = field.getAnnotation(JsonApiResource.class);
+                JsonApiRelationship fieldJsonApiResourceAnnotation = field.getAnnotation(JsonApiRelationship.class);
 
                 Method getter = propMap.get(field.getName()).getReadMethod();
                 Object result = null;
@@ -121,10 +127,24 @@ public class JsonApiMapper {
         //clazz.getDe
 
         //Utils.getClassAnnotation(obj, JsonApiResource)
-        return builder;
+        return data;
     }
 
-    private static String getRelationshipName(JsonApiResource jsonApiResource) {
+    private void handleData(JsonApiBuilder builder, Object obj, Class clazz) throws ExecutionException {
+
+        JsonApiResource classApiResourceAnnotation = (JsonApiResource) clazz.getAnnotation(JsonApiResource.class);
+        Map<String, PropertyDescriptor> propMap = getPropMap(clazz);
+
+        JsonApiResourceBuilder data = new JsonApiResourceBuilder().setType(classApiResourceAnnotation.type());
+
+        // PROPERTY_DESCRIPTOR_MAP.get(builder.getClass(), () -> getPropertyDescriptorMap(builder.getClass()));
+    }
+
+    private static Map<String, PropertyDescriptor> getPropMap(Class clazz) throws ExecutionException {
+        return PROPERTY_DESCRIPTOR_MAP.get(clazz, () -> createPropertyDescriptorMap(clazz));
+    }
+
+    private static String getRelationshipName(JsonApiRelationship jsonApiResource) {
         String name = jsonApiResource.relationshipName();
         return StringUtils.isBlank(name) ? jsonApiResource.type() : name;
     }
@@ -163,25 +183,19 @@ public class JsonApiMapper {
         //Utils.getFieldValue(annotatedFields.get(0), result);
     }
 
+
+    public static Map<String, PropertyDescriptor> createPropertyDescriptorMap(Class clazz) throws IntrospectionException {
+        Map<String, PropertyDescriptor> propMap = new HashMap<>();
+
+        for (PropertyDescriptor propertyDescriptor : getProperties(clazz)) {
+            propMap.put(propertyDescriptor.getName(), propertyDescriptor);
+        }
+
+        return propMap;
+    }
+
     public static PropertyDescriptor[] getProperties(Class clazz) throws IntrospectionException {
-       // Method[] methods = clazz.getDeclaredMethods();
-
-       // for (Method method : methods) {
-          //  method.
-      //  }
-
         BeanInfo info = Introspector.getBeanInfo(clazz, Object.class);
-        PropertyDescriptor[] props = info.getPropertyDescriptors();
-
-        return props;
-        /*for (PropertyDescriptor pd : props) {
-            String name = pd.getName();
-            Method getter = pd.getReadMethod();
-            Class<?> type = pd.getPropertyType();
-
-            //Object value = getter.invoke(bean);
-
-           // System.out.println(String.format("name=[%s], getter=[%s], type=[%s]", name, getter.getName(), type));
-        }*/
+        return info.getPropertyDescriptors();
     }
 }
