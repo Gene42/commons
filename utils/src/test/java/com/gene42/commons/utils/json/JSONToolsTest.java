@@ -66,4 +66,87 @@ public class JSONToolsTest
         JSONArray arr = JSONTools.getJSONArray(obj, key);
         assertNotNull(arr);
     }
+
+    @Test
+    public void weqewqwe() throws Exception
+    {
+        Blob blob = new Blob().setId(2L).setName("Haha").setObj(new Hmm());
+        //JsonApiMapper.stuff(Blob.class);
+        //JsonApiMapper.map(blob, Blob.class);
+    }
+
+    @JsonApiResource(type = "blob")
+    public class Blob {
+
+        private Long id;
+        private String name;
+        private Hmm obj;
+
+        /**
+         * Getter for id.
+         *
+         * @return id
+         */
+        public Long getId() {
+            return this.id;
+        }
+
+        /**
+         * Setter for id.
+         *
+         * @param id id to set
+         * @return this object
+         */
+        public Blob setId(Long id) {
+            this.id = id;
+            return this;
+        }
+
+        /**
+         * Getter for name.
+         *
+         * @return name
+         */
+        public String getName() {
+            return this.name;
+        }
+
+        /**
+         * Setter for name.
+         *
+         * @param name name to set
+         * @return this object
+         */
+        public Blob setName(String name) {
+            this.name = name;
+            return this;
+        }
+
+        /**
+         * Getter for obj.
+         *
+         * @return obj
+         */
+        public Hmm getObj() {
+            return this.obj;
+        }
+
+        /**
+         * Setter for obj.
+         *
+         * @param obj obj to set
+         * @return this object
+         */
+        public Blob setObj(Hmm obj) {
+            this.obj = obj;
+            return this;
+        }
+    }
+
+    public class Hmm {
+        @Override
+        public String toString() {
+            return "Hmmmmmmmmmm";
+        }
+    }
 }

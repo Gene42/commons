@@ -9,6 +9,7 @@ package com.gene42.commons.utils.json;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.Builder;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 /**
@@ -56,6 +57,9 @@ public class JsonApiResourceBuilder implements Builder<JSONObject>
     private String id;
     private String type;
 
+    public JsonApiResourceBuilder() {
+    }
+
     /**
      * Constructor.
      * @param id the id of the resource
@@ -65,6 +69,28 @@ public class JsonApiResourceBuilder implements Builder<JSONObject>
     {
         this.id = id;
         this.type = type;
+    }
+
+    /**
+     * Setter for id.
+     *
+     * @param id id to set
+     * @return this object
+     */
+    public JsonApiResourceBuilder setId(String id) {
+        this.id = id;
+        return this;
+    }
+
+    /**
+     * Setter for type.
+     *
+     * @param type type to set
+     * @return this object
+     */
+    public JsonApiResourceBuilder setType(String type) {
+        this.type = type;
+        return this;
     }
 
     /**
@@ -166,6 +192,44 @@ public class JsonApiResourceBuilder implements Builder<JSONObject>
         return this;
     }
 
+    /**
+     * Adds the given relationship. If there are no other relationships for this type present, the 'data' field
+     * will be a single JSONObject. If currently only one JSONObject is present, the 'data' field is converted to
+     * an array and the old value added to it as well as the new one. If already an array, the new relationship will
+     * simply be added.
+     * @param relationshipName the name of the relationship (used as the key)
+     * @param id the id of the resource object the relationship points to, in the 'data' entry
+     * @param type the type of the relationship resource object, in the 'data' entry
+     * @return this object
+     */
+    public JsonApiResourceBuilder addRelationship(String relationshipName, String id, String type)
+    {
+        JSONObject relationship = this.relationships.optJSONObject(relationshipName);
+
+        if (relationship == null) {
+            relationship = new JSONObject();
+            this.relationships.put(relationshipName, relationship);
+        }
+
+        if (relationship.has(DATA_FIELD)) {
+
+            JSONArray relationshipDataArray = relationship.optJSONArray(DATA_FIELD);
+
+            // It means that the key holds a JSONObject
+            if (relationshipDataArray == null) {
+                relationshipDataArray = new JSONArray();
+                relationshipDataArray.put(relationship.getJSONObject(DATA_FIELD));
+                relationship.put(DATA_FIELD, relationshipDataArray);
+            }
+
+            relationshipDataArray.put(getRelationshipData(id, type));
+        } else {
+            relationship.put(DATA_FIELD, getRelationshipData(id, type));
+        }
+
+        return this;
+    }
+
     @Override
     public JSONObject build()
     {
@@ -192,5 +256,13 @@ public class JsonApiResourceBuilder implements Builder<JSONObject>
     public String toString()
     {
         return this.build().toString();
+    }
+
+    private static JSONObject getRelationshipData(String id, String type)
+    {
+        JSONObject relationshipData = new JSONObject();
+        relationshipData.put(ID_FIELD, id);
+        relationshipData.put(TYPE_FIELD, type);
+        return relationshipData;
     }
 }
