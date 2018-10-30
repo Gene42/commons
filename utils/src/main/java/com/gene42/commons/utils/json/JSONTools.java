@@ -7,8 +7,10 @@
  */
 package com.gene42.commons.utils.json;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -144,5 +146,21 @@ public final class JSONTools
         } else {
             return value;
         }
+    }
+
+    public static List<Object> jsonArrayToList(JSONArray array, boolean clone) {
+        List<Object> results = new ArrayList<Object>(array.length());
+        for (Object element : array) {
+            if (element == null || JSONObject.NULL.equals(element)) {
+                results.add(null);
+            } else if (element instanceof JSONArray && clone) {
+                results.add(jsonArrayToList(((JSONArray) element), true));
+            } else if (element instanceof Map && clone) {
+                results.add(new JSONObject((Map) element));
+            } else {
+                results.add(element);
+            }
+        }
+        return results;
     }
 }

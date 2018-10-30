@@ -1,15 +1,20 @@
 package org.phenotips.data.rest.internal;
 
-import org.phenotips.data.api.internal.builder.DocumentSearchBuilder;
+import org.phenotips.data.api.EntitySearch;
+import org.phenotips.data.api.EntitySearchResult;
 import org.phenotips.data.rest.LiveTableSearch;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.apache.http.entity.ContentType;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import com.gene42.commons.utils.exceptions.ServiceException;
+import com.gene42.commons.utils.json.JSONTools;
 import com.gene42.commons.utils.web.HttpEndpoint;
 
 /**
@@ -17,7 +22,7 @@ import com.gene42.commons.utils.web.HttpEndpoint;
  *
  * @version $Id$
  */
-public class EntitySearchRestEndpoint implements Closeable {
+public class EntitySearchRestEndpoint implements Closeable, EntitySearch<JSONObject> {
 
     private static final String RELATIVE_ENDPOINT = "rest" + LiveTableSearch.Paths.ROOT;
 
@@ -33,7 +38,7 @@ public class EntitySearchRestEndpoint implements Closeable {
      * @return a String representing the JSON output of the search result
      * @throws ServiceException if any error occur during the search
      */
-    public String search(DocumentSearchBuilder queryBuilder) throws ServiceException {
+    public EntitySearchResult<JSONObject> search(EntitySearchRequestBuilder queryBuilder) throws ServiceException {
         return this.search(queryBuilder.build());
     }
 
@@ -43,8 +48,21 @@ public class EntitySearchRestEndpoint implements Closeable {
      * @return a String representing the JSON output of the search result
      * @throws ServiceException if any error occur during the search
      */
-    public String search(JSONObject query) throws ServiceException {
-        return this.httpEndpoint.performPostRequest(RELATIVE_ENDPOINT, query.toString(), ContentType.APPLICATION_JSON);
+    public EntitySearchResult<JSONObject> search(JSONObject query) throws ServiceException {
+        String resultStr = this.httpEndpoint
+            .performPostRequest(RELATIVE_ENDPOINT, query.toString(), ContentType.APPLICATION_JSON);
+
+        JSONObject resultObj = new JSONObject(resultStr);
+
+        return new EntitySearchResult<JSONObject>()
+            .setOffset(resultObj.optInt(LiveTableSearch.Keys.OFFSET))
+            .setTotalRows(resultObj.optInt(LiveTableSearch.Keys.TOTAL_ROWS))
+            .setItems(JSONTools.jsonArrayToList(Optional
+                .ofNullable(resultObj.optJSONArray(LiveTableSearch.Keys.ROWS))
+                .orElse(new JSONArray()), true)
+                .stream()
+                .filter(o -> o instanceof JSONObject)
+                .map(o -> (JSONObject) o).collect(Collectors.toList()));
     }
 
     @Override
