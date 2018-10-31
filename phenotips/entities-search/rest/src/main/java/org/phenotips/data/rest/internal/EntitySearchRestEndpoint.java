@@ -65,6 +65,15 @@ public class EntitySearchRestEndpoint implements Closeable, EntitySearch<JSONObj
                 .map(o -> (JSONObject) o).collect(Collectors.toList()));
     }
 
+    /**
+     * Getter for httpEndpoint.
+     *
+     * @return httpEndpoint
+     */
+    public HttpEndpoint getHttpEndpoint() {
+        return this.httpEndpoint;
+    }
+
     @Override
     public void close() throws IOException {
         if (this.httpEndpoint != null) {

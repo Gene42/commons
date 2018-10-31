@@ -148,14 +148,26 @@ public final class JSONTools
         }
     }
 
-    public static List<Object> jsonArrayToList(JSONArray array, boolean clone) {
-        List<Object> results = new ArrayList<Object>(array.length());
+    /**
+     * Returns a java.util.List containing all of the elements in the JSONArray.
+     * If an element in the array is a JSONArray, JSONObject or Map it will also
+     * be converted.
+     * <p>
+     * Warning: This method assumes that the data structure is acyclical.
+     *
+     * @param array the JSONArray to convert
+     * @param deepCopy if set to true it will do a recursive conversion of all supported objects
+     *                 else it will simply add each object of the JSONArray (as is) into the result list
+     * @return a java.util.List containing the elements of this array
+     */
+    public static List<Object> jsonArrayToList(JSONArray array, boolean deepCopy) {
+        List<Object> results = new ArrayList<>(array.length());
         for (Object element : array) {
             if (element == null || JSONObject.NULL.equals(element)) {
                 results.add(null);
-            } else if (element instanceof JSONArray && clone) {
+            } else if (element instanceof JSONArray && deepCopy) {
                 results.add(jsonArrayToList(((JSONArray) element), true));
-            } else if (element instanceof Map && clone) {
+            } else if (element instanceof Map && deepCopy) {
                 results.add(new JSONObject((Map) element));
             } else {
                 results.add(element);

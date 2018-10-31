@@ -7,7 +7,9 @@
  */
 package org.phenotips.data.rest.internal;
 
+import org.phenotips.data.api.EntitySearchResult;
 import org.phenotips.data.api.internal.builder.FamilySearchBuilder;
+import org.phenotips.data.api.internal.builder.PatientSearchBuilder;
 import org.phenotips.data.api.internal.filter.StringFilter;
 import org.phenotips.data.rest.LiveTableInputAdapter;
 import org.phenotips.data.rest.internal.adapter.URLInputAdapter;
@@ -110,18 +112,37 @@ public class FamilyTableInputAdapterTest
             EntitySearchRequestBuilder builder = new EntitySearchRequestBuilder()
                 .setDocumentSearchBuilder(new FamilySearchBuilder().newExternalIdFilter()
                                                                    .setMatch(StringFilter.MATCH_SUBSTRING)
-                                                                   .setValue("bl")
+                                                                   .setValue("mrn")
                                                                    .back())
-                .addObjectTableColumn("proband_id", FamilySearchBuilder.FAMILY_CLASS);
+                .addObjectTableColumn("proband_id", FamilySearchBuilder.FAMILY_CLASS)
+                .addObjectTableColumn("members", FamilySearchBuilder.FAMILY_CLASS)
+                .addObjectTableColumn("external_id", FamilySearchBuilder.FAMILY_CLASS);
 
-           /* DocumentSearchBuilder builder = new FamilySearchBuilder().newExternalIdFilter()
-                                                                     .setMatch(StringFilter.MATCH_SUBSTRING)
-                                                                     .setValue("mrn")
-                                                                     .back();*/
 
-            JSONObject result = new JSONObject(entitySearchRestEndpoint.search(builder));
+
+            EntitySearchResult<JSONObject> searchResult = entitySearchRestEndpoint.search(builder);
+
+
+            JSONObject result = new JSONObject(searchResult);
 
             System.out.println(result.toString(4));
+
+            System.out.println(new JSONObject(
+                entitySearchRestEndpoint.getHttpEndpoint()
+                                        .performGetRequest("rest/patients/" + "P0000001")
+            ).toString(4));
+
+
+            System.out.println(new JSONObject(entitySearchRestEndpoint.search(
+                new EntitySearchRequestBuilder()
+                    .setDocumentSearchBuilder(new PatientSearchBuilder()
+                        .newStringFilter("doc.name")
+                        .setMatch(StringFilter.MATCH_EXACT)
+                        .setValue("P0000001")
+                        .back()
+                        .setLimit(1))
+                    .addObjectTableColumn("reference", "PhenoTips.FamilyReferenceClass"))
+            ).toString(4));
         }
     }
 
