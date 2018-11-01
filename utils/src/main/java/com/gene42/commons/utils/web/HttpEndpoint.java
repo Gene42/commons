@@ -52,22 +52,6 @@ public final class HttpEndpoint implements Closeable {
         HttpPost httpRequest = this.getHttpPost(this.getURL(relativeUrl), new StringEntity(content, type));
 
         return this.performRequest(httpRequest, "posting", true);
-
-       /* try (CloseableHttpResponse response = this.httpClient.execute(this.httpHost, httpRequest)) {
-            if (response.getStatusLine().getStatusCode() != 200) {
-                throw new ServiceException(String.format("Error occurred while performing post request [%s][%s]",
-                    response.getStatusLine().getStatusCode(), response.getStatusLine().getReasonPhrase()));
-            }
-
-            HttpEntity responseEntity = response.getEntity();
-            if (responseEntity == null) {
-                return "";
-            } else {
-                return IOUtils.toString(responseEntity.getContent(), StandardCharsets.UTF_8);
-            }
-        } catch (IOException e) {
-            throw new ServiceException(e);
-        }*/
     }
 
     public String performPutRequest(String relativeUrl, String content, ContentType type)
@@ -75,38 +59,12 @@ public final class HttpEndpoint implements Closeable {
         HttpPut httpRequest = this.getHttpPut(this.getURL(relativeUrl), new StringEntity(content, type));
 
         return this.performRequest(httpRequest, "putting", true);
-        /*try (CloseableHttpResponse response = this.httpClient.execute(this.httpHost, httpRequest)) {
-            if (response.getStatusLine().getStatusCode() != 200) {
-                throw new ServiceException(String.format("Error occurred while performing post request [%s][%s]",
-                    response.getStatusLine().getStatusCode(), response.getStatusLine().getReasonPhrase()));
-            }
-
-            HttpEntity responseEntity = response.getEntity();
-            if (responseEntity == null) {
-                return "";
-            } else {
-                return IOUtils.toString(responseEntity.getContent(), StandardCharsets.UTF_8);
-            }
-        } catch (IOException e) {
-            throw new ServiceException(e);
-        }*/
     }
 
     public String performGetRequest(String relativeUrl) throws ServiceException {
         HttpGet httpRequest = this.getHttpGet(this.getURL(relativeUrl));
 
         return this.performRequest(httpRequest, "getting", false);
-       /* try (CloseableHttpResponse response = this.httpClient.execute(this.httpHost, httpRequest)) {
-            if (response.getStatusLine().getStatusCode() == 404) {
-                return null;
-            } else if (response.getStatusLine().getStatusCode() >= 400) {
-                throw new ServiceException(String.format("Error occurred while getting resource [%s][%s]",
-                    response.getStatusLine().getStatusCode(), response.getStatusLine().getReasonPhrase()));
-            }
-            return IOUtils.toString(response.getEntity().getContent(), StandardCharsets.UTF_8);
-        } catch (IOException e) {
-            throw new ServiceException(e);
-        }*/
     }
 
     private String performRequest(HttpRequestBase request, String requestErrorStr, boolean require200)
@@ -117,17 +75,10 @@ public final class HttpEndpoint implements Closeable {
 
             if (responseCode == 404) {
                 return null;
-            } else if (responseCode >= 400 || (require200 && response.getStatusLine().getStatusCode() != 200)) {
+            } else if (responseCode >= 400 || (require200 && (responseCode >= 300))) {
                 throw new ServiceException(String.format("Error occurred while %s resource [%s][%s]", requestErrorStr,
                     response.getStatusLine().getStatusCode(), response.getStatusLine().getReasonPhrase()));
             }
-
-            /*if (require200 && response.getStatusLine().getStatusCode() != 200) {
-                throw new ServiceException(String.format("Error occurred while performing post request [%s][%s]",
-                    response.getStatusLine().getStatusCode(), response.getStatusLine().getReasonPhrase()));
-            }*/
-
-            System.out.println("hmmmmm=" + responseCode + ", msg=" + response.getStatusLine().getReasonPhrase());
 
             HttpEntity responseEntity = response.getEntity();
             if (responseEntity == null) {
