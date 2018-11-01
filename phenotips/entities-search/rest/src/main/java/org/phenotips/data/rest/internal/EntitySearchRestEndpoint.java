@@ -10,6 +10,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.apache.http.entity.ContentType;
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -38,6 +39,7 @@ public class EntitySearchRestEndpoint implements Closeable, EntitySearch<JSONObj
      * @return a String representing the JSON output of the search result
      * @throws ServiceException if any error occur during the search
      */
+    @NotNull
     public EntitySearchResult<JSONObject> search(EntitySearchRequestBuilder queryBuilder) throws ServiceException {
         return this.search(queryBuilder.build());
     }
@@ -48,6 +50,7 @@ public class EntitySearchRestEndpoint implements Closeable, EntitySearch<JSONObj
      * @return a String representing the JSON output of the search result
      * @throws ServiceException if any error occur during the search
      */
+    @NotNull
     public EntitySearchResult<JSONObject> search(JSONObject query) throws ServiceException {
         String resultStr = this.httpEndpoint
             .performPostRequest(RELATIVE_ENDPOINT, query.toString(), ContentType.APPLICATION_JSON);

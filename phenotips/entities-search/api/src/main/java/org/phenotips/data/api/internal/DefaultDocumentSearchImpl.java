@@ -31,6 +31,7 @@ import javax.inject.Singleton;
 
 import org.apache.commons.collections4.set.UnmodifiableSet;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 
@@ -67,6 +68,7 @@ public class DefaultDocumentSearchImpl implements EntitySearch<DocumentReference
     @Inject
     private Logger logger;
 
+    @NotNull
     @Override
     public EntitySearchResult<DocumentReference> search(JSONObject queryParameters) throws ServiceException
     {

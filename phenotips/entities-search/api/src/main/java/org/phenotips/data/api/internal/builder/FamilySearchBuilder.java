@@ -26,6 +26,9 @@ public class FamilySearchBuilder extends DocumentSearchBuilder
     /** Property. */
     public static final String PROBAND_ID_PROPERTY = "proband_id";
 
+    /** Property. */
+    public static final String EXTERNAL_ID_PROPERTY = "external_id";
+
     /**
      * Constructor.
      */
