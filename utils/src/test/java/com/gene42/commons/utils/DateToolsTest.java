@@ -7,6 +7,7 @@
  */
 package com.gene42.commons.utils;
 
+import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Calendar;
 import java.util.Date;
@@ -52,5 +53,24 @@ public class DateToolsTest
 
         assertEquals(dateStr1, DateTools.dateToString(date3, format1));
         assertEquals(dateStr2, DateTools.dateToString(date3, format2));
+    }
+
+    @Test
+    public void testZuluFormat() throws Exception
+    {
+        DateTimeFormatter formatter = DateTools.getDateFormatter("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+
+        String original = "2018-10-20T22:10:13.123Z";
+
+        Date date = DateTools.stringToDate(original, formatter);
+
+        String newOne = DateTools.dateToString(date, formatter);
+
+        assertEquals(original, newOne);
+
+        String newTwo = DateTools.dateToString(
+            DateTools.stringToDate(original, (DateTimeFormatter) null), (DateTimeFormatter) null);
+
+        assertEquals(original, newTwo);
     }
 }
