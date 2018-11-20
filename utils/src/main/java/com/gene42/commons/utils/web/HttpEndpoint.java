@@ -165,6 +165,10 @@ public final class HttpEndpoint implements Closeable {
      * Builder class.
      */
     public static class Builder {
+
+        private static final String HTTP = "http://";
+        private static final String HTTPS = "https://";
+
         private BasicHeader authHeader;
         private BasicCredentialsProvider credentialsProvider = new BasicCredentialsProvider();
         private CloseableHttpClient httpClient;
@@ -173,7 +177,33 @@ public final class HttpEndpoint implements Closeable {
         private String username;
         private String password;
 
+        private String host;
+        private int port;
+        private boolean https;
+
         public HttpEndpoint build() {
+
+            this.baseURL = this.host;
+
+            if (this.https) {
+                if (!StringUtils.startsWith(this.baseURL, HTTPS)) {
+                    if (StringUtils.startsWith(this.baseURL, HTTP)) {
+                        this.baseURL = StringUtils.removeStart(this.baseURL, HTTP);
+                    }
+                    this.baseURL = HTTPS + this.baseURL;
+                }
+            } else {
+                if (!StringUtils.startsWith(this.baseURL, HTTP)) {
+                    this.baseURL = HTTP + this.baseURL;
+                }
+            }
+
+            if (this.port > 0) {
+                this.baseURL = this.baseURL + ":" + this.port;
+            }
+
+            this.httpHost = new HttpHost(this.host, this.port);
+
             this.httpClient = this.getHttpClient(true);
             return new HttpEndpoint(this);
         }
@@ -183,19 +213,19 @@ public final class HttpEndpoint implements Closeable {
         }
 
         public Builder setHostAndPort(String host, int port) {
+            this.host = host;
+            this.port = port;
+            return this;
+        }
 
-            this.baseURL = host;
-
-            // TODO: handle https
-            if (!StringUtils.startsWith(this.baseURL, "http")) {
-                this.baseURL = "http://" + this.baseURL;
-            }
-
-            if (port > 0) {
-                this.baseURL = this.baseURL + ":" + port;
-            }
-
-            this.httpHost = new HttpHost(host, port);
+        /**
+         * Setter for https.
+         *
+         * @param https https to set
+         * @return this object
+         */
+        public Builder setHttps(boolean https) {
+            this.https = https;
             return this;
         }
 
@@ -288,6 +318,15 @@ public final class HttpEndpoint implements Closeable {
          */
         public CloseableHttpClient getHttpClient() {
             return this.httpClient;
+        }
+
+        /**
+         * Getter for https.
+         *
+         * @return https
+         */
+        public boolean isHttps() {
+            return this.https;
         }
     }
 }
