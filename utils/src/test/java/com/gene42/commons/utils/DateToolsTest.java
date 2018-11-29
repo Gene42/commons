@@ -46,8 +46,6 @@ public class DateToolsTest
             WebUtils.doNothing(e);
         }
 
-
-
         Date date3 = DateTools.stringToDate(dateStr2, format2);
         assertTrue(DateUtils.truncatedEquals(date1, date3, Calendar.DAY_OF_MONTH));
 

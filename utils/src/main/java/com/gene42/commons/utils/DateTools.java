@@ -7,11 +7,19 @@
  */
 package com.gene42.commons.utils;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.YearMonth;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.time.format.ResolverStyle;
+import java.time.temporal.ChronoField;
+import java.time.temporal.TemporalAccessor;
 import java.util.Date;
+import java.util.Optional;
 
 /**
  * Utilities class for handling dates.
@@ -38,7 +46,11 @@ public final class DateTools
      */
     public static DateTimeFormatter getDateFormatter(String dateFormat)
     {
-        return DateTimeFormatter.ofPattern(dateFormat).withZone(UTC_ZONE);
+        return new DateTimeFormatterBuilder().appendPattern(dateFormat)
+                                      .parseDefaulting(ChronoField.HOUR_OF_DAY, 0)
+                                      .parseDefaulting(ChronoField.MINUTE_OF_HOUR, 0)
+                                      .parseDefaulting(ChronoField.SECOND_OF_MINUTE, 0)
+                                      .toFormatter().withZone(UTC_ZONE);
     }
 
     /**
@@ -58,7 +70,7 @@ public final class DateTools
      */
     public static Date stringToDate(String value, String format)
     {
-        return stringToDate(value, DateTimeFormatter.ofPattern(format).withZone(UTC_ZONE));
+        return stringToDate(value, getDateFormatter(format));
     }
 
     /**
@@ -69,8 +81,22 @@ public final class DateTools
      */
     public static Date stringToDate(String value, DateTimeFormatter formatter)
     {
-        return Date.from(LocalDateTime.parse(value, formatter == null ? ZULU_FORMATTER : formatter)
-                                      .toInstant(ZoneOffset.UTC));
+        TemporalAccessor dt = getDateFormatter(formatter)
+            .parseBest(value, LocalDateTime::from, LocalDate::from, LocalTime::from, YearMonth::from);
+
+        LocalDateTime dateTime;
+
+        if (dt instanceof LocalDate) {
+            dateTime = ((LocalDate) dt).atStartOfDay();
+        } else if (dt instanceof LocalTime) {
+            dateTime = ((LocalTime) dt).atDate(LocalDate.now());
+        } else if (dt instanceof YearMonth) {
+            dateTime = ((YearMonth) dt).atDay(1).atStartOfDay();
+        } else {
+            dateTime = LocalDateTime.from(dt);
+        }
+
+        return Date.from(dateTime.toInstant(ZoneOffset.UTC));
     }
 
     /**
@@ -81,7 +107,7 @@ public final class DateTools
      */
     public static String dateToString(Date date, String format)
     {
-        return dateToString(date, DateTimeFormatter.ofPattern(format).withZone(UTC_ZONE));
+        return dateToString(date, getDateFormatter(format));
     }
 
     /**
@@ -93,10 +119,11 @@ public final class DateTools
      */
     public static String dateToString(Date date, DateTimeFormatter formatter)
     {
-        if (formatter == null) {
-            return ZULU_FORMATTER.format(date.toInstant());
-        } else {
-            return formatter.format(date.toInstant());
-        }
+        return getDateFormatter(formatter).format(date.toInstant());
+    }
+
+    private static DateTimeFormatter getDateFormatter(DateTimeFormatter formatter)
+    {
+        return Optional.ofNullable(formatter).orElse(ZULU_FORMATTER).withResolverStyle(ResolverStyle.LENIENT);
     }
 }
