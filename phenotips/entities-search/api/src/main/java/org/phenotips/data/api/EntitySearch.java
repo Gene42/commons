@@ -9,6 +9,7 @@ package org.phenotips.data.api;
 
 import org.xwiki.component.annotation.Role;
 
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
 
 import com.gene42.commons.utils.exceptions.ServiceException;
@@ -28,6 +29,7 @@ public interface EntitySearch<T>
      * @return a DocumentSearchResult containing the documents plus extra metadata
      * @throws ServiceException on any issues during document querying
      */
+    @NotNull
     EntitySearchResult<T> search(JSONObject queryParameters) throws ServiceException;
 
     /**

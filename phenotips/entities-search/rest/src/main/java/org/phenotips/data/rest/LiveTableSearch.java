@@ -11,7 +11,9 @@ import org.phenotips.rest.RequiredAccess;
 
 import org.xwiki.rest.XWikiRestComponent;
 
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
@@ -22,7 +24,7 @@ import javax.ws.rs.core.Response;
  *
  * @version $Id$
  */
-@Path("/entities")
+@Path(LiveTableSearch.Paths.ROOT)
 public interface LiveTableSearch extends XWikiRestComponent
 {
     /**
@@ -36,6 +38,27 @@ public interface LiveTableSearch extends XWikiRestComponent
     @Produces(MediaType.APPLICATION_JSON)
     @RequiredAccess("view")
     Response search();
+
+    /**
+     * Perform an XWikiDocument search.
+     * @param jsonContent the query as JSON
+     * @return the JSON representation of the results
+     */
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    @RequiredAccess("view")
+    Response search(String jsonContent);
+
+    /** Paths class. */
+    final class Paths
+    {
+        /** Root path. */
+        public static final String ROOT = "/entities";
+
+        private Paths()
+        { }
+    }
 
     /**
      * Holder for key values.

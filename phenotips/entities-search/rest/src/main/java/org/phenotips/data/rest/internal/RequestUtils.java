@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -48,7 +49,8 @@ public final class RequestUtils
         Map<String, List<String>> queryParameters = new HashMap<>();
 
 
-        String [] queryParamPairs = StringUtils.splitPreserveAllTokens(queryString, "&");
+        String [] queryParamPairs = Optional.ofNullable(StringUtils.splitPreserveAllTokens(queryString, "&"))
+                                            .orElse(new String[0]);
 
         for (String queryParamPair : queryParamPairs) {
             String pair = urlDecode(queryParamPair);

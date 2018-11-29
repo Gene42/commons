@@ -18,6 +18,7 @@ import org.xwiki.component.annotation.InstantiationStrategy;
 import org.xwiki.component.descriptor.ComponentInstantiationStrategy;
 import org.xwiki.model.reference.DocumentReference;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -29,6 +30,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 
@@ -77,27 +79,7 @@ public class DefaultLiveTableSearchImpl implements LiveTableSearch
             JSONObject inputObject = this.inputAdapter.convert(queryParameters);
             stopWatches.getAdapterStopWatch().stop();
 
-            this.liveTableFacade.authorizeEntitySearchInput(inputObject);
-
-            stopWatches.getSearchStopWatch().start();
-            EntitySearchResult<DocumentReference> documentSearchResult = this.documentSearch.search(inputObject);
-            stopWatches.getSearchStopWatch().stop();
-
-            stopWatches.getTableStopWatch().start();
-            JSONObject responseObject =
-                this.liveTableGenerator.generateTable(documentSearchResult, inputObject, queryParameters);
-            stopWatches.getTableStopWatch().stop();
-
-            JSONObject timingsJSON = stopWatches.toJSONObject();
-            responseObject.put(LiveTableSearch.Keys.TIMINGS, timingsJSON);
-
-            if (this.logger.isDebugEnabled()) {
-                this.logger.debug(timingsJSON.toString(4));
-            }
-
-            Response.ResponseBuilder response = Response.ok(responseObject, MediaType.APPLICATION_JSON_TYPE);
-
-            return response.build();
+            return this.search(inputObject, queryParameters, stopWatches);
         } catch (SecurityException e) {
             this.handleError(e, Status.UNAUTHORIZED);
         } catch (ServiceException | IllegalArgumentException e) {
@@ -105,6 +87,45 @@ public class DefaultLiveTableSearchImpl implements LiveTableSearch
         }
 
         return Response.serverError().build();
+    }
+
+    @Override
+    public Response search(String jsonContent) {
+        try {
+            return this.search(new JSONObject(jsonContent), Collections.emptyMap(), new LiveTableStopWatches());
+        } catch (SecurityException e) {
+            this.handleError(e, Status.UNAUTHORIZED);
+        } catch (ServiceException | JSONException | IllegalArgumentException e) {
+            this.handleError(e, Status.BAD_REQUEST);
+        }
+
+        return Response.serverError().build();
+    }
+
+    private Response search(JSONObject inputObject, Map<String, List<String>> queryParameters,
+        LiveTableStopWatches stopWatches) throws ServiceException {
+
+        this.liveTableFacade.authorizeEntitySearchInput(inputObject);
+
+        stopWatches.getSearchStopWatch().start();
+        EntitySearchResult<DocumentReference> documentSearchResult = this.documentSearch.search(inputObject);
+        stopWatches.getSearchStopWatch().stop();
+
+        stopWatches.getTableStopWatch().start();
+        JSONObject responseObject =
+            this.liveTableGenerator.generateTable(documentSearchResult, inputObject, queryParameters);
+        stopWatches.getTableStopWatch().stop();
+
+        JSONObject timingsJSON = stopWatches.toJSONObject();
+        responseObject.put(LiveTableSearch.Keys.TIMINGS, timingsJSON);
+
+        if (this.logger.isDebugEnabled()) {
+            this.logger.debug(timingsJSON.toString(4));
+        }
+
+        Response.ResponseBuilder response = Response.ok(responseObject, MediaType.APPLICATION_JSON_TYPE);
+
+        return response.build();
     }
 
     private void handleError(Exception e, Status status)

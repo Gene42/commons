@@ -279,7 +279,7 @@ public class DocumentQueryBuilder implements Builder<DocumentQueryBuilder>
             throw new IllegalArgumentException(String.format("Invalid dependsOn query for [%1$s]", propertyName));
         }
         JSONObject filter = query.filters.get(propertyName);
-        return filter != null && doesFilterHaveValues(filter);
+        return doesFilterHaveValues(filter);
     }
 
     private static boolean doesFilterHaveValues(JSONObject filter)

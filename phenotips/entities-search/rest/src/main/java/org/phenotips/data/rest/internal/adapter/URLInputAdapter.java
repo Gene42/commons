@@ -92,7 +92,7 @@ public class URLInputAdapter implements LiveTableInputAdapter
         queryObj.put(EntitySearch.Keys.LIMIT_KEY, RequestUtils.getFirst(queryParameters, EntitySearch.Keys.LIMIT_KEY));
         queryObj.put(EntitySearch.Keys.OFFSET_KEY,
             Integer.parseInt(RequestUtils.getFirst(queryParameters, EntitySearch.Keys.OFFSET_KEY, "1")) - 1);
-        queryObj.put(EntitySearch.Keys.COLUMN_LIST_KEY, this.getColumnList(documentClassName, queryParameters));
+        queryObj.put(EntitySearch.Keys.COLUMN_LIST_KEY, getColumnList(documentClassName, queryParameters));
 
         return queryObj;
     }
@@ -108,7 +108,7 @@ public class URLInputAdapter implements LiveTableInputAdapter
         builder.addToOrderFilter(typeKey, Collections.singletonList(OrderFilter.TYPE));
     }
 
-    private JSONArray getColumnList(String className, Map<String, List<String>> queryParameters)
+    private static JSONArray getColumnList(String className, Map<String, List<String>> queryParameters)
     {
         String [] tokens = StringUtils.split(RequestUtils.getFirst(queryParameters, EntitySearch.Keys.COLUMN_LIST_KEY),
             URLInputAdapter.VALUE_DELIMITER);

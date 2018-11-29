@@ -7,6 +7,7 @@
  */
 package org.phenotips.data.api;
 
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -20,7 +21,7 @@ import org.apache.commons.collections4.CollectionUtils;
  *
  * @version $Id$
  */
-public class EntitySearchResult<T>
+public class EntitySearchResult<T> implements Iterable<T>
 {
     private long totalRows;
 
@@ -105,5 +106,18 @@ public class EntitySearchResult<T>
             this.items = items;
         }
         return this;
+    }
+
+    /**
+     * Returns whether or not the result list is empty.
+     * @return boolean
+     */
+    public boolean isEmpty() {
+        return CollectionUtils.isEmpty(this.items);
+    }
+
+    @Override
+    public Iterator<T> iterator() {
+        return this.items.iterator();
     }
 }

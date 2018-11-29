@@ -12,12 +12,14 @@ import org.xwiki.model.EntityType;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 
+import com.gene42.commons.utils.json.JSONafiable;
+
 /**
  * A container class for holding defining information about a column.
  *
  * @version $Id$
  */
-public class TableColumn
+public class TableColumn implements JSONafiable
 {
     /** Key. */
     public static final String TYPE_KEY = "type";
@@ -33,12 +35,51 @@ public class TableColumn
 
 
     private EntityType type;
-
     private String colName;
-
     private String className;
-
     private String propertyName;
+
+    /**
+     * Constructor.
+     */
+    public TableColumn()
+    {
+    }
+
+    /**
+     * Constructor.
+     * @param colName the column name
+     * @param propertyName the name of the property
+     * @param className the name of the class of the object
+     * @param type the type of the entity : doc, XwikiObject
+     */
+    public TableColumn(String colName, String propertyName, String className, EntityType type)
+    {
+
+        if (type == null) {
+            throw new IllegalArgumentException("No type provided");
+        }
+
+        if (colName == null) {
+            throw new IllegalArgumentException("No colName provided");
+        }
+
+        this.colName = colName;
+        this.type = type;
+        boolean isDoc = EntityType.DOCUMENT.equals(type);
+
+        if (!isDoc && className == null) {
+            throw new IllegalArgumentException("No className provided");
+        }
+
+        this.className = className;
+
+        if (StringUtils.isBlank(propertyName)) {
+            this.propertyName = this.colName;
+        } else {
+            this.propertyName = propertyName;
+        }
+    }
 
     /**
      * Constructor.
@@ -60,6 +101,17 @@ public class TableColumn
         }
 
         return this;
+    }
+
+    @Override
+    public JSONObject toJSONObject()
+    {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put(TYPE_KEY, this.type);
+        jsonObject.put(CLASS_KEY, this.className);
+        jsonObject.put(COLUMN_NAME_KEY, this.colName);
+        jsonObject.put(PROPERTY_NAME_KEY, this.propertyName);
+        return jsonObject;
     }
 
     /**
