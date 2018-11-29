@@ -420,7 +420,7 @@ public class DocumentSearchBuilder implements Builder<JSONObject>
     }
 
     /**
-     * Creates + adds a new string filter builder for the external id property and returns it.*
+     * Creates + adds a new string filter builder for the external id property and returns it.
      * @return a new StringFilterBuilder
      */
     public StringFilterBuilder newExternalIdFilter()

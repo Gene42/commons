@@ -51,7 +51,8 @@ public interface LiveTableSearch extends XWikiRestComponent
     Response search(String jsonContent);
 
     /** Paths class. */
-    final class Paths {
+    final class Paths
+    {
         /** Root path. */
         public static final String ROOT = "/entities";
 

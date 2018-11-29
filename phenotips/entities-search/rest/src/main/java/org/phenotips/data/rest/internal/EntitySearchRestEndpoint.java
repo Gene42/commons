@@ -1,3 +1,10 @@
+/*
+ * This file is subject to the terms and conditions defined in file LICENSE,
+ * which is part of this source code package.
+ *
+ * See the NOTICE file distributed with this work for additional
+ * information regarding copyright ownership.
+ */
 package org.phenotips.data.rest.internal;
 
 import org.phenotips.data.api.EntitySearch;
@@ -23,13 +30,19 @@ import com.gene42.commons.utils.web.HttpEndpoint;
  *
  * @version $Id$
  */
-public class EntitySearchRestEndpoint implements Closeable, EntitySearch<JSONObject> {
+public class EntitySearchRestEndpoint implements Closeable, EntitySearch<JSONObject>
+{
 
     private static final String RELATIVE_ENDPOINT = "rest" + LiveTableSearch.Paths.ROOT;
 
     private HttpEndpoint httpEndpoint;
 
-    public EntitySearchRestEndpoint(HttpEndpoint httpEndpoint) {
+    /**
+     * Constructor.
+     * @param httpEndpoint HttpEndpoint to use for the connection
+     */
+    public EntitySearchRestEndpoint(HttpEndpoint httpEndpoint)
+    {
         this.httpEndpoint = httpEndpoint;
     }
 
@@ -40,7 +53,8 @@ public class EntitySearchRestEndpoint implements Closeable, EntitySearch<JSONObj
      * @throws ServiceException if any error occur during the search
      */
     @NotNull
-    public EntitySearchResult<JSONObject> search(EntitySearchRequestBuilder queryBuilder) throws ServiceException {
+    public EntitySearchResult<JSONObject> search(EntitySearchRequestBuilder queryBuilder) throws ServiceException
+    {
         return this.search(queryBuilder.build());
     }
 
@@ -51,7 +65,8 @@ public class EntitySearchRestEndpoint implements Closeable, EntitySearch<JSONObj
      * @throws ServiceException if any error occur during the search
      */
     @NotNull
-    public EntitySearchResult<JSONObject> search(JSONObject query) throws ServiceException {
+    public EntitySearchResult<JSONObject> search(JSONObject query) throws ServiceException
+    {
         String resultStr = this.httpEndpoint
             .performPostRequest(RELATIVE_ENDPOINT, query.toString(), ContentType.APPLICATION_JSON);
 
@@ -73,12 +88,14 @@ public class EntitySearchRestEndpoint implements Closeable, EntitySearch<JSONObj
      *
      * @return httpEndpoint
      */
-    public HttpEndpoint getHttpEndpoint() {
+    public HttpEndpoint getHttpEndpoint()
+    {
         return this.httpEndpoint;
     }
 
     @Override
-    public void close() throws IOException {
+    public void close() throws IOException
+    {
         if (this.httpEndpoint != null) {
             this.httpEndpoint.close();
         }

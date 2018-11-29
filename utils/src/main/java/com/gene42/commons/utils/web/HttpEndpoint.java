@@ -1,3 +1,10 @@
+/*
+ * This file is subject to the terms and conditions defined in file LICENSE,
+ * which is part of this source code package.
+ *
+ * See the NOTICE file distributed with this work for additional
+ * information regarding copyright ownership.
+ */
 package com.gene42.commons.utils.web;
 
 import java.io.Closeable;
@@ -28,12 +35,12 @@ import org.apache.http.message.BasicHeader;
 import com.gene42.commons.utils.exceptions.ServiceException;
 
 /**
- * DESCRIPTION.
+ * CloseableHttpClient wrapper. It provides useful authentication.
  *
  * @version $Id$
  */
-public final class HttpEndpoint implements Closeable {
-
+public final class HttpEndpoint implements Closeable
+{
     private final BasicHeader authHeader;
     private final String baseURL;
     private final HttpHost httpHost;
@@ -47,28 +54,54 @@ public final class HttpEndpoint implements Closeable {
         this.httpClient = builder.httpClient;
     }
 
+    /**
+     * Performs a post request with the given relative url against the base url.
+     * @param relativeUrl the relative url of the request
+     * @param content the content to send in the request
+     * @param type the type of the content
+     * @return the response body
+     * @throws ServiceException if any issue occurs during the request
+     */
     public String performPostRequest(String relativeUrl, String content, ContentType type)
-        throws ServiceException {
+        throws ServiceException
+    {
         HttpPost httpRequest = this.getHttpPost(this.getURL(relativeUrl), new StringEntity(content, type));
 
         return this.performRequest(httpRequest, "posting", true);
     }
 
+    /**
+     * Performs a put request with the given relative url against the base url.
+     * @param relativeUrl the relative url of the request
+     * @param content the content to send in the request
+     * @param type the type of the content
+     * @return the response body
+     * @throws ServiceException if any issue occurs during the request
+     */
     public String performPutRequest(String relativeUrl, String content, ContentType type)
-        throws ServiceException {
+        throws ServiceException
+    {
         HttpPut httpRequest = this.getHttpPut(this.getURL(relativeUrl), new StringEntity(content, type));
 
         return this.performRequest(httpRequest, "putting", true);
     }
 
-    public String performGetRequest(String relativeUrl) throws ServiceException {
+    /**
+     * Performs a get request with the given relative url against the base url.
+     * @param relativeUrl the relative url of the request
+     * @return the response body
+     * @throws ServiceException if any issue occurs during the request
+     */
+    public String performGetRequest(String relativeUrl) throws ServiceException
+    {
         HttpGet httpRequest = this.getHttpGet(this.getURL(relativeUrl));
 
         return this.performRequest(httpRequest, "getting", false);
     }
 
     private String performRequest(HttpRequestBase request, String requestErrorStr, boolean require200)
-        throws ServiceException {
+        throws ServiceException
+    {
         try (CloseableHttpResponse response = this.httpClient.execute(this.httpHost, request)) {
 
             int responseCode = response.getStatusLine().getStatusCode();
@@ -91,29 +124,33 @@ public final class HttpEndpoint implements Closeable {
         }
     }
 
-    private HttpPost getHttpPost(String path, HttpEntity content) {
+    private HttpPost getHttpPost(String path, HttpEntity content)
+    {
         HttpPost httpRequest = new HttpPost(path);
         httpRequest.setEntity(content);
         httpRequest.addHeader(this.authHeader);
         return httpRequest;
     }
 
-    private HttpGet getHttpGet(String path) {
+    private HttpGet getHttpGet(String path)
+    {
         HttpGet httpRequest = new HttpGet(path);
         httpRequest.addHeader(this.authHeader);
         return httpRequest;
     }
 
-    private HttpPut getHttpPut(String path, HttpEntity content) {
+    private HttpPut getHttpPut(String path, HttpEntity content)
+    {
         HttpPut httpRequest = new HttpPut(path);
         httpRequest.setEntity(content);
         httpRequest.addHeader(this.authHeader);
         return httpRequest;
     }
 
-    private String getURL(String path) {
+    private String getURL(String path)
+    {
         if (StringUtils.isNotBlank(path)) {
-            return this.baseURL + ((StringUtils.startsWith(path,"/")) ? path : "/" + path);
+            return this.baseURL + ((StringUtils.startsWith(path, "/")) ? path : "/" + path);
         } else {
             return this.baseURL;
         }
@@ -123,7 +160,8 @@ public final class HttpEndpoint implements Closeable {
      * Get new builder object.
      * @return a Builder
      */
-    public static Builder builder() {
+    public static Builder builder()
+    {
         return new Builder();
     }
 
@@ -132,7 +170,8 @@ public final class HttpEndpoint implements Closeable {
      *
      * @return authHeader
      */
-    public BasicHeader getAuthHeader() {
+    public BasicHeader getAuthHeader()
+    {
         return this.authHeader;
     }
 
@@ -141,7 +180,8 @@ public final class HttpEndpoint implements Closeable {
      *
      * @return baseURL
      */
-    public String getBaseURL() {
+    public String getBaseURL()
+    {
         return this.baseURL;
     }
 
@@ -164,8 +204,8 @@ public final class HttpEndpoint implements Closeable {
     /**
      * Builder class.
      */
-    public static class Builder {
-
+    public static class Builder
+    {
         private static final String HTTP = "http://";
         private static final String HTTPS = "https://";
 
@@ -181,6 +221,10 @@ public final class HttpEndpoint implements Closeable {
         private int port;
         private boolean https;
 
+        /**
+         * Build a new a HttpEndpoint.
+         * @return a new HttpEndpoint instance filled with the options set up
+         */
         public HttpEndpoint build() {
 
             this.baseURL = this.host;
@@ -208,10 +252,21 @@ public final class HttpEndpoint implements Closeable {
             return new HttpEndpoint(this);
         }
 
+        /**
+         * Setter for host.
+         * @param host the host name
+         * @return this object
+         */
         public Builder setHost(String host) {
             return this.setHostAndPort(host, -1);
         }
 
+        /**
+         * Setter for host and port.
+         * @param host the host name
+         * @param port the port
+         * @return this object
+         */
         public Builder setHostAndPort(String host, int port) {
             this.host = host;
             this.port = port;
@@ -229,6 +284,12 @@ public final class HttpEndpoint implements Closeable {
             return this;
         }
 
+        /**
+         * Sets the authentication parameters.
+         * @param username the user name
+         * @param password the password
+         * @return this object
+         */
         public Builder setUsernameAndPassword(String username, String password) {
             this.username = username;
             this.password = password;
@@ -236,8 +297,7 @@ public final class HttpEndpoint implements Closeable {
             this.credentialsProvider.setCredentials(AuthScope.ANY,
                 new UsernamePasswordCredentials(this.username, this.password));
 
-            String auth = new String(Base64.getEncoder().encode((this.username + ":" + this.password)
-                .getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8);
+            String auth = Base64.getEncoder().encodeToString((this.username + ":" + this.password).getBytes());
 
             this.authHeader = new BasicHeader("Authorization", "Basic " + auth);
             return this;

@@ -39,10 +39,20 @@ public class TableColumn implements JSONafiable
     private String className;
     private String propertyName;
 
+    /**
+     * Constructor.
+     */
     public TableColumn()
     {
     }
 
+    /**
+     * Constructor.
+     * @param colName the column name
+     * @param propertyName the name of the property
+     * @param className the name of the class of the object
+     * @param type the type of the entity : doc, XwikiObject
+     */
     public TableColumn(String colName, String propertyName, String className, EntityType type)
     {
 
