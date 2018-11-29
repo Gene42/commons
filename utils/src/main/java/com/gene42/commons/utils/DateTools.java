@@ -7,8 +7,9 @@
  */
 package com.gene42.commons.utils;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
@@ -19,7 +20,7 @@ import java.util.Date;
  */
 public final class DateTools
 {
-    private static final String ZULU_TIME_FORMAT = "yyyy-MM-dd'T'hh:mm:ss.SSS'Z'";
+    private static final String ZULU_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
 
     private static final ZoneId UTC_ZONE = ZoneId.of("UTC");
 
@@ -68,7 +69,8 @@ public final class DateTools
      */
     public static Date stringToDate(String value, DateTimeFormatter formatter)
     {
-        return Date.from(LocalDate.parse(value, formatter).atStartOfDay(formatter.getZone()).toInstant());
+        return Date.from(LocalDateTime.parse(value, formatter == null ? ZULU_FORMATTER : formatter)
+                                      .toInstant(ZoneOffset.UTC));
     }
 
     /**
@@ -84,7 +86,7 @@ public final class DateTools
 
     /**
      * Converts the given date in a String using the given formatter. If the formatter is null,
-     * a Zulu time formatter is used (yyyy-MM-dd'T'hh:mm:ss.SSS'Z')
+     * a Zulu time formatter is used (yyyy-MM-dd'T'HH:mm:ss.SSS'Z')
      * @param date the Date to convert
      * @param formatter the formatter to use
      * @return a String
