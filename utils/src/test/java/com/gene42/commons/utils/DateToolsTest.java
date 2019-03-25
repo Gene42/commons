@@ -7,6 +7,8 @@
  */
 package com.gene42.commons.utils;
 
+import com.gene42.commons.utils.web.WebUtils;
+
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Calendar;
@@ -14,8 +16,6 @@ import java.util.Date;
 
 import org.apache.commons.lang3.time.DateUtils;
 import org.junit.Test;
-
-import com.gene42.commons.utils.web.WebUtils;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;

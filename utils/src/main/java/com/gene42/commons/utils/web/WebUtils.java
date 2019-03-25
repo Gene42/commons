@@ -7,6 +7,10 @@
  */
 package com.gene42.commons.utils.web;
 
+import com.gene42.commons.utils.exceptions.ServiceException;
+import com.gene42.commons.utils.json.JsonApiBuilder;
+import com.gene42.commons.utils.json.JsonApiErrorBuilder;
+
 import java.util.EnumMap;
 import java.util.Objects;
 
@@ -20,10 +24,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
-
-import com.gene42.commons.utils.exceptions.ServiceException;
-import com.gene42.commons.utils.json.JsonApiBuilder;
-import com.gene42.commons.utils.json.JsonApiErrorBuilder;
 
 /**
  * A utils class for Web related helper functions.

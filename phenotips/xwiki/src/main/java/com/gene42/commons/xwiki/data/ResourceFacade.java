@@ -1,4 +1,13 @@
+/*
+ * This file is subject to the terms and conditions defined in file LICENSE,
+ * which is part of this source code package.
+ *
+ * See the NOTICE file distributed with this work for additional
+ * information regarding copyright ownership.
+ */
 package com.gene42.commons.xwiki.data;
+
+import com.gene42.commons.utils.exceptions.ServiceException;
 
 import org.phenotips.data.api.EntitySearchResult;
 
@@ -10,8 +19,6 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
-
-import com.gene42.commons.utils.exceptions.ServiceException;
 
 /**
  * Interface for business level facades meant to provide CRUD operations for a RestResource.

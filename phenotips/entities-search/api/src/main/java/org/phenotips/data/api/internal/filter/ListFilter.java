@@ -7,6 +7,8 @@
  */
 package org.phenotips.data.api.internal.filter;
 
+import com.gene42.commons.utils.json.JSONTools;
+
 import org.phenotips.data.api.internal.DocumentQuery;
 import org.phenotips.data.api.internal.QueryBuffer;
 import org.phenotips.data.api.internal.QueryExpression;
@@ -16,7 +18,6 @@ import java.util.List;
 import org.apache.commons.collections4.CollectionUtils;
 import org.json.JSONObject;
 
-import com.gene42.commons.utils.json.JSONTools;
 import com.xpn.xwiki.objects.PropertyInterface;
 import com.xpn.xwiki.objects.classes.BaseClass;
 import com.xpn.xwiki.objects.classes.ListClass;

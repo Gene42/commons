@@ -7,6 +7,8 @@
  */
 package com.gene42.commons.xwiki;
 
+import com.gene42.commons.utils.exceptions.ServiceException;
+
 import org.phenotips.Constants;
 import org.phenotips.security.authorization.AuthorizationService;
 
@@ -37,7 +39,6 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import com.gene42.commons.utils.exceptions.ServiceException;
 import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;

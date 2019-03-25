@@ -7,6 +7,8 @@
  */
 package org.phenotips.data.rest.internal.adapter;
 
+import com.gene42.commons.utils.json.JSONTools;
+
 import org.phenotips.data.api.EntitySearch;
 import org.phenotips.data.api.internal.DocumentQuery;
 import org.phenotips.data.api.internal.PropertyName;
@@ -26,8 +28,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.Builder;
 import org.json.JSONArray;
 import org.json.JSONObject;
-
-import com.gene42.commons.utils.json.JSONTools;
 
 /**
  * This is a builder class for a document query input object.

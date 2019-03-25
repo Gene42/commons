@@ -7,6 +7,8 @@
  */
 package org.phenotips.data.rest.internal;
 
+import com.gene42.commons.utils.exceptions.ServiceException;
+
 import org.phenotips.data.api.EntitySearch;
 import org.phenotips.data.api.EntitySearchResult;
 import org.phenotips.data.rest.LiveTableGenerator;
@@ -33,8 +35,6 @@ import javax.ws.rs.core.Response.Status;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
-
-import com.gene42.commons.utils.exceptions.ServiceException;
 
 /**
  * This is the default implementation of the LiveTableSearch REST API.

@@ -7,12 +7,12 @@
  */
 package org.phenotips.data.rest.internal;
 
+import com.gene42.commons.utils.json.JSONafiable;
+
 import org.xwiki.model.EntityType;
 
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
-
-import com.gene42.commons.utils.json.JSONafiable;
 
 /**
  * A container class for holding defining information about a column.

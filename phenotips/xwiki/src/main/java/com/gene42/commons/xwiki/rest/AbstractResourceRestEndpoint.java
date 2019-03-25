@@ -1,4 +1,20 @@
+/*
+ * This file is subject to the terms and conditions defined in file LICENSE,
+ * which is part of this source code package.
+ *
+ * See the NOTICE file distributed with this work for additional
+ * information regarding copyright ownership.
+ */
 package com.gene42.commons.xwiki.rest;
+
+import com.gene42.commons.utils.exceptions.ServiceException;
+import com.gene42.commons.utils.json.JsonApiBuilder;
+import com.gene42.commons.utils.json.JsonApiErrorBuilder;
+import com.gene42.commons.utils.json.JsonApiResourceBuilder;
+import com.gene42.commons.utils.web.WebUtils;
+import com.gene42.commons.xwiki.data.ResourceFacade;
+import com.gene42.commons.xwiki.data.ResourceOperation;
+import com.gene42.commons.xwiki.data.RestResource;
 
 import org.phenotips.data.api.EntitySearch;
 import org.phenotips.data.api.EntitySearchResult;
@@ -19,15 +35,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.gene42.commons.utils.exceptions.ServiceException;
-import com.gene42.commons.utils.json.JsonApiBuilder;
-import com.gene42.commons.utils.json.JsonApiErrorBuilder;
-import com.gene42.commons.utils.json.JsonApiResourceBuilder;
-import com.gene42.commons.utils.web.WebUtils;
-import com.gene42.commons.xwiki.data.ResourceFacade;
-import com.gene42.commons.xwiki.data.ResourceOperation;
-import com.gene42.commons.xwiki.data.RestResource;
 
 /**
  * DESCRIPTION.

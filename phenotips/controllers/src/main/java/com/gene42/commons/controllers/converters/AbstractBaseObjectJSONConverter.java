@@ -7,6 +7,9 @@
  */
 package com.gene42.commons.controllers.converters;
 
+import com.gene42.commons.utils.DateTools;
+import com.gene42.commons.utils.exceptions.ServiceException;
+
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -20,20 +23,18 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-import com.xpn.xwiki.objects.NumberProperty;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import com.gene42.commons.utils.DateTools;
-import com.gene42.commons.utils.exceptions.ServiceException;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.objects.BaseObject;
 import com.xpn.xwiki.objects.DBStringListProperty;
 import com.xpn.xwiki.objects.ListProperty;
+import com.xpn.xwiki.objects.NumberProperty;
 import com.xpn.xwiki.objects.PropertyInterface;
 import com.xpn.xwiki.objects.classes.TextAreaClass;
 
@@ -66,15 +67,15 @@ public abstract class AbstractBaseObjectJSONConverter implements BaseObjectJSONC
         tempMap.put(Double.class, (from, to, fieldName)
             -> to.putOpt(fieldName, from.getDoubleValue(fieldName)));
         tempMap.put(Integer.class, (from, to, fieldName)
-                -> to.putOpt(fieldName, from.getIntValue(fieldName)));
+            -> to.putOpt(fieldName, from.getIntValue(fieldName)));
         tempMap.put(Long.class, (from, to, fieldName)
-                -> to.putOpt(fieldName, from.getLongValue(fieldName)));
+            -> to.putOpt(fieldName, from.getLongValue(fieldName)));
         tempMap.put(Boolean.class, (from, to, fieldName)
             -> to.putOpt(fieldName, BooleanUtils.toBoolean(from.getIntValue(fieldName), 1, 0)));
         tempMap.put(Date.class, (from, to, fieldName)
             -> to.putOpt(fieldName, DateTools.dateToString(from.getDateValue(fieldName), DATE_TIME_FORMATTER)));
         tempMap.put(LocalDateTime.class, (from, to, fieldName)
-                -> to.putOpt(fieldName, getStringFromLong(fieldName, from, StringUtils.EMPTY)));
+            -> to.putOpt(fieldName, getStringFromLong(fieldName, from, StringUtils.EMPTY)));
         tempMap.put(List.class, (from, to, fieldName)
             -> to.putOpt(fieldName, toJSONArrayFromList(fieldName, from)));
         tempMap.put(Set.class, (from, to, fieldName)
@@ -93,15 +94,15 @@ public abstract class AbstractBaseObjectJSONConverter implements BaseObjectJSONC
         tempMap.put(Double.class, (from, to, fieldName, context)
             -> to.setDoubleValue(fieldName, from.getDouble(fieldName)));
         tempMap.put(Integer.class, (from, to, fieldName, context)
-                -> to.setIntValue(fieldName, from.getInt(fieldName)));
+            -> to.setIntValue(fieldName, from.getInt(fieldName)));
         tempMap.put(Long.class, (from, to, fieldName, context)
-                -> to.setLongValue(fieldName, from.getLong(fieldName)));
+            -> to.setLongValue(fieldName, from.getLong(fieldName)));
         tempMap.put(Boolean.class, (from, to, fieldName, context)
             -> to.setIntValue(fieldName, BooleanUtils.toInteger(from.getBoolean(fieldName), 1, 0)));
         tempMap.put(Date.class, (from, to, fieldName, context)
             -> to.setDateValue(fieldName, DateTools.stringToDate(from.getString(fieldName), DATE_TIME_FORMATTER)));
         tempMap.put(LocalDateTime.class, (from, to, fieldName, context)
-                -> to.setLongValue(fieldName, DateTools.stringToMillis(from.getString(fieldName), null)));
+            -> to.setLongValue(fieldName, DateTools.stringToMillis(from.getString(fieldName), null)));
         tempMap.put(List.class, (from, to, fieldName, context)
             -> putListInBaseObject(fromJSONArrayToList(fieldName, from), fieldName, to));
         tempMap.put(Set.class, (from, to, fieldName, context)
@@ -120,9 +121,9 @@ public abstract class AbstractBaseObjectJSONConverter implements BaseObjectJSONC
         tempMap.put(Double.class, (o1, o2, fieldName, context)
             -> Objects.equals(o1.getDoubleValue(fieldName), o2.getDoubleValue(fieldName)));
         tempMap.put(Integer.class, (o1, o2, fieldName, context)
-                -> Objects.equals(o1.getIntValue(fieldName), o2.getIntValue(fieldName)));
+            -> Objects.equals(o1.getIntValue(fieldName), o2.getIntValue(fieldName)));
         tempMap.put(Long.class, (o1, o2, fieldName, context)
-                -> Objects.equals(o1.getLongValue(fieldName), o2.getLongValue(fieldName)));
+            -> Objects.equals(o1.getLongValue(fieldName), o2.getLongValue(fieldName)));
         tempMap.put(Boolean.class, (o1, o2, fieldName, context)
             -> Objects.equals(BooleanUtils.toBoolean(o1.getIntValue(fieldName), 1, 0),
                 BooleanUtils.toBoolean(o2.getIntValue(fieldName), 1, 0)));
@@ -130,7 +131,7 @@ public abstract class AbstractBaseObjectJSONConverter implements BaseObjectJSONC
             -> Objects.equals(DateTools.dateToString(o1.getDateValue(fieldName), DATE_TIME_FORMATTER),
                 DateTools.dateToString(o2.getDateValue(fieldName), DATE_TIME_FORMATTER)));
         tempMap.put(LocalDateTime.class, (o1, o2, fieldName, context)
-                -> Objects.equals(o1.getLongValue(fieldName), o2.getLongValue(fieldName)));
+            -> Objects.equals(o1.getLongValue(fieldName), o2.getLongValue(fieldName)));
         tempMap.put(List.class, (o1, o2, fieldName, context)
             -> Objects.equals(getList(fieldName, o1), getList(fieldName, o2)));
         tempMap.put(Set.class, (o1, o2, fieldName, context)
@@ -172,14 +173,15 @@ public abstract class AbstractBaseObjectJSONConverter implements BaseObjectJSONC
             return to;
         }
 
-        Set<Map.Entry<String, Class<?>>> _keyTypesMapEntrySet =
+        Set<Map.Entry<String, Class<?>>> localKeyTypesMapEntrySet =
             (keyTypesMapEntrySet == null) ? this.getKeyTypesMapEntrySet() : keyTypesMapEntrySet;
 
 
-        Map<Class<?>, JSONToXObj> _functionMap = (functionMap == null) ? this.getJSONToXObjFunctionMap() : functionMap;
+        Map<Class<?>, JSONToXObj> localFunctionMap =
+            (functionMap == null) ? this.getJSONToXObjFunctionMap() : functionMap;
 
-        for (Map.Entry<String, Class<?>> entry : _keyTypesMapEntrySet) {
-            JSONToXObj func = _functionMap.get(entry.getValue());
+        for (Map.Entry<String, Class<?>> entry : localKeyTypesMapEntrySet) {
+            JSONToXObj func = localFunctionMap.get(entry.getValue());
             String key = entry.getKey();
             if (func != null && jsonValueIsNotNull(from, key, entry.getValue())) {
                 func.apply(from, to, key, context);
@@ -239,8 +241,11 @@ public abstract class AbstractBaseObjectJSONConverter implements BaseObjectJSONC
 
             CompareXObj func = functionMap.get(entry.getValue());
 
-            if ((value1 == null && value2 != null) || (value2 == null && value1 != null)
-                    || (func != null && !func.equals(object1, object2, key, context))) {
+            boolean valueCheck1 = value1 == null && value2 != null;
+            boolean valueCheck2 = value2 == null && value1 != null;
+            boolean funcCheck = func != null && !func.equals(object1, object2, key, context);
+
+            if (valueCheck1 || valueCheck2 || funcCheck) {
                 return false;
             }
         }
@@ -302,7 +307,7 @@ public abstract class AbstractBaseObjectJSONConverter implements BaseObjectJSONC
                 return jsonArray;
             }
 
-            ListProperty listProperty = (ListProperty)property;
+            ListProperty listProperty = (ListProperty) property;
 
             for (String obj : listProperty.getList()) {
                 jsonArray.put(obj);
@@ -327,7 +332,7 @@ public abstract class AbstractBaseObjectJSONConverter implements BaseObjectJSONC
                 return jsonArray;
             }
 
-            ListProperty listProperty = (ListProperty)property;
+            ListProperty listProperty = (ListProperty) property;
 
             for (String obj : listProperty.getList()) {
                 if (!current.contains(obj)) {
@@ -397,7 +402,7 @@ public abstract class AbstractBaseObjectJSONConverter implements BaseObjectJSONC
                 return current;
             }
 
-            ListProperty listProperty = (ListProperty)property;
+            ListProperty listProperty = (ListProperty) property;
 
             return new LinkedList<>(listProperty.getList());
 
@@ -445,11 +450,11 @@ public abstract class AbstractBaseObjectJSONConverter implements BaseObjectJSONC
     private static String getStringFromLong(String fieldName, BaseObject object, String defaultValue) {
 
         try {
-            NumberProperty prop = (NumberProperty)object.safeget(fieldName);
+            NumberProperty prop = (NumberProperty) object.safeget(fieldName);
             if (prop == null) {
                 return defaultValue;
             }
-            return  DateTools.millisToString(((Number)prop.getValue()).longValue(), null);
+            return DateTools.millisToString(((Number) prop.getValue()).longValue(), null);
         } catch (Exception var3) {
             return defaultValue;
         }

@@ -157,8 +157,10 @@ public final class DateTools
     private static DateTimeFormatter getDateFormatter(DateTimeFormatter formatter)
     {
         return Optional.ofNullable(formatter).orElse(ZULU_FORMATTER).withResolverStyle(ResolverStyle.LENIENT);
+    }
+
     /**
-     * Converts the given Date into a LocalDateTime (UTC)
+     * Converts the given Date into a LocalDateTime (UTC).
      * @param date the Date to convert
      * @return the resulting LocalDateTime
      */
@@ -167,7 +169,7 @@ public final class DateTools
     }
 
     /**
-     * Converts milliseconds from the epoch of 1970-01-01T00:00:00Z to a LocalDateTime (UTC)
+     * Converts milliseconds from the epoch of 1970-01-01T00:00:00Z to a LocalDateTime (UTC).
      * @param milliseconds milliseconds to convert
      * @return the resulting LocalDateTime
      */
@@ -176,7 +178,7 @@ public final class DateTools
     }
 
     /**
-     * Converts given LocalDateTime (UTC) to milliseconds from the epoch of 1970-01-01T00:00:00Z
+     * Converts given LocalDateTime (UTC) to milliseconds from the epoch of 1970-01-01T00:00:00Z .
      * @param localDateTime LocalDateTime to convert
      * @return the resulting millisecond value
      */

@@ -7,10 +7,10 @@
  */
 package org.phenotips.data.api.internal;
 
+import com.gene42.commons.utils.json.JSONTools;
+
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
-
-import com.gene42.commons.utils.json.JSONTools;
 
 /**
  * This class is a container for a filter property and all its associated variables.

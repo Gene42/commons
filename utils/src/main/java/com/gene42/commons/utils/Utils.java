@@ -1,12 +1,19 @@
+/*
+ * This file is subject to the terms and conditions defined in file LICENSE,
+ * which is part of this source code package.
+ *
+ * See the NOTICE file distributed with this work for additional
+ * information regarding copyright ownership.
+ */
 package com.gene42.commons.utils;
+
+import com.gene42.commons.utils.exceptions.ServiceException;
 
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-
-import com.gene42.commons.utils.exceptions.ServiceException;
 
 /**
  * General Utilities.

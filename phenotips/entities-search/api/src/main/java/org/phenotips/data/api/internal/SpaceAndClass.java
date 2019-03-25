@@ -7,6 +7,8 @@
  */
 package org.phenotips.data.api.internal;
 
+import com.gene42.commons.utils.json.JSONTools;
+
 import org.phenotips.Constants;
 import org.phenotips.data.api.EntitySearch;
 
@@ -14,8 +16,6 @@ import javax.annotation.concurrent.Immutable;
 
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
-
-import com.gene42.commons.utils.json.JSONTools;
 
 /**
  * Container for PhenoTips Space and Class.
