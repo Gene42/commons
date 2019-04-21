@@ -7,6 +7,8 @@
  */
 package org.phenotips.data.api.internal;
 
+import com.gene42.commons.utils.json.JSONTools;
+
 import org.phenotips.data.api.EntitySearch;
 import org.phenotips.data.api.internal.filter.AbstractFilter;
 
@@ -19,8 +21,6 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
-
-import com.gene42.commons.utils.json.JSONTools;
 
 /**
  * This class represents a queyr expression which is a block in a query surrounded by round brackets '()'. A

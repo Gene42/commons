@@ -7,6 +7,8 @@
  */
 package com.gene42.commons.utils.web;
 
+import com.gene42.commons.utils.exceptions.ServiceException;
+
 import java.io.Closeable;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -31,8 +33,6 @@ import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicHeader;
-
-import com.gene42.commons.utils.exceptions.ServiceException;
 
 /**
  * CloseableHttpClient wrapper. It provides useful authentication.

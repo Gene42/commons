@@ -7,6 +7,8 @@
  */
 package org.phenotips.data.rest;
 
+import com.gene42.commons.utils.exceptions.ServiceException;
+
 import org.phenotips.data.api.EntitySearchResult;
 
 import org.xwiki.component.annotation.Role;
@@ -15,8 +17,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.json.JSONObject;
-
-import com.gene42.commons.utils.exceptions.ServiceException;
 
 /**
  * DESCRIPTION.

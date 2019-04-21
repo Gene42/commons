@@ -36,13 +36,16 @@ public interface BaseObjectJSONConverter
 
     /**
      * Populates the given BaseObject with values found in the given JSONObject. It uses the getKeyTypesMapEntrySet()
-     * method to grab the needed mappings.
+     * method to grab the needed mappings. While iterating over the entry set, if the incoming JSON object does not
+     * contain the key, or the value of the key is null, the BaseObject property associated with that key should not
+     * be updated.
      * @param from the JSONObject used to populate the BaseObject
      * @param to the BaseObject to be populated with the properties found in the JSONObject
      * @param context XWikiContext used for populating the BaseObject
      * @return the same given BaseObject
      */
     BaseObject populateBaseObject(JSONObject from, BaseObject to, XWikiContext context);
+
 
     /**
      * Converts the given XWiki BaseObject into a JSONObject.

@@ -7,12 +7,12 @@
  */
 package org.phenotips.data.api;
 
+import com.gene42.commons.utils.exceptions.ServiceException;
+
 import org.xwiki.component.annotation.Role;
 
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
-
-import com.gene42.commons.utils.exceptions.ServiceException;
 
 /**
  * Interface for searching entities in the system.

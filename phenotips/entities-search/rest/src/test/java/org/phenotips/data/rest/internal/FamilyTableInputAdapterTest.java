@@ -7,6 +7,8 @@
  */
 package org.phenotips.data.rest.internal;
 
+import com.gene42.commons.utils.web.HttpEndpoint;
+
 import org.phenotips.data.api.EntitySearchResult;
 import org.phenotips.data.api.internal.builder.FamilySearchBuilder;
 import org.phenotips.data.api.internal.builder.PatientSearchBuilder;
@@ -21,8 +23,6 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.json.JSONObject;
 import org.junit.Ignore;
 import org.junit.Test;
-
-import com.gene42.commons.utils.web.HttpEndpoint;
 
 /**
  * DESCRIPTION.

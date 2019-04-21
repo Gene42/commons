@@ -7,6 +7,10 @@
  */
 package org.phenotips.data.rest.internal;
 
+import com.gene42.commons.utils.exceptions.ServiceException;
+import com.gene42.commons.utils.json.JSONTools;
+import com.gene42.commons.utils.web.HttpEndpoint;
+
 import org.phenotips.data.api.EntitySearch;
 import org.phenotips.data.api.EntitySearchResult;
 import org.phenotips.data.rest.LiveTableSearch;
@@ -20,10 +24,6 @@ import org.apache.http.entity.ContentType;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONObject;
-
-import com.gene42.commons.utils.exceptions.ServiceException;
-import com.gene42.commons.utils.json.JSONTools;
-import com.gene42.commons.utils.web.HttpEndpoint;
 
 /**
  * A helper class for performing entity search rest requests given a query in JSON format.

@@ -57,6 +57,15 @@ public class DocumentSearchBuilder implements Builder<JSONObject>
      * Constructor.
      * @param docSpaceAndClass the document space and class (should be null if expression)
      */
+    public DocumentSearchBuilder(SpaceAndClass docSpaceAndClass)
+    {
+        this(null, (docSpaceAndClass == null) ? null : docSpaceAndClass.get());
+    }
+
+    /**
+     * Constructor.
+     * @param docSpaceAndClass the document space and class (should be null if expression)
+     */
     public DocumentSearchBuilder(String docSpaceAndClass)
     {
         this(null, docSpaceAndClass);
@@ -239,47 +248,8 @@ public class DocumentSearchBuilder implements Builder<JSONObject>
         boolean hasOwnershipOrVisibility = checkOwnership || CollectionUtils.isNotEmpty(visibilityValues);
 
         if (complexCollaborators && hasOwnershipOrVisibility) {
-
-            DocumentSearchBuilder builder = this.newExpression().setJoinModeToAnd().newExpression()
-                   .setJoinModeToOr();
-
-            if (checkOwnership && CollectionUtils.isNotEmpty(visibilityValues)) {
-                // We need (ownership || visib || collab) * (ownership || visib || access)
-                addOwnership(fullUserName, builder);
-                addVisibility(visibilityValues, builder);
-                addCollaborators(fullUserName, fullUserGroupNames, builder);
-
-                builder = builder.back()
-                                 .newExpression()
-                                 .setJoinModeToOr();
-
-                addOwnership(fullUserName, builder);
-                addVisibility(visibilityValues, builder);
-                addAccessRight(accessRight, builder);
-
-            } else if (checkOwnership) {
-                // We need (ownership || collab) * (ownership || access)
-                addOwnership(fullUserName, builder);
-                addCollaborators(fullUserName, fullUserGroupNames, builder);
-
-                builder = builder.back()
-                                 .newExpression()
-                                 .setJoinModeToOr();
-
-                addOwnership(fullUserName, builder);
-                addAccessRight(accessRight, builder);
-            } else {
-                // We need (visib || collab) * (visib || access)
-                addVisibility(visibilityValues, builder);
-                addCollaborators(fullUserName, fullUserGroupNames, builder);
-
-                builder = builder.back()
-                                 .newExpression()
-                                 .setJoinModeToOr();
-
-                addVisibility(visibilityValues, builder);
-                addAccessRight(accessRight, builder);
-            }
+            this.onlyForUserComplexCheck(fullUserName, fullUserGroupNames, checkOwnership,
+                visibilityValues, accessRight);
         } else {
             DocumentSearchBuilder builder = this.newExpression().setJoinModeToOr();
             if (checkOwnership) {
@@ -300,6 +270,51 @@ public class DocumentSearchBuilder implements Builder<JSONObject>
         }
 
         return this;
+    }
+
+    private void onlyForUserComplexCheck(String fullUserName, Collection<String> fullUserGroupNames,
+        boolean checkOwnership, List<String> visibilityValues, String accessRight) {
+
+        DocumentSearchBuilder builder = this.newExpression().setJoinModeToAnd().newExpression()
+                                            .setJoinModeToOr();
+
+        if (checkOwnership && CollectionUtils.isNotEmpty(visibilityValues)) {
+            // We need (ownership || visib || collab) * (ownership || visib || access)
+            addOwnership(fullUserName, builder);
+            addVisibility(visibilityValues, builder);
+            addCollaborators(fullUserName, fullUserGroupNames, builder);
+
+            builder = builder.back()
+                             .newExpression()
+                             .setJoinModeToOr();
+
+            addOwnership(fullUserName, builder);
+            addVisibility(visibilityValues, builder);
+            addAccessRight(accessRight, builder);
+
+        } else if (checkOwnership) {
+            // We need (ownership || collab) * (ownership || access)
+            addOwnership(fullUserName, builder);
+            addCollaborators(fullUserName, fullUserGroupNames, builder);
+
+            builder = builder.back()
+                             .newExpression()
+                             .setJoinModeToOr();
+
+            addOwnership(fullUserName, builder);
+            addAccessRight(accessRight, builder);
+        } else {
+            // We need (visib || collab) * (visib || access)
+            addVisibility(visibilityValues, builder);
+            addCollaborators(fullUserName, fullUserGroupNames, builder);
+
+            builder = builder.back()
+                             .newExpression()
+                             .setJoinModeToOr();
+
+            addVisibility(visibilityValues, builder);
+            addAccessRight(accessRight, builder);
+        }
     }
 
     private static DocumentSearchBuilder addOwnership(String fullUserName, DocumentSearchBuilder builder)

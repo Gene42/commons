@@ -7,6 +7,8 @@
  */
 package org.phenotips.data.api.internal;
 
+import com.gene42.commons.utils.json.JSONTools;
+
 import org.phenotips.data.api.internal.filter.AbstractFilter;
 import org.phenotips.data.api.internal.filter.BooleanFilter;
 import org.phenotips.data.api.internal.filter.DateFilter;
@@ -32,7 +34,6 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.gene42.commons.utils.json.JSONTools;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.objects.PropertyInterface;

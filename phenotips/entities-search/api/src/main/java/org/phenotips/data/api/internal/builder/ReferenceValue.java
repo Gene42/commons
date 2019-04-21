@@ -7,13 +7,13 @@
  */
 package org.phenotips.data.api.internal.builder;
 
+import com.gene42.commons.utils.json.JSONafiable;
+
 import org.phenotips.data.api.internal.PropertyName;
 import org.phenotips.data.api.internal.SpaceAndClass;
 import org.phenotips.data.api.internal.filter.AbstractFilter;
 
 import org.json.JSONObject;
-
-import com.gene42.commons.utils.json.JSONafiable;
 
 /**
  * Reference Value Container Class.

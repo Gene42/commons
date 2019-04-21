@@ -7,6 +7,8 @@
  */
 package org.phenotips.data.rest.internal;
 
+import com.gene42.commons.utils.exceptions.ServiceException;
+
 import org.phenotips.data.api.EntitySearch;
 import org.phenotips.data.api.internal.builder.DocumentSearchBuilder;
 
@@ -19,8 +21,6 @@ import java.util.List;
 import org.apache.commons.collections4.CollectionUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
-
-import com.gene42.commons.utils.exceptions.ServiceException;
 
 /**
  * Builds an entity search request. This request can then be used with the entity search (as an input) to

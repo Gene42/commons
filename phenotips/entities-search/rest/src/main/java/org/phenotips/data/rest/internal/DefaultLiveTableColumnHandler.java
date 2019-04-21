@@ -7,6 +7,8 @@
  */
 package org.phenotips.data.rest.internal;
 
+import com.gene42.commons.xwiki.XWikiTools;
+
 import org.phenotips.data.api.internal.SearchUtils;
 import org.phenotips.data.rest.LiveTableColumnHandler;
 
@@ -45,7 +47,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 
-import com.gene42.commons.xwiki.XWikiTools;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;

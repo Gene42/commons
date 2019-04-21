@@ -7,10 +7,10 @@
  */
 package org.phenotips.data.rest.internal;
 
+import com.gene42.commons.utils.json.JSONafiable;
+
 import org.apache.commons.lang3.time.StopWatch;
 import org.json.JSONObject;
-
-import com.gene42.commons.utils.json.JSONafiable;
 
 /**
  * DESCRIPTION.

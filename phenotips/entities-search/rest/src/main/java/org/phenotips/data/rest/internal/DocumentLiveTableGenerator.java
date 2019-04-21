@@ -7,6 +7,8 @@
  */
 package org.phenotips.data.rest.internal;
 
+import com.gene42.commons.utils.exceptions.ServiceException;
+
 import org.phenotips.data.api.EntitySearch;
 import org.phenotips.data.api.EntitySearchResult;
 import org.phenotips.data.rest.LiveTableGenerator;
@@ -27,7 +29,6 @@ import javax.inject.Singleton;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import com.gene42.commons.utils.exceptions.ServiceException;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
 

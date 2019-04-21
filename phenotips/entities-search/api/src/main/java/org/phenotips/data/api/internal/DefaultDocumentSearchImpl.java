@@ -7,6 +7,9 @@
  */
 package org.phenotips.data.api.internal;
 
+import com.gene42.commons.utils.exceptions.ServiceException;
+import com.gene42.commons.utils.json.JSONTools;
+
 import org.phenotips.data.api.EntitySearch;
 import org.phenotips.data.api.EntitySearchResult;
 
@@ -35,8 +38,6 @@ import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 
-import com.gene42.commons.utils.exceptions.ServiceException;
-import com.gene42.commons.utils.json.JSONTools;
 import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiContext;
 

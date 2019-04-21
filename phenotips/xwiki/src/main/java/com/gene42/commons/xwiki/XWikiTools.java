@@ -7,6 +7,8 @@
  */
 package com.gene42.commons.xwiki;
 
+import com.gene42.commons.utils.exceptions.ServiceException;
+
 import org.phenotips.Constants;
 import org.phenotips.security.authorization.AuthorizationService;
 
@@ -33,10 +35,10 @@ import javax.inject.Singleton;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import com.gene42.commons.utils.exceptions.ServiceException;
 import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
@@ -62,6 +64,8 @@ public final class XWikiTools
 
     private static final String XWIKI_PREFS = "XWikiPreferences";
 
+    private static final String GUEST = "xwikiguest";
+
     @Inject
     private UserManager userManager;
 
@@ -82,6 +86,17 @@ public final class XWikiTools
     public boolean isCurrentUserAdmin()
     {
         return isUserAdmin(this.userManager.getCurrentUser());
+    }
+
+    /**
+     * Checks to see if given user is a guest.
+     * @param user the user to check. If null, it will return true.
+     * @return true if user is a guest or given object is null
+     */
+    @Contract("null -> true")
+    public boolean isGuest(User user)
+    {
+        return user == null || StringUtils.contains(StringUtils.lowerCase(user.getUsername()), GUEST);
     }
 
     /**

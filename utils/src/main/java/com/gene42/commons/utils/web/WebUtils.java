@@ -7,7 +7,12 @@
  */
 package com.gene42.commons.utils.web;
 
+import com.gene42.commons.utils.exceptions.ServiceException;
+import com.gene42.commons.utils.json.JsonApiBuilder;
+import com.gene42.commons.utils.json.JsonApiErrorBuilder;
+
 import java.util.EnumMap;
+import java.util.Objects;
 
 import javax.annotation.Nonnull;
 import javax.ws.rs.WebApplicationException;
@@ -19,10 +24,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
-
-import com.gene42.commons.utils.exceptions.ServiceException;
-import com.gene42.commons.utils.json.JsonApiBuilder;
-import com.gene42.commons.utils.json.JsonApiErrorBuilder;
 
 /**
  * A utils class for Web related helper functions.
@@ -54,6 +55,7 @@ public final class WebUtils
         SERVICE_TO_WEB_MAP.put(ServiceException.Status.INVALID_INPUT, Response.Status.BAD_REQUEST);
         SERVICE_TO_WEB_MAP.put(ServiceException.Status.SERVICE_UNAVAILABLE, Response.Status.SERVICE_UNAVAILABLE);
         SERVICE_TO_WEB_MAP.put(ServiceException.Status.UNAUTHORIZED, Response.Status.UNAUTHORIZED);
+        SERVICE_TO_WEB_MAP.put(ServiceException.Status.FORBIDDEN, Response.Status.FORBIDDEN);
     }
 
     private WebUtils()
@@ -70,7 +72,7 @@ public final class WebUtils
      */
     public static void throwWebApplicationException(ServiceException e, Logger logger)
     {
-        throw new WebApplicationException(e, getErrorResponse(e, logger).getStatus());
+        throw new WebApplicationException(e, getErrorResponse(e, logger));
     }
 
 
@@ -83,30 +85,57 @@ public final class WebUtils
      */
     public static Response getErrorResponse(ServiceException e, Logger logger)
     {
-        if (e.getCode() != null && e.getCode() >= 400 && e.getCode() < 600) {
-            return Response.status(e.getCode()).entity(e.getMessage()).build();
+        Response.ResponseBuilder builder;
+
+        Integer code = e.getCode();
+        Response.Status status = getReturnStatus(e);
+
+        boolean internalError;
+        if (code != null && code >= 400 && code < 600) {
+            builder = Response.status(code);
+            internalError = code >= 500;
+        } else {
+            builder = Response.status(status);
+            internalError = Objects.equals(Response.Status.INTERNAL_SERVER_ERROR, status);
         }
 
-        if (e.getStatus() == null) {
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
-        }
-
-        Response.Status status;
         String message = e.getMessage();
 
-        status = SERVICE_TO_WEB_MAP.get(e.getStatus());
-
-        if (status == null) {
-            status = Response.Status.INTERNAL_SERVER_ERROR;
-            if (logger != null && logger.isErrorEnabled()) {
-                logger.error(status.toString(), e);
-            }
+        if (StringUtils.isBlank(message)) {
             message = "Uh oh, something went wrong on the server. Contact an admin if it persists.";
         }
 
-        return Response.status(status).entity(message).build();
+        builder.entity(new JsonApiBuilder()
+            .addError(new JsonApiErrorBuilder()
+                .setStatus(String.valueOf(status.getStatusCode()))
+                .setDetail(message)
+                .setTitle(status.toString()))
+                .build().toString());
+        builder.type(MediaType.APPLICATION_JSON);
+
+        if (internalError) {
+            e.printStackTrace();
+        } else if (logger != null) {
+            logger.warn("Client error {}: {}", code == null ? status : code, message);
+        }
+
+        return builder.build();
     }
 
+    private static Response.Status getReturnStatus(ServiceException e) {
+
+        Response.Status status = null;
+
+        if (e.getStatus() != null) {
+            status = SERVICE_TO_WEB_MAP.get(e.getStatus());
+        }
+
+        if (status == null) {
+            status = Response.Status.INTERNAL_SERVER_ERROR;
+        }
+
+        return status;
+    }
 
     /**
      * Returns a Response with a status value depending on the given status and the body containing the given message.
