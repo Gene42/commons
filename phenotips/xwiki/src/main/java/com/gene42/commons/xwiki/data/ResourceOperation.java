@@ -20,12 +20,15 @@ public class ResourceOperation
     /**
      * Default CRUD operations.
      */
-    public static class Names {
+    public static final class Names {
         public static final String CREATE = "create";
         public static final String GET = "get";
         public static final String UPDATE = "update";
         public static final String DELETE = "delete";
         public static final String SEARCH = "search";
+
+        private Names() {
+        }
     }
 
     public static final ResourceOperation CREATE = new ResourceOperation(Names.CREATE);

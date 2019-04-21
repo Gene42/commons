@@ -20,7 +20,7 @@
   <name>Gene42 - Commons - PhenoTips - XWiki</name>
 
   <properties>
-    <coverage.instructionRatio>0.4</coverage.instructionRatio>
+    <coverage.instructionRatio>0.1</coverage.instructionRatio>
   </properties>
 
   <dependencies>
@@ -160,6 +160,26 @@
     <dependency>
       <groupId>net.jcip</groupId>
       <artifactId>jcip-annotations</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.json</groupId>
+      <artifactId>json</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.google.code.findbugs</groupId>
+      <artifactId>jsr305</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>javax.ws.rs</groupId>
+      <artifactId>jsr311-api</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
     </dependency>
 
     <dependency>
