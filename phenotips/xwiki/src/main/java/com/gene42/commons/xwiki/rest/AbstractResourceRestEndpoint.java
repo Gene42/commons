@@ -37,7 +37,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * DESCRIPTION.
+ * Abstract class for resource rest endpoints.
  *
  * @param <T> entity extending the RestResource interface
  * @version $Id$

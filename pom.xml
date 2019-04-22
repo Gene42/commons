@@ -12,7 +12,7 @@
   <parent>
     <groupId>org.phenotips</groupId>
     <artifactId>phenotips-parent</artifactId>
-    <version>1.3.9</version>
+    <version>1.4.5</version>
     <relativePath />
   </parent>
 
@@ -36,7 +36,8 @@
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
     <phenotips.groupId>org.phenotips</phenotips.groupId>
-    <gene42.pt.fork.version>1.3.9-gene42</gene42.pt.fork.version>
+    <gene42.pt.fork.version>1.4.5-gene42</gene42.pt.fork.version>
+    <checkstyle.skip>false</checkstyle.skip>
     <devops.public.verion>1.0.0</devops.public.verion>
   </properties>
 
@@ -86,6 +87,32 @@
 
   <pluginRepositories>
     <pluginRepository>
+      <id>gene42-nexus-private</id>
+      <name>Gene42 PhenoTips Private repository</name>
+      <url>https://nexus.gene42.com/repository/gene42-private-group/</url>
+      <releases>
+        <enabled>true</enabled>
+        <checksumPolicy>fail</checksumPolicy>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+        <checksumPolicy>fail</checksumPolicy>
+      </snapshots>
+    </pluginRepository>
+    <pluginRepository>
+      <id>gene42-nexus-public</id>
+      <name>Gene42 PhenoTips Public repository</name>
+      <url>https://nexus.gene42.com/repository/gene42-public-group/</url>
+      <releases>
+        <enabled>true</enabled>
+        <checksumPolicy>fail</checksumPolicy>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+        <checksumPolicy>fail</checksumPolicy>
+      </snapshots>
+    </pluginRepository>
+    <pluginRepository>
       <id>phenotips-externals</id>
       <name>PhenoTips external repositories mirror</name>
       <url>https://nexus.phenotips.org/nexus/content/groups/public/</url>
@@ -127,6 +154,15 @@
       <plugins>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-dependency-plugin</artifactId>
+          <configuration>
+            <ignoredUnusedDeclaredDependencies>
+              <ignoredUnusedDeclaredDependency>*</ignoredUnusedDeclaredDependency>
+            </ignoredUnusedDeclaredDependencies>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-compiler-plugin</artifactId>
           <version>3.6.1</version>
           <configuration>
@@ -162,6 +198,21 @@
               <goals>
                 <goal>check</goal>
               </goals>
+            </execution>
+            <execution>
+              <id>test-checkstyle</id>
+              <goals>
+                <goal>check</goal>
+              </goals>
+              <configuration combine.self="override">
+                <configLocation>checkstyle.xml</configLocation>
+                <includeTestSourceDirectory>true</includeTestSourceDirectory>
+                <sourceDirectories>
+                  <sourceDirectory>src/test/java/</sourceDirectory>
+                </sourceDirectories>
+                <consoleOutput>true</consoleOutput>
+                <skip>true</skip>
+              </configuration>
             </execution>
           </executions>
         </plugin>
@@ -276,7 +327,7 @@
       <dependency>
         <groupId>org.apache.commons</groupId>
         <artifactId>commons-collections4</artifactId>
-        <version>4.1</version>
+        <version>4.3</version>
       </dependency>
 
       <dependency>
