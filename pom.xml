@@ -265,6 +265,16 @@
               <skip>true</skip>
             </configuration>
         </plugin>
+        <plugin>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <groupId>org.apache.maven.plugins</groupId>
+          <version>3.0.0-M3</version>
+          <configuration>
+            <excludes>
+              <exclude>**/*IntegrationTest</exclude>
+            </excludes>
+          </configuration>
+        </plugin>
       </plugins>
     </pluginManagement>
   </build>
