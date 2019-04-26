@@ -54,6 +54,7 @@ public class URLInputAdapter implements LiveTableInputAdapter
     private static final String FILTER_WHERE_KEY = "filterWhere";
     private static final String FILTER_FROM_KEY = "filterFrom";
     private static final String QUERY_FILTERS_KEY = "queryFilters";
+    private static final String USER_HASH = "user-hash";
 
     static {
         NON_FILTERS.add(CLASS_NAME_KEY);
@@ -68,6 +69,7 @@ public class URLInputAdapter implements LiveTableInputAdapter
         NON_FILTERS.add(EntitySearch.Keys.SORT_DIR_KEY);
         NON_FILTERS.add(EntitySearch.Keys.COLUMN_LIST_KEY);
         NON_FILTERS.add(RequestUtils.TRANS_PREFIX_KEY);
+        NON_FILTERS.add(USER_HASH);
     }
 
     @Override

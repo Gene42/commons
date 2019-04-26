@@ -321,12 +321,9 @@ public class DocumentQueryBuilder implements Builder<DocumentQueryBuilder>
         if (parentIndex < paramKey.getParents().size() - 1) {
             int nextIndex = parentIndex + 1;
             ParameterKey.NameAndTag childQueryName = paramKey.getParents().get(nextIndex);
-            Map<String, DocumentQueryBuilder> childTagMap = this.queries.get(childQueryName.getQueryName());
 
-            if (childTagMap == null) {
-                childTagMap = new HashMap<>();
-                this.queries.put(childQueryName.getQueryName(), childTagMap);
-            }
+            Map<String, DocumentQueryBuilder> childTagMap =
+                this.queries.computeIfAbsent(childQueryName.getQueryName(), k -> new HashMap<>());
 
             DocumentQueryBuilder childQuery = childTagMap.get(childQueryName.getQueryTag());
 
@@ -364,7 +361,9 @@ public class DocumentQueryBuilder implements Builder<DocumentQueryBuilder>
 
     private void addPropertyOrValueToFilter(JSONObject filter, ParameterKey paramKey)
     {
-        if (paramKey.isFilterValue()) {
+        if (paramKey.isSubTermsFlag()) {
+            this.addPropertyValueToFilter(PropertyName.SUBTERMS_KEY, paramKey.getValues(), filter);
+        } else if (paramKey.isFilterValue()) {
             for (String val : paramKey.getValues()) {
                 filter.append(AbstractFilter.VALUES_KEY, val);
             }

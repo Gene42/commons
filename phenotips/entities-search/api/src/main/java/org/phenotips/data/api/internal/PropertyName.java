@@ -112,7 +112,7 @@ public class PropertyName
     @Override
     public boolean equals(Object o)
     {
-        if (o == null || !(o instanceof PropertyName)) {
+        if (!(o instanceof PropertyName)) {
             return false;
         } else {
             return this.name.equals(((PropertyName) o).name);

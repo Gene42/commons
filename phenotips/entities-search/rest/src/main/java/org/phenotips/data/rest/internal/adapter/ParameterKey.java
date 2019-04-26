@@ -59,12 +59,17 @@ public class ParameterKey
      * header filters/sorters. */
     public static final String PROPERTY_CLASS_SUFFIX = "_class";
 
+    /* Special suffix indicating an extended property. If filter has a true/yes value */
+    public static final String PROPERTY_SUB_TERMS_SUFFIX = "_subterms";
+
     /** The default operation joining expression in a query/expression. */
     public static final String DEFAULT_OPERATION = "and";
 
     private String propertyName;
 
     private String parameterName;
+
+    private boolean subTermsFlag;
 
     private String key;
 
@@ -96,6 +101,12 @@ public class ParameterKey
 
         } else {
             this.propertyName = param;
+        }
+
+        this.subTermsFlag = StringUtils.endsWith(this.propertyName, PROPERTY_SUB_TERMS_SUFFIX);
+
+        if (this.subTermsFlag) {
+            this.propertyName = StringUtils.removeEnd(this.propertyName, PROPERTY_SUB_TERMS_SUFFIX);
         }
 
         if (this.parents.isEmpty()) {
@@ -178,6 +189,15 @@ public class ParameterKey
     public boolean isFilterValue()
     {
         return this.parameterName == null;
+    }
+
+    /**
+     * Getter for subTermsFlag.
+     *
+     * @return subTermsFlag
+     */
+    public boolean isSubTermsFlag() {
+        return this.subTermsFlag;
     }
 
     /**
