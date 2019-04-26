@@ -94,7 +94,7 @@ public class DocumentLiveTableGenerator implements LiveTableGenerator<DocumentRe
                 throw new IllegalArgumentException(String.format("Column %1$s is not a JSONObject", obj));
             }
 
-            columns.add(new TableColumn().populate((JSONObject) obj));
+            columns.add(new TableColumn().populate((JSONObject) obj, jsonObject));
         }
 
         return columns;

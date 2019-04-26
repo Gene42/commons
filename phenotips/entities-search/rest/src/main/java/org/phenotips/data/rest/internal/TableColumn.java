@@ -7,11 +7,19 @@
  */
 package org.phenotips.data.rest.internal;
 
+import com.gene42.commons.utils.json.JSONTools;
 import com.gene42.commons.utils.json.JSONafiable;
+
+import org.phenotips.data.api.EntitySearch;
+import org.phenotips.data.api.internal.PropertyName;
 
 import org.xwiki.model.EntityType;
 
+import java.util.LinkedList;
+import java.util.List;
+
 import org.apache.commons.lang3.StringUtils;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 /**
@@ -38,6 +46,7 @@ public class TableColumn implements JSONafiable
     private String colName;
     private String className;
     private String propertyName;
+    private List<JSONObject> filters;
 
     /**
      * Constructor.
@@ -84,9 +93,10 @@ public class TableColumn implements JSONafiable
     /**
      * Constructor.
      * @param obj the input object to use to populate this object
+     * @param query the search query json. Used to retrieve filters associated with this column
      * @return this
      */
-    public TableColumn populate(JSONObject obj)
+    public TableColumn populate(JSONObject obj, JSONObject query)
     {
         this.type = EntityType.valueOf(StringUtils.upperCase(getProperty(obj, TYPE_KEY, false)));
 
@@ -100,7 +110,18 @@ public class TableColumn implements JSONafiable
             this.propertyName = this.colName;
         }
 
+        this.filters = this.getFiltersAssociatedWithColumn(query);
+
         return this;
+    }
+
+    /**
+     * Getter for filters.
+     *
+     * @return filters
+     */
+    public List<JSONObject> getFilters() {
+        return this.filters;
     }
 
     @Override
@@ -161,5 +182,28 @@ public class TableColumn implements JSONafiable
             throw new IllegalArgumentException(String.format("No %1$s provided", key));
         }
         return propStr;
+    }
+
+    private List<JSONObject> getFiltersAssociatedWithColumn(JSONObject query) {
+
+        List<JSONObject> result = new LinkedList<>();
+
+        JSONArray array = JSONTools.getJSONArray(query, EntitySearch.Keys.FILTERS_KEY);
+
+        for (Object obj : array) {
+            if (!(obj instanceof JSONObject)) {
+                continue;
+            }
+
+            JSONObject filter = (JSONObject) obj;
+
+            if (org.xwiki.text.StringUtils.equals(this.getPropertyName(),
+                filter.optString(PropertyName.PROPERTY_NAME_KEY, null))) {
+
+                result.add(filter);
+            }
+        }
+
+        return result;
     }
 }

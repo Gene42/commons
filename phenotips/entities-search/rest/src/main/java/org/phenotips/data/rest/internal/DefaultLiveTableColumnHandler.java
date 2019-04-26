@@ -10,6 +10,7 @@ package org.phenotips.data.rest.internal;
 import com.gene42.commons.xwiki.XWikiTools;
 
 import org.phenotips.data.api.internal.SearchUtils;
+import org.phenotips.data.api.internal.filter.StringFilter;
 import org.phenotips.data.rest.LiveTableColumnHandler;
 
 import org.xwiki.component.annotation.Component;
@@ -35,6 +36,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.regex.Pattern;
 
 import javax.inject.Inject;
@@ -56,7 +58,6 @@ import com.xpn.xwiki.objects.StringProperty;
 import com.xpn.xwiki.objects.classes.DBListClass;
 import com.xpn.xwiki.objects.classes.PropertyClass;
 import com.xpn.xwiki.objects.classes.StringClass;
-import com.xpn.xwiki.objects.classes.TextAreaClass;
 import com.xpn.xwiki.web.ViewAction;
 
 /**
@@ -145,8 +146,9 @@ public class DefaultLiveTableColumnHandler implements LiveTableColumnHandler
 
         XWikiContext context = this.contextProvider.get();
 
-        if (field instanceof DBListClass && StringUtils.isNotBlank(((DBListClass) field).getValueField()) && !(
-            (DBListClass) field).isMultiSelect()) {
+        // DBListClass check also covers PageClass
+        if (field instanceof DBListClass && StringUtils.isNotBlank(((DBListClass) field).getValueField())
+            && !((DBListClass) field).isMultiSelect()) {
 
             DBListClass listField = (DBListClass) field;
             value = listField.getValueField();
@@ -158,6 +160,8 @@ public class DefaultLiveTableColumnHandler implements LiveTableColumnHandler
             if (!StringUtils.equals(testURL, compURL)) {
                 valueURL = testURL;
             }
+        } else if (isFullReferenceMatch(col)) {
+
         } else if (StringUtils.startsWith(value, "xwiki:")) {
             String testURL = context.getWiki().getURL(value, ViewAction.VIEW_ACTION, null, context);
             String compURL = context.getWiki().getURL(this.resolveDocument(
@@ -170,6 +174,14 @@ public class DefaultLiveTableColumnHandler implements LiveTableColumnHandler
 
         CollectionUtils.addIgnoreNull(valueWrapper.values, StringUtils.defaultIfEmpty(value, null));
         CollectionUtils.addIgnoreNull(valueWrapper.urls, StringUtils.defaultIfEmpty(valueURL, null));
+    }
+
+    private static boolean isFullReferenceMatch(TableColumn col) {
+        return col.getFilters()
+           .stream()
+           .map(f -> f.optString(StringFilter.MATCH_KEY, null))
+           .filter(Objects::nonNull)
+           .anyMatch(StringFilter.MATCH_FULL_REFERENCE::equals);
     }
 
     private void addDisplayValue(ValueWrapper valueWrapper, BaseObject baseObject, TableColumn col,
@@ -211,8 +223,8 @@ public class DefaultLiveTableColumnHandler implements LiveTableColumnHandler
 
     private static boolean isStringValue(PropertyInterface field, String customDisplay)
     {
-        boolean isFiledStr = field instanceof TextAreaClass || field instanceof StringClass
-            || field instanceof StringProperty;
+        // StringClass check also covers TextAreaClass
+        boolean isFiledStr = field instanceof StringClass || field instanceof StringProperty;
 
         return StringUtils.isNotBlank(customDisplay) || field == null || isFiledStr;
     }

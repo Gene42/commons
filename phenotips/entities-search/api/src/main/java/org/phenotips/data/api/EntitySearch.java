@@ -64,6 +64,12 @@ public interface EntitySearch<T>
         /** Input key. */
         public static final String COUNT_ONLY = "count_only";
 
+        /** Input key. */
+        public static final String FILTER_WHERE = "filterWhere";
+
+        /** Input key. */
+        public static final String FILTER_FROM = "filterFrom";
+
         private Keys()
         {
             // Empty

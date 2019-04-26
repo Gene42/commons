@@ -60,6 +60,8 @@ public final class XWikiTools
 
     private static final String ADMINISTRATORS_SUFFIX = " Administrators";
 
+    private static final String MANAGERS_SUFFIX = " Managers";
+
     private static final String XWIKI = "XWiki";
 
     private static final String XWIKI_PREFS = "XWikiPreferences";
@@ -186,6 +188,8 @@ public final class XWikiTools
         String entityFullName = escapeTool.sql(groupName);
         if (StringUtils.endsWith(entityFullName, ADMINISTRATORS_SUFFIX)) {
             return StringUtils.removeEnd(entityFullName, ADMINISTRATORS_SUFFIX);
+        } else if (StringUtils.endsWith(entityFullName, MANAGERS_SUFFIX)) {
+            return StringUtils.removeEnd(entityFullName, MANAGERS_SUFFIX);
         } else {
             return entityFullName;
         }

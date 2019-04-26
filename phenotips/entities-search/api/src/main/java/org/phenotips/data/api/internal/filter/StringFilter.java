@@ -38,6 +38,9 @@ public class StringFilter extends AbstractFilter<String>
     public static final String MATCH_EXACT = "exact";
 
     /** Match value. */
+    public static final String MATCH_FULL_REFERENCE = "fullReference";
+
+    /** Match value. */
     public static final String MATCH_SUBSTRING = "substr";
 
     /** Match value. */

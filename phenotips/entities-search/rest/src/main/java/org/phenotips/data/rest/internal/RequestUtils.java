@@ -81,13 +81,7 @@ public final class RequestUtils
      */
     public static void addToMap(Map<String, List<String>> map, String key, String value)
     {
-        List<String> values = map.get(key);
-
-        if (values == null) {
-            values = new LinkedList<>();
-            map.put(key, values);
-        }
-        values.add(value);
+        map.computeIfAbsent(key, k -> new LinkedList<>()).add(value);
     }
 
     /**

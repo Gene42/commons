@@ -10,6 +10,8 @@ package org.phenotips.data.api.internal;
 import org.phenotips.data.api.EntitySearch;
 import org.phenotips.data.api.internal.filter.AbstractFilter;
 
+import org.xwiki.text.StringUtils;
+
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -60,6 +62,11 @@ public class DocumentQuery
     private int expressionCounter = 1;
 
     private SpaceAndClass mainSpaceClass;
+
+    /* Fields for adding extra conditions from the input. I don't like allowing this, but it's needed for
+     * backward compatibility with the velocity interacting code. */
+    private String filterFrom;
+    private String filterWhere;
 
     /**
      * Constructor.
@@ -198,6 +205,9 @@ public class DocumentQuery
             this.orderFilter.createBindings();
         }
 
+        this.filterFrom = PropertyName.sanitizeForHql(input.optString(EntitySearch.Keys.FILTER_FROM, null));
+        this.filterWhere = PropertyName.sanitizeForHql(input.optString(EntitySearch.Keys.FILTER_WHERE, null));
+
         return this;
     }
 
@@ -313,6 +323,10 @@ public class DocumentQuery
             }
         }
 
+        if (StringUtils.isNotBlank(this.filterFrom)) {
+            from.append(" ").append(this.filterFrom);
+        }
+
         return from;
     }
 
@@ -345,6 +359,10 @@ public class DocumentQuery
 
         // Add value comparisons
         this.expression.addValueConditions(where, bindingValues);
+
+        if (StringUtils.isNotBlank(this.filterWhere)) {
+            where.append(" ").append(this.filterWhere);
+        }
 
         where.append(" and ").append(this.docName).append(".fullName not like '%Template%' ESCAPE '!' ) ");
 
