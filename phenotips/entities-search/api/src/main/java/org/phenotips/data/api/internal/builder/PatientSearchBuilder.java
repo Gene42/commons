@@ -7,6 +7,8 @@
  */
 package org.phenotips.data.api.internal.builder;
 
+import org.phenotips.data.api.internal.filter.StringFilter;
+
 /**
  * Builder Class for generating a DocumentSearch input JSONObject specifically geared towards PhenoTips Patient
  * Documents.
@@ -25,6 +27,18 @@ public class PatientSearchBuilder extends DocumentSearchBuilder
     {
         super(PATIENT_CLASS);
         this.addIdentifierFilter();
+    }
+
+    /**
+     * Creates + adds a new string filter builder for the "phenotype" property and returns it.
+     * @param phenotype the phenotype value
+     * @return a new StringFilterBuilder
+     */
+    public StringFilterBuilder newPhenotypeFilter(String phenotype)
+    {
+        return (StringFilterBuilder) this.newStringFilter("phenotype")
+        .setMatch(StringFilter.MATCH_CASE_INSENSITIVE)
+        .setValue(phenotype);
     }
 
     private void addIdentifierFilter()

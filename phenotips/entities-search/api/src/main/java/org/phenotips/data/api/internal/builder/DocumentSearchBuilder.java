@@ -37,21 +37,21 @@ public class DocumentSearchBuilder implements Builder<JSONObject>
     /** External id property name. */
     public static final String EXTERNAL_ID_PROPERTY = "external_id";
 
-    private static final String PHENO_TIPS_COLLABORATOR_CLASS = "PhenoTips.CollaboratorClass";
-    private static final String AND = "and";
-    private static final String OR = "or";
-    private static final String DEFAULT_SORT_PARAM = "doc.name";
+    protected static final String PHENO_TIPS_COLLABORATOR_CLASS = "PhenoTips.CollaboratorClass";
+    protected static final String AND = "and";
+    protected static final String OR = "or";
+    protected static final String DEFAULT_SORT_PARAM = "doc.name";
 
-    private JSONObject searchQuery = new JSONObject();
+    protected JSONObject searchQuery = new JSONObject();
 
-    private String docSpaceAndClass;
+    protected String docSpaceAndClass;
 
-    private AbstractFilterBuilder<String> sortFilter;
+    protected AbstractFilterBuilder<String> sortFilter;
 
-    private List<DocumentSearchBuilder> queries = new LinkedList<>();
-    private List<AbstractFilterBuilder> filters = new LinkedList<>();
+    protected List<DocumentSearchBuilder> queries = new LinkedList<>();
+    protected List<AbstractFilterBuilder> filters = new LinkedList<>();
 
-    private DocumentSearchBuilder parent;
+    protected DocumentSearchBuilder parent;
 
     /**
      * Constructor.
@@ -433,6 +433,20 @@ public class DocumentSearchBuilder implements Builder<JSONObject>
         this.filters.add(filter);
         return filter;
     }
+
+    /**
+     * Creates + adds a new reference filter builder and returns it.
+     * @param propertyName the name of the property
+     * @return a new ReferenceFilterBuilder
+     */
+    public ReferenceFilterBuilder newReferenceFilter(String propertyName)
+    {
+        ReferenceFilterBuilder filter = new ReferenceFilterBuilder(propertyName, this);
+        this.filters.add(filter);
+        return filter;
+    }
+
+
 
     /**
      * Creates + adds a new string filter builder for the external id property and returns it.

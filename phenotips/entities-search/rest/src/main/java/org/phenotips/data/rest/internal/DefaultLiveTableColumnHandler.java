@@ -161,7 +161,7 @@ public class DefaultLiveTableColumnHandler implements LiveTableColumnHandler
                 valueURL = testURL;
             }
         } else if (isFullReferenceMatch(col)) {
-
+            // TODO
         } else if (StringUtils.startsWith(value, "xwiki:")) {
             String testURL = context.getWiki().getURL(value, ViewAction.VIEW_ACTION, null, context);
             String compURL = context.getWiki().getURL(this.resolveDocument(

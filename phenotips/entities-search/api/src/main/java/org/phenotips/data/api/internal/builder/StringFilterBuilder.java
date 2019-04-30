@@ -7,6 +7,7 @@
  */
 package org.phenotips.data.api.internal.builder;
 
+import org.phenotips.data.api.internal.PropertyName;
 import org.phenotips.data.api.internal.filter.StringFilter;
 
 import org.json.JSONObject;
@@ -19,6 +20,7 @@ import org.json.JSONObject;
 public class StringFilterBuilder extends AbstractFilterBuilder<String>
 {
     private String match;
+    private Boolean subTerms;
 
     /**
      * Constructor.
@@ -52,6 +54,26 @@ public class StringFilterBuilder extends AbstractFilterBuilder<String>
         return this;
     }
 
+    /**
+     * Getter for subTerms.
+     *
+     * @return subTerms
+     */
+    public boolean isSubTerms() {
+        return Boolean.TRUE.equals(this.subTerms);
+    }
+
+    /**
+     * Setter for subTerms.
+     *
+     * @param subTerms subTerms to set
+     * @return this object
+     */
+    public StringFilterBuilder setSubTerms(Boolean subTerms) {
+        this.subTerms = subTerms;
+        return this;
+    }
+
     @Override
     public JSONObject build()
     {
@@ -59,6 +81,10 @@ public class StringFilterBuilder extends AbstractFilterBuilder<String>
 
         if (this.match != null) {
             filter.put(StringFilter.MATCH_KEY, this.match);
+        }
+
+        if (this.subTerms != null) {
+            filter.put(PropertyName.SUBTERMS_KEY, this.subTerms.toString());
         }
 
         return filter;

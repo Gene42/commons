@@ -65,6 +65,24 @@ public class FamilySearchBuilder extends DocumentSearchBuilder
         return (ListFilterBuilder) this.newListFilter(MEMBERS_PROPERTY).setValue(patientId);
     }
 
+    /**
+     * Creates a new sub query of type patient focusing on the proband patient.
+     * @return the given subQuery
+     */
+    public PatientSearchBuilder newPatientProbandIdSubQuery() {
+
+        // TODO: the level might need to be computed based on depth of subquery
+        return (PatientSearchBuilder) this.newSubQuery(new PatientSearchBuilder())
+                                          .newStringFilter("doc.fullName")
+                                          .addReferenceValue(new ReferenceValue()
+                                              .setLevel(-1)
+                                              .setPropertyName(PROBAND_ID_PROPERTY)
+                                              .setSpaceAndClass(FAMILY_CLASS)).back()
+                                          .newReferenceFilter("reference")
+                                          .setSpaceAndClass("PhenoTips.FamilyReferenceClass").back();
+    }
+
+
     private void addIdentifierFilter()
     {
         this.newNumberFilter("identifier").setMinValue(0);

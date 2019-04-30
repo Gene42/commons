@@ -123,6 +123,11 @@ public class EntitySearchRequestBuilder
             throw new ServiceException("You must provide a DocumentSearchBuilder");
         }
 
+        if (this.queryBuilder.getParent() != null) {
+            throw new ServiceException("The DocumentSearchBuilder given is not the root query builder! You probably "
+                + "forgot to call .back() on a sub query or expression");
+        }
+
         if (CollectionUtils.isEmpty(this.tableColumns)) {
             throw new ServiceException("tableColumns cannot be empty");
         }
