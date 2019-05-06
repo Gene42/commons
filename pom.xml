@@ -86,6 +86,32 @@
 
   <pluginRepositories>
     <pluginRepository>
+      <id>gene42-nexus-private</id>
+      <name>Gene42 PhenoTips Private repository</name>
+      <url>https://nexus.gene42.com/repository/gene42-private-group/</url>
+      <releases>
+        <enabled>true</enabled>
+        <checksumPolicy>fail</checksumPolicy>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+        <checksumPolicy>fail</checksumPolicy>
+      </snapshots>
+    </pluginRepository>
+    <pluginRepository>
+      <id>gene42-nexus-public</id>
+      <name>Gene42 PhenoTips Public repository</name>
+      <url>https://nexus.gene42.com/repository/gene42-public-group/</url>
+      <releases>
+        <enabled>true</enabled>
+        <checksumPolicy>fail</checksumPolicy>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+        <checksumPolicy>fail</checksumPolicy>
+      </snapshots>
+    </pluginRepository>
+    <pluginRepository>
       <id>phenotips-externals</id>
       <name>PhenoTips external repositories mirror</name>
       <url>https://nexus.phenotips.org/nexus/content/groups/public/</url>
