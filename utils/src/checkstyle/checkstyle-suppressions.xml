@@ -11,4 +11,5 @@
 
 <suppressions>
   <suppress checks="CyclomaticComplexity" files="WebUtils.java"/>
+  <suppress checks="ClassDataAbstractionCoupling" files="HttpEndpoint.java"/>
 </suppressions>

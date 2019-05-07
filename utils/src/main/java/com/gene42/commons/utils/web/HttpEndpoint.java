@@ -22,7 +22,9 @@ import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPatch;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
@@ -87,6 +89,36 @@ public final class HttpEndpoint implements Closeable
     }
 
     /**
+     * Performs a patch request with the given relative url against the base url.
+     * @param relativeUrl the relative url of the request
+     * @param content the content to send in the request
+     * @param type the type of the content
+     * @return the response body
+     * @throws ServiceException if any issue occurs during the request
+     */
+    public String performPatchRequest(String relativeUrl, String content, ContentType type)
+        throws ServiceException
+    {
+        HttpPatch httpRequest = this.getHttpPatch(this.getURL(relativeUrl), new StringEntity(content, type));
+
+        return this.performRequest(httpRequest, "patching", true);
+    }
+
+    /**
+     * Performs a delete request with the given relative url against the base url.
+     * @param relativeUrl the relative url of the request
+     * @return the response body
+     * @throws ServiceException if any issue occurs during the request
+     */
+    public String performDeleteRequest(String relativeUrl)
+        throws ServiceException
+    {
+        HttpDelete httpRequest = this.getHttpDelete(this.getURL(relativeUrl));
+
+        return this.performRequest(httpRequest, "deleting", true);
+    }
+
+    /**
      * Performs a get request with the given relative url against the base url.
      * @param relativeUrl the relative url of the request
      * @return the response body
@@ -142,6 +174,21 @@ public final class HttpEndpoint implements Closeable
     private HttpPut getHttpPut(String path, HttpEntity content)
     {
         HttpPut httpRequest = new HttpPut(path);
+        httpRequest.setEntity(content);
+        httpRequest.addHeader(this.authHeader);
+        return httpRequest;
+    }
+
+    private HttpDelete getHttpDelete(String path)
+    {
+        HttpDelete httpRequest = new HttpDelete(path);
+        httpRequest.addHeader(this.authHeader);
+        return httpRequest;
+    }
+
+    private HttpPatch getHttpPatch(String path, HttpEntity content)
+    {
+        HttpPatch httpRequest = new HttpPatch(path);
         httpRequest.setEntity(content);
         httpRequest.addHeader(this.authHeader);
         return httpRequest;
