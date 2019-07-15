@@ -110,6 +110,33 @@ public final class XWikiTools
     }
 
     /**
+     * Getter for resolver.
+     *
+     * @return resolver
+     */
+    public DocumentReferenceResolver<EntityReference> getResolver() {
+        return this.resolver;
+    }
+
+    /**
+     * Getter for authorizationService.
+     *
+     * @return authorizationService
+     */
+    public AuthorizationService getAuthorizationService() {
+        return this.authorizationService;
+    }
+
+    /**
+     * Getter for contextProvider.
+     *
+     * @return contextProvider
+     */
+    public Provider<XWikiContext> getContextProvider() {
+        return this.contextProvider;
+    }
+
+    /**
      * Returns whether or not the given user is an Admin or not.
      * @param user the user to check (can be null, will return false)
      * @return true if user is an Admin, false otherwise
