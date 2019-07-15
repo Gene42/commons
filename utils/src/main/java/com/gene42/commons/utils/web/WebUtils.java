@@ -56,6 +56,7 @@ public final class WebUtils
         SERVICE_TO_WEB_MAP.put(ServiceException.Status.SERVICE_UNAVAILABLE, Response.Status.SERVICE_UNAVAILABLE);
         SERVICE_TO_WEB_MAP.put(ServiceException.Status.UNAUTHORIZED, Response.Status.UNAUTHORIZED);
         SERVICE_TO_WEB_MAP.put(ServiceException.Status.FORBIDDEN, Response.Status.FORBIDDEN);
+        SERVICE_TO_WEB_MAP.put(ServiceException.Status.INTERNAL_EXCEPTION, Response.Status.INTERNAL_SERVER_ERROR);
     }
 
     private WebUtils()
