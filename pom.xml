@@ -9,17 +9,12 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <parent>
-    <groupId>org.phenotips</groupId>
-    <artifactId>phenotips-parent</artifactId>
-    <version>1.4.9</version>
-    <relativePath />
-  </parent>
-
   <groupId>com.gene42.commons</groupId>
   <artifactId>gene42-commons-parent</artifactId>
-  <version>2.1.1-SNAPSHOT</version>
+  <version>3.0.0-SNAPSHOT</version>
+
   <packaging>pom</packaging>
+
   <name>Gene42 - Commons - Parent</name>
   <inceptionYear>2017</inceptionYear>
 
@@ -38,7 +33,7 @@
     <phenotips.groupId>org.phenotips</phenotips.groupId>
     <gene42.pt.fork.version>1.4.9-gene42</gene42.pt.fork.version>
     <checkstyle.skip>false</checkstyle.skip>
-    <devops.public.version>1.0.0</devops.public.version>
+    <devops.public.version>1.0.1-SNAPSHOT</devops.public.version>
   </properties>
 
   <!-- We need to list repositories for finding the parent. Other settings will be correctly inherited from the parent. -->
@@ -155,9 +150,18 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-dependency-plugin</artifactId>
+          <!-- Lock down plugin version for build reproducibility -->
+          <version>3.1.1</version>
           <configuration>
+            <ignoredUsedUndeclaredDependencies>
+              <ignoredUsedUndeclaredDependency>javax.inject:javax.inject</ignoredUsedUndeclaredDependency>
+              <ignoredUsedUndeclaredDependency>org.xwiki.commons:xwiki-commons-stability</ignoredUsedUndeclaredDependency>
+              <ignoredUsedUndeclaredDependency>org.mockito:mockito-core</ignoredUsedUndeclaredDependency>
+              <ignoredUsedUndeclaredDependency>junit:junit</ignoredUsedUndeclaredDependency>
+              <ignoredUsedUndeclaredDependency>org.hamcrest:hamcrest-library</ignoredUsedUndeclaredDependency>
+            </ignoredUsedUndeclaredDependencies>
             <ignoredUnusedDeclaredDependencies>
-              <ignoredUnusedDeclaredDependency>*</ignoredUnusedDeclaredDependency>
+              <ignoredUnusedDeclaredDependency>javax.servlet:javax.servlet-api</ignoredUnusedDeclaredDependency>
             </ignoredUnusedDeclaredDependencies>
           </configuration>
         </plugin>
@@ -170,9 +174,13 @@
             <target>1.8</target>
           </configuration>
         </plugin>
+
+        <!-- Apply checkstyle rules and fail the build in case of errors. The checkstyle config
+             files are taken from the build-tools JAR module.-->
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-checkstyle-plugin</artifactId>
+          <!-- Lock down plugin version for build reproducibility -->
           <version>3.0.0</version>
           <dependencies>
             <dependency>
@@ -184,14 +192,13 @@
               <groupId>com.gene42.devops</groupId>
               <artifactId>gene42-checkstyle-configuration</artifactId>
               <version>${devops.public.version}</version>
-              <exclusions>
-                <exclusion>
-                  <groupId>org.phenotips</groupId>
-                  <artifactId>phenotips-checkstyle-configuration</artifactId>
-                </exclusion>
-              </exclusions>
             </dependency>
           </dependencies>
+          <configuration>
+            <consoleOutput>true</consoleOutput>
+            <skip>${checkstyle.skip}</skip>
+            <configLocation>checkstyle.xml</configLocation>
+          </configuration>
           <executions>
             <execution>
               <id>source-checkstyle</id>
@@ -199,37 +206,62 @@
                 <goal>check</goal>
               </goals>
             </execution>
-            <execution>
-              <id>test-checkstyle</id>
-              <goals>
-                <goal>check</goal>
-              </goals>
-              <configuration combine.self="override">
-                <configLocation>checkstyle.xml</configLocation>
-                <includeTestSourceDirectory>true</includeTestSourceDirectory>
-                <sourceDirectories>
-                  <sourceDirectory>src/test/java/</sourceDirectory>
-                </sourceDirectories>
-                <consoleOutput>true</consoleOutput>
-                <skip>true</skip>
-              </configuration>
-            </execution>
           </executions>
         </plugin>
+
+
+        <!-- Check license headers and fail the build if they're missing or not matching the defined format -->
         <plugin>
           <groupId>com.mycila</groupId>
           <artifactId>license-maven-plugin</artifactId>
+          <!-- Lock down plugin version for build reproducibility -->
+          <version>3.0</version>
           <configuration>
-            <header combine.self="override">commercial-license.txt</header>
-            <includes combine.children="append">
+            <header>commercial-license.txt</header>
+            <strictCheck>true</strictCheck>
+            <headerDefinitions>
+              <!-- Our style for XML headers isn't standard so we need to define it in a custom manner.
+                   See xwiki-commons-tool-validation-resources module -->
+              <headerDefinition>license-xml-definition.xml</headerDefinition>
+              <headerDefinition>license-script-definition.xml</headerDefinition>
+              <headerDefinition>license-batch-definition.xml</headerDefinition>
+            </headerDefinitions>
+            <!-- Our Java and XML styles aren't the default so we need to change the mapping -->
+            <mapping>
+              <java>SLASHSTAR_STYLE</java>
+              <aj>SLASHSTAR_STYLE</aj>
+            </mapping>
+            <!-- We're only interested in checking our sources and our POMs -->
+            <!-- At the moment, only check the license headers in Java, XML and shell script files -->
+            <!-- FIXME: fix other types of files as well -->
+            <includes>
+              <include>src/**/*.java</include>
+              <include>src/**/*.xml</include>
+              <include>src/**/*.bat</include>
+              <include>src/**/*.sh</include>
               <include>src/**/*.js</include>
+              <include>pom.xml</include>
             </includes>
+            <excludes>
+              <!-- At the moment we don't have a comment syntax for components.txt files so we need to exclude them
+                   from the check -->
+              <exclude>**/components.txt</exclude>
+              <exclude>**/component-overrides.txt</exclude>
+              <!-- Since there's no comment syntax for Maven IT tests's goal.txt file we need to exclude it -->
+              <exclude>**/it/**/goals.txt</exclude>
+              <exclude>**/goal.txt</exclude>
+              <!-- Exclude sample patient records -->
+              <exclude>**/P0*.xml</exclude>
+              <exclude>**/F0*.xml</exclude>
+            </excludes>
+            <useDefaultExcludes>false</useDefaultExcludes>
           </configuration>
+          <!-- Add a dependency since this is where the maven-license-plugin plugin will find the license.txt file -->
           <dependencies>
             <dependency>
-              <groupId>${phenotips.groupId}</groupId>
-              <artifactId>phenotips-license-verification-resources</artifactId>
-              <version>1.6</version>
+              <groupId>com.gene42.devops</groupId>
+              <artifactId>gene42-license-verification-resources</artifactId>
+              <version>${devops.public.version}</version>
             </dependency>
           </dependencies>
           <executions>
@@ -245,16 +277,6 @@
           <artifactId>maven-release-plugin</artifactId>
           <configuration>
             <tagNameFormat combine.self="override">gene42-commons-@{project.version}</tagNameFormat>
-          </configuration>
-        </plugin>
-        <plugin>
-          <artifactId>maven-javadoc-plugin</artifactId>
-          <configuration>
-            <tagletArtifact>
-              <groupId>${phenotips.groupId}</groupId>
-              <artifactId>phenotips-taglets</artifactId>
-              <version>${buildtools.version}</version>
-            </tagletArtifact>
           </configuration>
         </plugin>
         <plugin>
@@ -278,6 +300,24 @@
 
   <dependencyManagement>
     <dependencies>
+      <dependency>
+        <groupId>commons-io</groupId>
+        <artifactId>commons-io</artifactId>
+        <version>2.6</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.httpcomponents</groupId>
+        <artifactId>httpcore</artifactId>
+        <version>4.4.11</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.httpcomponents</groupId>
+        <artifactId>httpclient</artifactId>
+        <version>4.5.9</version>
+      </dependency>
+
       <!-- https://mvnrepository.com/artifact/org.json/json -->
       <dependency>
         <groupId>org.json</groupId>
@@ -337,18 +377,6 @@
       </dependency>
 
       <dependency>
-        <groupId>org.phenotips</groupId>
-        <artifactId>patient-data-default-impl</artifactId>
-        <version>${gene42.pt.fork.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.phenotips</groupId>
-        <artifactId>patient-data-api</artifactId>
-        <version>${gene42.pt.fork.version}</version>
-      </dependency>
-
-      <dependency>
         <groupId>org.jetbrains</groupId>
         <artifactId>annotations</artifactId>
         <version>17.0.0</version>
@@ -358,7 +386,6 @@
 
   <modules>
     <module>utils</module>
-    <module>phenotips</module>
     <module>testing</module>
   </modules>
 
