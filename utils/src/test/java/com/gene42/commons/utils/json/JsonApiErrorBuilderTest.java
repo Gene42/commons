@@ -18,9 +18,7 @@ import org.junit.Test;
 public class JsonApiErrorBuilderTest
 {
     @Test
-    public void testBuild() throws Exception
-    {
-
+    public void testBuild() throws Exception {
         JsonApiErrorBuilder builder = new JsonApiErrorBuilder();
         builder
             .setId("1e009cce-2b7b-11e7-93ae-92361f002671")
@@ -32,7 +30,6 @@ public class JsonApiErrorBuilderTest
             .setTitle("Bad Request");
 
         JSONObject result = builder.build();
-
-        System.out.println(result.toString(4));
+        result.toString(4);
     }
 }

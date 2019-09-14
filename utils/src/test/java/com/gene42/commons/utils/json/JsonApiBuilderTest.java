@@ -47,7 +47,7 @@ public class JsonApiBuilderTest
             .addIncluded(include1).addIncluded(include2)
             .build();
 
-        System.out.println(result.toString(4));
+        result.toString(4);
 
         assertEquals("metaValue2", ((JSONObject)result.get(JsonApiBuilder.META_FIELD)).get("meta2"));
     }
@@ -58,7 +58,7 @@ public class JsonApiBuilderTest
             .addData(new JsonApiResourceBuilder("data1", "type1"))
             .addData(null).addData(null)
             .addIncluded(null).addIncluded(null).build();
-        System.out.println(result.toString(4));
+        result.toString(4);
         assertEquals(1, ((JSONArray)result.get(JsonApiResourceBuilder.DATA_FIELD)).length());
         assertFalse(result.has(JsonApiBuilder.INCLUDED_FIELD));
     }

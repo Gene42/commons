@@ -49,7 +49,7 @@ public class WebUtilsTest
             WebUtils.getJSONObjectValue(jsonObject, "Double", Double.class);
             fail();
         } catch (WebApplicationException e) {
-            System.out.println(e.getResponse().getEntity().toString());
+            //System.out.println(e.getResponse().getEntity().toString());
             // Pass
         }
     }
@@ -61,7 +61,7 @@ public class WebUtilsTest
             WebUtils.castJSONObject(new JSONArray(), JSONObject.class);
             fail();
         } catch (WebApplicationException e) {
-            System.out.println(e.getResponse().getEntity().toString());
+            //System.out.println(e.getResponse().getEntity().toString());
             // Pass
         }
     }
