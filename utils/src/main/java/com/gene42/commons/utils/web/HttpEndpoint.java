@@ -7,8 +7,6 @@
  */
 package com.gene42.commons.utils.web;
 
-import com.gene42.commons.utils.exceptions.ServiceException;
-
 import java.io.Closeable;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -35,6 +33,8 @@ import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicHeader;
+
+import com.gene42.commons.utils.exceptions.ServiceException;
 
 /**
  * CloseableHttpClient wrapper. It provides useful authentication.
@@ -73,6 +73,22 @@ public final class HttpEndpoint implements Closeable
     }
 
     /**
+     * Performs a post request with the given relative url against the base url.
+     * @param relativeUrl the relative url of the request
+     * @param content the content to send in the request
+     * @return the response body
+     * @throws ServiceException if any issue occurs during the request
+     */
+    public String performPostRequest(String relativeUrl, HttpEntity content)
+        throws ServiceException
+    {
+        HttpPost httpRequest = this.getHttpPost(this.getURL(relativeUrl), content);
+
+        return this.performRequest(httpRequest, "posting", true);
+    }
+
+
+    /**
      * Performs a put request with the given relative url against the base url.
      * @param relativeUrl the relative url of the request
      * @param content the content to send in the request
@@ -84,6 +100,20 @@ public final class HttpEndpoint implements Closeable
         throws ServiceException
     {
         HttpPut httpRequest = this.getHttpPut(this.getURL(relativeUrl), new StringEntity(content, type));
+
+        return this.performRequest(httpRequest, "putting", true);
+    }
+
+    /**
+     * Performs a put request with the given relative url against the base url.
+     * @param relativeUrl the relative url of the request
+     * @param content the content to send in the request
+     * @return the response body
+     * @throws ServiceException if any issue occurs during the request
+     */
+    public String performPutRequest(String relativeUrl, HttpEntity content) throws ServiceException
+    {
+        HttpPut httpRequest = this.getHttpPut(this.getURL(relativeUrl), content);
 
         return this.performRequest(httpRequest, "putting", true);
     }
@@ -131,7 +161,16 @@ public final class HttpEndpoint implements Closeable
         return this.performRequest(httpRequest, "getting", false);
     }
 
-    private String performRequest(HttpRequestBase request, String requestErrorStr, boolean require200)
+    /**
+     * Performs the given request.
+     * @param request the request to execute on this endpoint's client.
+     * @param requestErrorStr the error string to use if request fails
+     * @param require200 if set to true this method will throw an exception if anything but a 200 or a 404 is returned
+     * @return the body of the response
+     * @throws ServiceException if require200 is true and request response is not a 200 or a 404.
+     *                          if the body content cannot be read into a string
+     */
+    public String performRequest(HttpRequestBase request, String requestErrorStr, boolean require200)
         throws ServiceException
     {
         try (CloseableHttpResponse response = this.httpClient.execute(this.httpHost, request)) {
@@ -156,7 +195,15 @@ public final class HttpEndpoint implements Closeable
         }
     }
 
-    private HttpPost getHttpPost(String path, HttpEntity content)
+    /**
+     * Returns an {@link HttpPost} request set up with the given content entity and an authentication header
+     * using the credentials set up in this object.
+     * @param path the full url in string form of the request (use {@link HttpEndpoint#getURL} to generate this url
+     *             easily against a relative path
+     * @param content the content entity of the request
+     * @return the {@link HttpPost} request
+     */
+    public HttpPost getHttpPost(String path, HttpEntity content)
     {
         HttpPost httpRequest = new HttpPost(path);
         httpRequest.setEntity(content);
@@ -164,14 +211,29 @@ public final class HttpEndpoint implements Closeable
         return httpRequest;
     }
 
-    private HttpGet getHttpGet(String path)
+    /**
+     * Returns an {@link HttpGet} request set up with an authentication header
+     * using the credentials set up in this object.
+     * @param path the full url in string form of the request (use {@link HttpEndpoint#getURL} to generate this url
+     *             easily against a relative path
+     * @return the {@link HttpGet} request
+     */
+    public HttpGet getHttpGet(String path)
     {
         HttpGet httpRequest = new HttpGet(path);
         httpRequest.addHeader(this.authHeader);
         return httpRequest;
     }
 
-    private HttpPut getHttpPut(String path, HttpEntity content)
+    /**
+     * Returns an {@link HttpPut} request set up with the given content entity and an authentication header
+     * using the credentials set up in this object.
+     * @param path the full url in string form of the request (use {@link HttpEndpoint#getURL} to generate this url
+     *             easily against a relative path
+     * @param content the content entity of the request
+     * @return the {@link HttpPut} request
+     */
+    public HttpPut getHttpPut(String path, HttpEntity content)
     {
         HttpPut httpRequest = new HttpPut(path);
         httpRequest.setEntity(content);
@@ -179,14 +241,29 @@ public final class HttpEndpoint implements Closeable
         return httpRequest;
     }
 
-    private HttpDelete getHttpDelete(String path)
+    /**
+     * Returns an {@link HttpDelete} request set up with an authentication header
+     * using the credentials set up in this object.
+     * @param path the full url in string form of the request (use {@link HttpEndpoint#getURL} to generate this url
+     *             easily against a relative path
+     * @return the {@link HttpDelete} request
+     */
+    public HttpDelete getHttpDelete(String path)
     {
         HttpDelete httpRequest = new HttpDelete(path);
         httpRequest.addHeader(this.authHeader);
         return httpRequest;
     }
 
-    private HttpPatch getHttpPatch(String path, HttpEntity content)
+    /**
+     * Returns an {@link HttpPatch} request set up with the given content entity and an authentication header
+     * using the credentials set up in this object.
+     * @param path the full url in string form of the request (use {@link HttpEndpoint#getURL} to generate this url
+     *             easily against a relative path
+     * @param content the content entity of the request
+     * @return the {@link HttpPatch} request
+     */
+    public HttpPatch getHttpPatch(String path, HttpEntity content)
     {
         HttpPatch httpRequest = new HttpPatch(path);
         httpRequest.setEntity(content);
@@ -194,7 +271,12 @@ public final class HttpEndpoint implements Closeable
         return httpRequest;
     }
 
-    private String getURL(String path)
+    /**
+     * Get a full URL starting with the base URL of this endpoint appended with the relative path given.
+     * @param path a relative path to use for generating the final URL
+     * @return a URL in string form
+     */
+    public String getURL(String path)
     {
         if (StringUtils.isNotBlank(path)) {
             return this.baseURL + ((StringUtils.startsWith(path, "/")) ? path : "/" + path);
@@ -257,7 +339,7 @@ public final class HttpEndpoint implements Closeable
         private static final String HTTPS = "https://";
 
         private BasicHeader authHeader;
-        private BasicCredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+        private final BasicCredentialsProvider credentialsProvider = new BasicCredentialsProvider();
         private CloseableHttpClient httpClient;
         private HttpHost httpHost;
         private String baseURL;
