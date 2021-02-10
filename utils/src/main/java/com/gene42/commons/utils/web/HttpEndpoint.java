@@ -10,7 +10,15 @@ package com.gene42.commons.utils.web;
 import java.io.Closeable;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.security.cert.X509Certificate;
 import java.util.Base64;
+
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -26,13 +34,20 @@ import org.apache.http.client.methods.HttpPatch;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.config.RegistryBuilder;
+import org.apache.http.conn.HttpClientConnectionManager;
+import org.apache.http.conn.socket.ConnectionSocketFactory;
+import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.message.BasicHeader;
+import org.apache.http.util.TextUtils;
 
 import com.gene42.commons.utils.exceptions.ServiceException;
 
@@ -67,7 +82,7 @@ public final class HttpEndpoint implements Closeable
     public String performPostRequest(String relativeUrl, String content, ContentType type)
         throws ServiceException
     {
-        HttpPost httpRequest = this.getHttpPost(this.getURL(relativeUrl), new StringEntity(content, type));
+        HttpPost httpRequest = this.getHttpPost(relativeUrl, new StringEntity(content, type));
 
         return this.performRequest(httpRequest, "posting", true);
     }
@@ -82,7 +97,7 @@ public final class HttpEndpoint implements Closeable
     public String performPostRequest(String relativeUrl, HttpEntity content)
         throws ServiceException
     {
-        HttpPost httpRequest = this.getHttpPost(this.getURL(relativeUrl), content);
+        HttpPost httpRequest = this.getHttpPost(relativeUrl, content);
 
         return this.performRequest(httpRequest, "posting", true);
     }
@@ -99,7 +114,7 @@ public final class HttpEndpoint implements Closeable
     public String performPutRequest(String relativeUrl, String content, ContentType type)
         throws ServiceException
     {
-        HttpPut httpRequest = this.getHttpPut(this.getURL(relativeUrl), new StringEntity(content, type));
+        HttpPut httpRequest = this.getHttpPut(relativeUrl, new StringEntity(content, type));
 
         return this.performRequest(httpRequest, "putting", true);
     }
@@ -113,7 +128,7 @@ public final class HttpEndpoint implements Closeable
      */
     public String performPutRequest(String relativeUrl, HttpEntity content) throws ServiceException
     {
-        HttpPut httpRequest = this.getHttpPut(this.getURL(relativeUrl), content);
+        HttpPut httpRequest = this.getHttpPut(relativeUrl, content);
 
         return this.performRequest(httpRequest, "putting", true);
     }
@@ -129,7 +144,7 @@ public final class HttpEndpoint implements Closeable
     public String performPatchRequest(String relativeUrl, String content, ContentType type)
         throws ServiceException
     {
-        HttpPatch httpRequest = this.getHttpPatch(this.getURL(relativeUrl), new StringEntity(content, type));
+        HttpPatch httpRequest = this.getHttpPatch(relativeUrl, new StringEntity(content, type));
 
         return this.performRequest(httpRequest, "patching", true);
     }
@@ -143,7 +158,7 @@ public final class HttpEndpoint implements Closeable
     public String performDeleteRequest(String relativeUrl)
         throws ServiceException
     {
-        HttpDelete httpRequest = this.getHttpDelete(this.getURL(relativeUrl));
+        HttpDelete httpRequest = this.getHttpDelete(relativeUrl);
 
         return this.performRequest(httpRequest, "deleting", true);
     }
@@ -156,7 +171,7 @@ public final class HttpEndpoint implements Closeable
      */
     public String performGetRequest(String relativeUrl) throws ServiceException
     {
-        HttpGet httpRequest = this.getHttpGet(this.getURL(relativeUrl));
+        HttpGet httpRequest = this.getHttpGet(relativeUrl);
 
         return this.performRequest(httpRequest, "getting", false);
     }
@@ -205,8 +220,9 @@ public final class HttpEndpoint implements Closeable
      */
     public HttpPost getHttpPost(String path, HttpEntity content)
     {
-        HttpPost httpRequest = new HttpPost(path);
+        HttpPost httpRequest = new HttpPost(this.getRequestURL(path));
         httpRequest.setEntity(content);
+        httpRequest.setHeader(content.getContentType());
         httpRequest.addHeader(this.authHeader);
         return httpRequest;
     }
@@ -220,7 +236,7 @@ public final class HttpEndpoint implements Closeable
      */
     public HttpGet getHttpGet(String path)
     {
-        HttpGet httpRequest = new HttpGet(path);
+        HttpGet httpRequest = new HttpGet(this.getRequestURL(path));
         httpRequest.addHeader(this.authHeader);
         return httpRequest;
     }
@@ -235,8 +251,9 @@ public final class HttpEndpoint implements Closeable
      */
     public HttpPut getHttpPut(String path, HttpEntity content)
     {
-        HttpPut httpRequest = new HttpPut(path);
+        HttpPut httpRequest = new HttpPut(this.getRequestURL(path));
         httpRequest.setEntity(content);
+        httpRequest.setHeader(content.getContentType());
         httpRequest.addHeader(this.authHeader);
         return httpRequest;
     }
@@ -250,7 +267,7 @@ public final class HttpEndpoint implements Closeable
      */
     public HttpDelete getHttpDelete(String path)
     {
-        HttpDelete httpRequest = new HttpDelete(path);
+        HttpDelete httpRequest = new HttpDelete(this.getRequestURL(path));
         httpRequest.addHeader(this.authHeader);
         return httpRequest;
     }
@@ -265,7 +282,7 @@ public final class HttpEndpoint implements Closeable
      */
     public HttpPatch getHttpPatch(String path, HttpEntity content)
     {
-        HttpPatch httpRequest = new HttpPatch(path);
+        HttpPatch httpRequest = new HttpPatch(this.getRequestURL(path));
         httpRequest.setEntity(content);
         httpRequest.addHeader(this.authHeader);
         return httpRequest;
@@ -282,6 +299,21 @@ public final class HttpEndpoint implements Closeable
             return this.baseURL + ((StringUtils.startsWith(path, "/")) ? path : "/" + path);
         } else {
             return this.baseURL;
+        }
+    }
+
+    /**
+     * Get a full request URL. If already starting with http, return as is, else call the {@link HttpEndpoint#getURL}
+     * method.
+     * @param path a path to use for generating the final URL, could be either an absolute url, or a relative path.
+     * @return a URL in string form
+     */
+    private String getRequestURL(String path)
+    {
+        if (StringUtils.startsWith(path, "http")) {
+            return path;
+        } else {
+            return this.getURL(path);
         }
     }
 
@@ -349,6 +381,8 @@ public final class HttpEndpoint implements Closeable
         private String host;
         private int port;
         private boolean https;
+        private boolean verifySSL = true;
+        private boolean redirectsEnabled = true;
 
         /**
          * Build a new a HttpEndpoint.
@@ -375,9 +409,9 @@ public final class HttpEndpoint implements Closeable
                 this.baseURL = this.baseURL + ":" + this.port;
             }
 
-            this.httpHost = new HttpHost(this.host, this.port);
+            this.httpHost = HttpHost.create(this.baseURL);// new HttpHost(this.host, this.port);
 
-            this.httpClient = this.getHttpClient(true);
+            this.httpClient = this.createHttpClient();
             return new HttpEndpoint(this);
         }
 
@@ -426,24 +460,71 @@ public final class HttpEndpoint implements Closeable
             this.credentialsProvider.setCredentials(AuthScope.ANY,
                 new UsernamePasswordCredentials(this.username, this.password));
 
-            String auth = Base64.getEncoder().encodeToString((this.username + ":" + this.password).getBytes());
+            String auth =
+                Base64.getEncoder().encodeToString((this.username + ":" + this.password)
+                    .getBytes(StandardCharsets.UTF_8));
 
             this.authHeader = new BasicHeader("Authorization", "Basic " + auth);
             return this;
         }
 
-        private CloseableHttpClient getHttpClient(boolean redirectsEnabled) {
-            return HttpClientBuilder
+        private CloseableHttpClient createHttpClient() {
+            HttpClientBuilder builder = HttpClientBuilder
                 .create()
                 .setDefaultRequestConfig(
                     RequestConfig.custom()
                                  .setAuthenticationEnabled(true)
-                                 .setRedirectsEnabled(redirectsEnabled)
-                                 .setRelativeRedirectsAllowed(redirectsEnabled)
+                                 .setRedirectsEnabled(this.redirectsEnabled)
+                                 .setRelativeRedirectsAllowed(this.redirectsEnabled)
                                  .build())
-                .setDefaultCredentialsProvider(this.credentialsProvider)
-                .setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE)
-                .build();
+                .setDefaultCredentialsProvider(this.credentialsProvider);
+
+
+            if (!this.verifySSL) {
+                builder.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE);
+                try {
+                    SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
+
+                    sslContext.init(null, new TrustManager[] { new X509TrustManager() {
+                        public X509Certificate[] getAcceptedIssuers() {
+                            return null;
+                        }
+
+                        public void checkClientTrusted(X509Certificate[] certs,
+                            String authType) {
+                        }
+
+                        public void checkServerTrusted(X509Certificate[] certs,
+                            String authType) {
+                        }
+                    } }, new SecureRandom());
+
+                    HttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager(
+                        RegistryBuilder.<ConnectionSocketFactory>create()
+                            .register("http", PlainConnectionSocketFactory.getSocketFactory())
+                            .register("https", new SSLConnectionSocketFactory(
+                                sslContext,
+                                split(System.getProperty("https.protocols")),
+                                split(System.getProperty("https.cipherSuites")),
+                                NoopHostnameVerifier.INSTANCE
+                            ))
+                            .build());
+
+                    builder.setConnectionManager(connectionManager);
+                    builder.setSSLContext(sslContext);
+                } catch (NoSuchAlgorithmException | KeyManagementException e) {
+                    //
+                }
+            }
+
+            return builder.build();
+        }
+
+        private static String[] split(final String s) {
+            if (TextUtils.isBlank(s)) {
+                return null;
+            }
+            return s.split(" *, *");
         }
 
         /**
@@ -516,6 +597,50 @@ public final class HttpEndpoint implements Closeable
          */
         public boolean isHttps() {
             return this.https;
+        }
+
+        /**
+         * Getter for verifySSL.
+         *
+         * @return verifySSL
+         */
+        public boolean isVerifySSL() {
+            return this.verifySSL;
+        }
+
+        /**
+         * Setter for verifySSL.
+         *
+         * @param verifySSL verifySSL to set
+         * @return this object
+         */
+        public Builder setVerifySSL(boolean verifySSL) {
+            this.verifySSL = verifySSL;
+            return this;
+        }
+
+        /**
+         * Getter for redirectsEnabled.
+         *
+         * @return redirectsEnabled
+         */
+        public boolean isRedirectsEnabled() {
+            return this.redirectsEnabled;
+        }
+
+        /**
+         * Setter for redirectsEnabled.
+         *
+         * @param redirectsEnabled redirectsEnabled to set
+         * @return this object
+         */
+        public Builder setRedirectsEnabled(boolean redirectsEnabled) {
+            this.redirectsEnabled = redirectsEnabled;
+            return this;
+        }
+
+        private void disableVerifySSL() {
+
         }
     }
 }
